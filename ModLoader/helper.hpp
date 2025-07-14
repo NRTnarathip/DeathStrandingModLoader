@@ -215,4 +215,95 @@ void PrintCallStack()
 	free(symbol);
 }
 
+void  WaitForDebug() {
+	print("waiting for debugger to attach...");
+	while (!IsDebuggerPresent())
+	{
+		Sleep(100);
+	}
+	print("some debug attached");
+}
+
+
+
+int CustomStringCompare(LONGLONG param_1, char* param_2, int param_3)
+
+{
+	char cVar1;
+	char cVar2;
+	int iVar3;
+	LONGLONG lVar4;
+
+	iVar3 = 0;
+	if (0 < param_3) {
+		lVar4 = param_1 - (LONGLONG)param_2;
+		do {
+			cVar1 = param_2[lVar4];
+			cVar2 = *param_2;
+			iVar3 = (int)cVar1 - (int)cVar2;
+			if (cVar1 == '\0') {
+				return iVar3;
+			}
+			if (cVar2 == '\0') {
+				return iVar3;
+			}
+			if (iVar3 != 0) {
+				if (iVar3 == -0x2d) {
+				LAB_141a11e34:
+					if (cVar1 != '/') {
+					LAB_141a11e39:
+						if (cVar1 != '\\') {
+							return iVar3;
+						}
+					}
+				}
+				else if (iVar3 == -0x20) {
+				LAB_141a11e25:
+					if ((0x19 < (byte)(cVar1 + 0xbfU)) || (0x19 < (byte)(cVar2 + 0x9fU))) goto LAB_141a11e34;
+				}
+				else {
+					if (iVar3 != 0x20) {
+						if (iVar3 != 0x2d) {
+							return iVar3;
+						}
+						goto LAB_141a11e39;
+					}
+					if ((0x19 < (byte)(cVar1 + 0x9fU)) || (0x19 < (byte)(cVar2 + 0xbfU))) goto LAB_141a11e25;
+				}
+				iVar3 = 0;
+			}
+			param_2 = param_2 + 1;
+			param_3 = param_3 + -1;
+		} while (0 < param_3);
+	}
+	return iVar3;
+}
+
+typedef bool (*AreResourcesIdenticalOrCompatible_t)(ResourceHeader* resourceHeader, const char** resNamePtr);
+auto fpAreResourcesIdenticalOrCompatible = (AreResourcesIdenticalOrCompatible_t)GetFuncAddr(0x190b0a0);
+
+bool StringIsSame(LONGLONG* p_left, char** p_right) {
+	print("calling AreResourcesIdenticalOrCompatible");
+
+	char* leftString = (char*)p_left;
+	char* rightString = *p_right;
+
+
+	if (leftString == rightString)
+		return true;
+
+	auto leftLen = *(int*)(leftString - 8);
+	auto rightLen = *(int*)(rightString - 8);
+
+	// check length is same??
+	if (*(int*)(leftString - 8) != *(int*)(rightString - 8)) {
+		//print("left length != right");
+		return false;
+	}
+
+	print("try CustomStringCompare....");
+	auto reesult = CustomStringCompare((LONGLONG)leftString, rightString, *(int*)(leftString + -8));
+	print("CustomStringCompare result: %d", reesult);
+	return reesult == 0;
+}
 

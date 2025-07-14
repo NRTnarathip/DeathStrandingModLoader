@@ -36,91 +36,57 @@
 #pragma comment(lib, "libMinHook.x86.lib")
 #endif
 
-typedef UINT64(__fastcall* CheckFileExist_t)(UINT64 param_1, LONGLONG* param_2, LONGLONG pathPattern);
-CheckFileExist_t CheckFileExist_original = nullptr;
-UINT64 __fastcall HookedCheckFileExist(UINT64 param_1, LONGLONG* param_2, LONGLONG param3_pathPattern)
+typedef bool (*OpenResourceDevice_t)(ResourceReaderHandle* handleInfo,
+	LONGLONG* resourcePath, UINT param_flags,
+	UINT32 param_4, UINT32 param_5, int param_6);
+OpenResourceDevice_t fpOpenResourceDevice = nullptr;
+
+bool Hook_OpenResourceDevice(ResourceReaderHandle* reader, LONGLONG* resourcePath, UINT param_flags,
+	UINT32 param_4, UINT32 param_5, int param_6)
 {
-	auto patternStr = std::string(reinterpret_cast<const char*>(param3_pathPattern));
+	print("[Hook] OpenResourceDevice called");
+	print("handleInfo: %p, ", reader);
 
-	// print หรือ debug pattern ที่ค้นหา
-	if (
-		patternStr.find("checkpoint") != std::string::npos
-		|| patternStr.find("::") != std::string::npos
-		|| patternStr.find("]") != std::string::npos
-		|| patternStr.find("slotinfo") != std::string::npos
-		|| patternStr.find("PS") != std::string::npos
-		|| patternStr.find("VS") != std::string::npos
-		|| patternStr.empty())
-		return CheckFileExist_original(param_1, param_2, param3_pathPattern);
+	// Call the original function
+	auto result = fpOpenResourceDevice(reader, resourcePath, param_flags, param_4, param_5, param_6);
+	print("result: %s", result ? "ok" : "failed");
+	print(" entryPath: %s", reader->entryPath);
+	print(" fullPath: %s", *reader->fullPathPtrPtr);
+	print(" error: %s", *reader->errorString);
 
-	print("[Hook] CheckFileExists");
-	print("pattern: %s", patternStr.c_str() ? patternStr.c_str() : "NULL");
-	print("param2: %p, *param2: 0x%llX", param_2, *param_2);
-	int metadata = *(int*)((uintptr_t)(*param_2) - 8);
-	print("metadata: 0x%X", metadata);
-
-	print("[Hook] End");
-
-	return CheckFileExist_original(param_1, param_2, param3_pathPattern);
-}
-
-// typedef ฟังก์ชันเดิม
-using FUN_14190b4f0_t = uint64_t(__fastcall*)(uint64_t, const char*, int64_t);
-
-// pointer เก็บฟังก์ชันเดิม
-FUN_14190b4f0_t FUN_14190b4f0_backup = nullptr;
-
-// ฟังก์ชัน hook
-uint64_t __fastcall Hooked_FUN_14190b4f0(uint64_t param_1, const char* param_2, INT64 param_3)
-{
-	print("[Hook] Called FUN_14190b4f0");
-	print("param2: %s", param_2);
-
-	auto result = FUN_14190b4f0_backup(param_1, param_2, param_3);
-	print("result: %i", result);
+	print("[Hook End] OpenResourceDevice");
 
 	return result;
 }
-decltype(&CreateFileW) fpCreateFileW = nullptr;
-HANDLE WINAPI HookedCreateFileW(
-	LPCWSTR lpFileName,
-	DWORD dwDesiredAccess,
-	DWORD dwShareMode,
-	LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-	DWORD dwCreationDisposition,
-	DWORD dwFlagsAndAttributes,
-	HANDLE hTemplateFile)
+
+
+typedef ULONGLONG(*FUN_141929a50)(LONGLONG* param_1, void* param_2, ULONGLONG param_3, ULONGLONG param_4);
+FUN_141929a50 fpFUN_141929a50 = nullptr;
+ULONGLONG __fastcall Hook_FUN_141929a50(LONGLONG* param_1, void* param_2, ULONGLONG param_3, ULONGLONG param_4)
 {
-	print("hooking CreateFileW: %ls", lpFileName);
-
-	//PrintStack();
-
-	//print("[Calling] CreateFilwW");
-	auto result = fpCreateFileW(
-		lpFileName,
-		dwDesiredAccess,
-		dwShareMode,
-		lpSecurityAttributes,
-		dwCreationDisposition,
-		dwFlagsAndAttributes,
-		hTemplateFile
-	);
-	//print("[Called] CreateFilwW");
-
-	print("[Hook Return]");
+	print("[Hook] FUN_141929a50 called");
+	print("param_1: %p, *param_1: 0x%llX", param_1, *param_1);
+	print("param_2: %p", param_2);
+	print("param_3: 0x%llX", param_3);
+	print("param_4: 0x%llX", param_4);
+	auto result = fpFUN_141929a50(param_1, param_2, param_3, param_4);
+	print("result: 0x%llX", result);
+	print("[Hook End] FUN_141929a50");
 	return result;
 }
 
-typedef void (*LoadArchiveBinFunc)(ResourceManager* resManager, uint64_t* param_2, int loadIndex);
-LoadArchiveBinFunc loadArchiveBinFuncBackup = nullptr;
+typedef void (*LoadArchiveBinFunc)(ResourceManager* resManager, char** loadResourceNamePtrPtr, int loadIndex);
+LoadArchiveBinFunc fpLoadArchiveBin = nullptr;
 
-void __fastcall Hook_LoadArchiveBin(ResourceManager* resManager, uint64_t* param_2, int loadIndex)
+void __fastcall Hook_LoadArchiveBin(ResourceManager* resManager, char** loadResourceNamePtrPtr, int loadIndex)
 {
 	print("[Hook] LoadArchiveBin called");
-	print("resManager: %p, param_2: 0x%llX, loadIndex: %d", resManager, param_2, loadIndex);
-	print("resManager->resourceTotal: %d", resManager->resourceTotal);
+	print("resManager: %p, loadResName: %s, loadIndex: %d", resManager, *loadResourceNamePtrPtr, loadIndex);
+	print(" resourceTotal: %d", resManager->resourceTotal);
 
-	loadArchiveBinFuncBackup(resManager, param_2, loadIndex);
+
+	print("[Prefix] fpLoadArchiveBin");
+	fpLoadArchiveBin(resManager, loadResourceNamePtrPtr, loadIndex);
 
 	print("[Hook End] LoadArchiveBin");
 }
@@ -227,26 +193,35 @@ void __fastcall HookedAddLoadedResourceIndex(int* resourceCounterPtr, int resour
 	print("[Hook End] AddLoadedResourceIndex");
 }
 
-typedef void (*ProcessGameResources_t)(ResourceManager* resManager, uint64_t* param_2);
+typedef void (*ProcessGameResources_t)(ResourceManager* resManager, const char** resNamePtr);
 ProcessGameResources_t fpProcessGameResources = nullptr;
-void ProcessGameResources(ResourceManager* resManager, uint64_t* param_2) {
+void ProcessGameResources(ResourceManager* resManager, const char** resNamePtr) {
 	print("[Hook Begin] ProcessGameResources called");
-	print("resManager: %p, param_2: 0x%llX", resManager, param_2);
+	print("resManager: %p, param_2: 0x%llX", resManager, resNamePtr);
+	print("res name: %s", *resNamePtr);
 	print("resManager->resourceTotal: %d", resManager->resourceTotal);
-	fpProcessGameResources(resManager, param_2);
+
+	fpProcessGameResources(resManager, resNamePtr);
 	print("[Postfix] ProcessGameResources");
 
-
-	if (resManager->resourceList == nullptr) {
+	if (resManager->resourceListPtrPtr == nullptr) {
 		print("resManager->resourceList is NULL");
 	}
 	else {
 		for (int i = 0; i < resManager->resourceTotal; i++) {
-			ResourceHeader* resource = resManager->resourceList[i];
+			ResourceHeader* resource = resManager->resourceListPtrPtr[i];
 			if (resource != nullptr) {
+				print("resource ptr: %p", resource);
 				print("Resource[%d] header->index: %d", i, resource->index);
 				print("Resource[%d] header->unknow1: %d", i, resource->unknow1);
 				print("Resource[%d] header->name: %s", i, resource->name ? resource->name : "NULL");
+				print("Resource[%d] header->isEncrypted: %s", i, resource->isEncrypted ? "true" : "false");
+				if (resource->info != nullptr) {
+					print("info ptr: %p", resource->info);
+					print(" info->filePath: %s", resource->info->filePath ? resource->info->filePath : "NULL");
+					auto meta = resource->info->meta;
+					print(" info->meta: %p", meta);
+				}
 			}
 		}
 	}
@@ -260,14 +235,19 @@ bool Start() {
 	if (MH_Initialize() != MH_OK)
 		return false;
 
-	HookFunc(0x1928ac0, &Hook_LoadArchiveBin, reinterpret_cast<LPVOID*>(&loadArchiveBinFuncBackup));
+	//HookFunc(0x1929a50, &Hook_FUN_141929a50, reinterpret_cast<LPVOID*>(&fpFUN_141929a50));
+	HookFunc(0x1928ac0, &Hook_LoadArchiveBin, reinterpret_cast<LPVOID*>(&fpLoadArchiveBin));
+	HookFunc(0x19280b0, &Hook_OpenResourceDevice, reinterpret_cast<LPVOID*>(&fpOpenResourceDevice));
 
 	//HookFunc(&CreateFileW, &HookedCreateFileW, reinterpret_cast<LPVOID*>(&fpCreateFileW));
 	//HookFunc(&ReadFile, &HookReadFile, reinterpret_cast<LPVOID*>(&fpReadFile));
 
 	//HookFunc(0x19042b0, &HookedAddLoadedResourceIndex, reinterpret_cast<LPVOID*>(&fpAddLoadedResourceIndex));
 
-	HookFunc(0x1924850, &ProcessGameResources, reinterpret_cast<LPVOID*>(&fpProcessGameResources));
+	//HookFunc(0x1924850, &ProcessGameResources, reinterpret_cast<LPVOID*>(&fpProcessGameResources));
+
+	// wait x64dbg attach
+	//WaitForDebug();
 
 	return true;
 }
