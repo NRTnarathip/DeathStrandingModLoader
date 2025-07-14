@@ -1,4 +1,29 @@
 #pragma once
+#include "header.h"
+
+std::ofstream m_logFile("log.txt", std::ios::trunc);
+
+void Log(const char* message)
+{
+	auto now = std::chrono::system_clock::now();
+	auto in_time = std::chrono::system_clock::to_time_t(now);
+	m_logFile << "[" << std::put_time(std::localtime(&in_time), "%F %T") << "] "
+		<< message << std::endl;
+}
+
+void print(const char* format, ...)
+{
+	// Format string
+	char buffer[1024];
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buffer, sizeof(buffer), format, args);
+	va_end(args);
+
+	std::cout << buffer << std::endl;
+	Log(buffer);
+}
+
 
 #define BUFSIZE 512
 std::string GetFileNameFromHandle_Internal(HANDLE hFile)
@@ -123,3 +148,71 @@ LONGLONG GetCurrentPos(HANDLE hFile) {
 	SetFilePointerEx(hFile, index, &index, FILE_CURRENT);
 	return index.QuadPart;
 }
+uintptr_t base = -1;
+void* GetFuncAddr(uintptr_t rva) {
+	if (base == -1)
+		base = (uintptr_t)GetModuleHandleA(NULL); // ds.exe main exe
+
+	return (void*)(base + rva);
+}
+bool HookFunc(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
+	if (MH_CreateHook(targetFunc, detour, originalBackup) != MH_OK) {
+		MessageBoxA(NULL, "Failed to create hook", "Error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	if (MH_EnableHook(targetFunc) != MH_OK)
+	{
+		MessageBoxA(NULL, "Failed to enable hook", "Error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+	print("hooked function: %p", targetFunc);
+
+}
+bool HookFunc(uintptr_t funcRva, LPVOID detour, LPVOID* originalBackup) {
+	return HookFunc(GetFuncAddr(funcRva), detour, originalBackup);
+}
+
+
+void SetupConsole()
+{
+	AllocConsole(); // fallback
+	freopen("CONOUT$", "w", stdout);
+	freopen("CONOUT$", "w", stderr);
+	freopen("CONIN$", "r", stdin);
+}
+DWORD g_mainThreadId = GetCurrentThreadId();
+bool IsMainThread() {
+	return GetCurrentThreadId() == g_mainThreadId;
+}
+void PrintCallStack()
+{
+	const int maxFrames = 62;
+	void* stack[maxFrames];
+	USHORT frames = CaptureStackBackTrace(0, maxFrames, stack, nullptr);
+
+	HANDLE process = GetCurrentProcess();
+	SymInitialize(process, nullptr, TRUE);
+
+	SYMBOL_INFO* symbol = (SYMBOL_INFO*)malloc(sizeof(SYMBOL_INFO) + 256);
+	symbol->MaxNameLen = 255;
+	symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+
+	bool mainThread = IsMainThread();
+	print("main thread?: %s", mainThread ? "true" : "false");
+
+	for (USHORT i = 0; i < frames; ++i) {
+		DWORD64 address = (DWORD64)(stack[i]);
+
+		if (SymFromAddr(process, address, 0, symbol)) {
+			print("%d: %s - 0x%llx", i, symbol->Name, (unsigned long long)symbol->Address);
+		}
+		else {
+			print("%d: ??? - 0x%llx", i, address);
+		}
+	}
+
+	free(symbol);
+}
+
+
