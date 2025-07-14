@@ -24,9 +24,6 @@
 #include <strsafe.h>
 #include <string>
 #include <map>
-
-#include "header.h"
-
 #include "helper.hpp"
 
 
@@ -51,8 +48,9 @@ bool Hook_OpenResourceDevice(ResourceReaderHandle* reader, LONGLONG* resourcePat
 	auto result = fpOpenResourceDevice(reader, resourcePath, param_flags, param_4, param_5, param_6);
 	print("result: %s", result ? "ok" : "failed");
 	print(" entryPath: %s", reader->entryPath);
-	print(" fullPath: %s", *reader->fullPathPtrPtr);
+	print(" fullPath: %s", *reader->fullPath);
 	print(" error: %s", *reader->errorString);
+	print(" someBool 1: %s", reader->someBool1 ? "true" : "false");
 
 	print("[Hook End] OpenResourceDevice");
 
@@ -176,8 +174,6 @@ void __fastcall HookedAddLoadedResourceIndex(int* resourceCounterPtr, int resour
 
 	ArchiveHeader* archiveHeader = (ArchiveHeader*)header;
 	print("archiveHeader->index: %d", archiveHeader->index);
-	print("archiveHeader->p1: %d", archiveHeader->p1);
-	print("archiveHeader->p2: %d", archiveHeader->p2);
 	print("archiveHeader->isEncrypted: %s", archiveHeader->isEncrypted ? "true" : "false");
 	print("archiveHeader->p3: %d", archiveHeader->p3);
 	print("archiveHeader->p4: %d", archiveHeader->p4);
@@ -234,6 +230,7 @@ bool Start() {
 	SetupConsole();
 	if (MH_Initialize() != MH_OK)
 		return false;
+
 
 	//HookFunc(0x1929a50, &Hook_FUN_141929a50, reinterpret_cast<LPVOID*>(&fpFUN_141929a50));
 	HookFunc(0x1928ac0, &Hook_LoadArchiveBin, reinterpret_cast<LPVOID*>(&fpLoadArchiveBin));

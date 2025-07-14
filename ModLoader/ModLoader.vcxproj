@@ -169,7 +169,6 @@ exit /b 0</Command>
   <ItemGroup>
     <ClInclude Include="classes.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="header.h" />
     <ClInclude Include="helper.hpp" />
     <ClInclude Include="pch.h" />
   </ItemGroup>

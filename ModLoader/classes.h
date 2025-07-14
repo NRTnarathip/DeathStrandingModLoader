@@ -1,14 +1,8 @@
 #pragma once
 
-#include <stdio.h>
-
-struct alignas(8) ResourceEntry {
-	uint32_t index;
-	uint32_t padding;     // เพื่อให้ ptr1 ชิด 8-byte
-	uint64_t ptr1;
-	uint64_t ptr2;
-	uint64_t sizeOrOffset;
-};
+#define ASSERT_OFFSET(struct_type, member, expected_offset) \
+    static_assert(offsetof(struct_type, member) == expected_offset, \
+                  #member " offset mismatch")
 
 struct Metadata {
 	const char* GetInterface2(Metadata* meta) {
@@ -43,24 +37,39 @@ struct ResourceManager
 {
 	char padding1[0x30];
 	int resourceTotal; // 0x30
-	char padding2[0x4]; // 0x34
+	char padding2[0x4];
 	ResourceHeader** resourceListPtrPtr; // 0x38
 	int resourcePatchTotal; // 0x40
 };
 
-// correct type
-//struct ResourceReaderHandle {
-//	LONGLONG someValue; //0x0 -> 0x7
-//	char padding1[0x08]; //0x8 -> 0xF
-//	int status; //0x10 -> 0x13, status code of the resource reader
-//	char padding2[0x0C]; // 0x14 -> 0x1F
-//	char** fullPath; // 0x20, pointer to the resource path
-//	char padding3[0x28];
-//	char** error; // 0x50, error string ptr
-//	bool someBool; //0x58
-//};
-//
-//static_assert(offsetof(ResourceReaderHandle, status) == 0x10, "status offset mismatch");
-//static_assert(offsetof(ResourceReaderHandle, fullPath) == 0x20, "fullPath offset mismatch");
-//static_assert(offsetof(ResourceReaderHandle, error) == 0x50, "errorString offset mismatch");
-//static_assert(offsetof(ResourceReaderHandle, someBool) == 0x58, "someBool offset mismatch");
+struct ArchiveHeader {
+	int index; //0x0
+	char padding1[4];
+	char* name; //0x8
+	char padding3[0x8];
+	bool isEncrypted; //0x18
+	char padding4[7];
+	int p3;
+	int p4;
+	int* indexPtr;
+};
+
+
+#define FIELD(type, name, offset, prev) \
+    char _pad_##name[offset - prev]; \
+    type name
+
+struct ResourceReaderHandle {
+	LONGLONG someValue; //0x0
+	FIELD(int, status, 0x10, 0x08);
+	FIELD(char*, entryPath, 0x20, 0x14);
+	char** fullPath;
+	FIELD(char**, errorString, 0x50, 0x30);
+	bool someBool1;
+};
+
+ASSERT_OFFSET(ResourceReaderHandle, status, 0x10);
+ASSERT_OFFSET(ResourceReaderHandle, entryPath, 0x20);
+ASSERT_OFFSET(ResourceReaderHandle, fullPath, 0x28);
+ASSERT_OFFSET(ResourceReaderHandle, errorString, 0x50);
+ASSERT_OFFSET(ResourceReaderHandle, someBool1, 0x58);

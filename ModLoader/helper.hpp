@@ -1,5 +1,4 @@
 #pragma once
-#include "header.h"
 
 std::ofstream m_logFile("log.txt", std::ios::trunc);
 
@@ -185,35 +184,6 @@ DWORD g_mainThreadId = GetCurrentThreadId();
 bool IsMainThread() {
 	return GetCurrentThreadId() == g_mainThreadId;
 }
-void PrintCallStack()
-{
-	const int maxFrames = 62;
-	void* stack[maxFrames];
-	USHORT frames = CaptureStackBackTrace(0, maxFrames, stack, nullptr);
-
-	HANDLE process = GetCurrentProcess();
-	SymInitialize(process, nullptr, TRUE);
-
-	SYMBOL_INFO* symbol = (SYMBOL_INFO*)malloc(sizeof(SYMBOL_INFO) + 256);
-	symbol->MaxNameLen = 255;
-	symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-
-	bool mainThread = IsMainThread();
-	print("main thread?: %s", mainThread ? "true" : "false");
-
-	for (USHORT i = 0; i < frames; ++i) {
-		DWORD64 address = (DWORD64)(stack[i]);
-
-		if (SymFromAddr(process, address, 0, symbol)) {
-			print("%d: %s - 0x%llx", i, symbol->Name, (unsigned long long)symbol->Address);
-		}
-		else {
-			print("%d: ??? - 0x%llx", i, address);
-		}
-	}
-
-	free(symbol);
-}
 
 void  WaitForDebug() {
 	print("waiting for debugger to attach...");
@@ -223,8 +193,6 @@ void  WaitForDebug() {
 	}
 	print("some debug attached");
 }
-
-
 
 int CustomStringCompare(LONGLONG param_1, char* param_2, int param_3)
 
