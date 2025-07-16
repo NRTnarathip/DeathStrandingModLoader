@@ -1,4 +1,8 @@
 #pragma once
+#include <Windows.h>
+
+#define ulonglong ULONGLONG
+#define longlong LONGLONG
 
 #define ASSERT_OFFSET(struct_type, member, expected_offset) \
     static_assert(offsetof(struct_type, member) == expected_offset, \
@@ -44,7 +48,7 @@ struct ResourceManager
 
 struct ArchiveHeader {
 	int index; //0x0
-	char padding1[4];
+	uint32_t encryptKey; // 0x4
 	char* name; //0x8
 	char padding3[0x8];
 	bool isEncrypted; //0x18

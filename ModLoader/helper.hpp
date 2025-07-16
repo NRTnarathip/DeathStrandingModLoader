@@ -1,4 +1,7 @@
 #pragma once
+#include <immintrin.h> // สำหรับ AVX, AVX2, SSE
+#include <DbgHelp.h>
+#pragma comment(lib, "Dbghelp.lib")
 
 std::ofstream m_logFile("log.txt", std::ios::trunc);
 
@@ -147,12 +150,12 @@ LONGLONG GetCurrentPos(HANDLE hFile) {
 	SetFilePointerEx(hFile, index, &index, FILE_CURRENT);
 	return index.QuadPart;
 }
-uintptr_t base = -1;
+uintptr_t imageBase = -1;
 void* GetFuncAddr(uintptr_t rva) {
-	if (base == -1)
-		base = (uintptr_t)GetModuleHandleA(NULL); // ds.exe main exe
+	if (imageBase == -1)
+		imageBase = (uintptr_t)GetModuleHandleA(NULL); // ds.exe main exe
 
-	return (void*)(base + rva);
+	return (void*)(imageBase + rva);
 }
 bool HookFunc(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
 	if (MH_CreateHook(targetFunc, detour, originalBackup) != MH_OK) {
@@ -170,6 +173,9 @@ bool HookFunc(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
 }
 bool HookFunc(uintptr_t funcRva, LPVOID detour, LPVOID* originalBackup) {
 	return HookFunc(GetFuncAddr(funcRva), detour, originalBackup);
+}
+bool HookFunc(uintptr_t funcRva, LPVOID detour, void* originalBackup) {
+	return HookFunc(GetFuncAddr(funcRva), detour, reinterpret_cast<LPVOID*>(originalBackup));
 }
 
 
@@ -275,3 +281,106 @@ bool StringIsSame(LONGLONG* p_left, char** p_right) {
 	return reesult == 0;
 }
 
+char* GetHexString(const uint8_t* data, size_t length) {
+	char* hex_str = (char*)malloc(length * 2 + 1);
+	if (!hex_str) return NULL;
+
+	for (size_t i = 0; i < length; i++)
+		sprintf(&hex_str[i * 2], "%02x", data[i]);
+
+	hex_str[length * 2] = '\0'; // null-terminate
+	return hex_str;
+}
+
+void M128iToBytes(__m128i dataToHashVector, uint8_t out[16]) {
+	// วิธี 1: ใช้ memcpy (ปลอดภัย และง่าย)
+	std::memcpy(out, &dataToHashVector, 16);
+}
+
+void PrintStackTrace() {
+	std::ostringstream oss;
+	oss << boost::stacktrace::stacktrace();
+	std::string str = oss.str();
+	print("%s", str.c_str());
+}
+
+
+void PrintCallerAddress() {
+	CONTEXT context = {};
+	RtlCaptureContext(&context);
+
+	STACKFRAME64 frame = {};
+	frame.AddrPC.Offset = context.Rip;
+	frame.AddrPC.Mode = AddrModeFlat;
+	frame.AddrFrame.Offset = context.Rbp;
+	frame.AddrFrame.Mode = AddrModeFlat;
+	frame.AddrStack.Offset = context.Rsp;
+	frame.AddrStack.Mode = AddrModeFlat;
+
+	HANDLE process = GetCurrentProcess();
+	HANDLE thread = GetCurrentThread();
+
+	SymInitialize(process, NULL, TRUE);
+
+	for (int i = 0; i < 10; i++) {
+		if (!StackWalk64(
+			IMAGE_FILE_MACHINE_AMD64,
+			process,
+			thread,
+			&frame,
+			&context,
+			NULL,
+			SymFunctionTableAccess64,
+			SymGetModuleBase64,
+			NULL)) break;
+
+		auto rva = frame.AddrPC.Offset - imageBase;
+		print("Frame %d: rva %llx", i, rva);
+	}
+}
+
+bool IsCalledFromFuncRva(INT64 nextRetAddrRva) {
+	CONTEXT context = {};
+	RtlCaptureContext(&context);
+
+	STACKFRAME64 frame = {};
+	frame.AddrPC.Offset = context.Rip;
+	frame.AddrPC.Mode = AddrModeFlat;
+	frame.AddrFrame.Offset = context.Rbp;
+	frame.AddrFrame.Mode = AddrModeFlat;
+	frame.AddrStack.Offset = context.Rsp;
+	frame.AddrStack.Mode = AddrModeFlat;
+
+	HANDLE process = GetCurrentProcess();
+	HANDLE thread = GetCurrentThread();
+
+	SymInitialize(process, NULL, TRUE);
+
+	// get only at index 1
+	for (int i = 0; i < 2; i++) {
+		if (!StackWalk64(
+			IMAGE_FILE_MACHINE_AMD64,
+			process,
+			thread,
+			&frame,
+			&context,
+			NULL,
+			SymFunctionTableAccess64,
+			SymGetModuleBase64,
+			NULL)) break;
+
+		auto rva = frame.AddrPC.Offset - imageBase;
+		if (rva == nextRetAddrRva) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void CreateIntFromBytes(char a, char  b, char c, char d, UINT* out) {
+	*out = (a) | (b << 8) | (c << 16) | (d << 24);
+}
+
+void* GetDataSection(int fileOffset) {
+	return (void*)(imageBase + fileOffset);
+}

@@ -170,6 +170,7 @@ exit /b 0</Command>
     <ClInclude Include="classes.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="helper.hpp" />
+    <ClInclude Include="hooks.hpp" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
