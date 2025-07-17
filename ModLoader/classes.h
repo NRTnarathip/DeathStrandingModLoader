@@ -3,6 +3,7 @@
 
 #define ulonglong ULONGLONG
 #define longlong LONGLONG
+#define uint unsigned int
 
 #define ASSERT_OFFSET(struct_type, member, expected_offset) \
     static_assert(offsetof(struct_type, member) == expected_offset, \
@@ -37,25 +38,48 @@ struct ResourceHeader {
 };
 #pragma pack(pop)
 
+struct ResourceList {
+	int count;
+	int capacity;
+	void* data;
+};
+
 struct ResourceManager
 {
 	char padding1[0x30];
-	int resourceTotal; // 0x30
-	char padding2[0x4];
-	ResourceHeader** resourceListPtrPtr; // 0x38
+	void* first; // 0x30
+	ResourceList* resourceListPtr; // 0x38
 	int resourcePatchTotal; // 0x40
 };
 
 struct ArchiveHeader {
-	int index; //0x0
-	uint32_t encryptKey; // 0x4
-	char* name; //0x8
-	char padding3[0x8];
-	bool isEncrypted; //0x18
-	char padding4[7];
+	int index; //0x0 - 0x3
+	uint32_t encryptKey; // 0x4 - 0x7
+	char* name; //0x08 - 0x0F
+	void* gap10; //0x10 - 0x17
+	bool isEncrypted; //0x18 - 0x19
+	char padding4[7]; // 
 	int p3;
 	int p4;
-	int* indexPtr;
+	int* indexPtr; // 0x28 - 0x2F
+	longlong p5;   //0x30 > 0x37
+	void* dataPtr; // 0x38 - 0x3F
+};
+//  size 24 bytes : 0x18
+struct  MyStringHeader {
+	//int refCount1; // 0x0
+	//int someFlags; // 0x4
+	ulonglong refCount1; // 0x0, using longlong for consistency with MyString
+	int refCount2; // 0x8
+	uint reserveLength;  // 0xC
+	char* dataPtr; // 0x10
+};
+
+// size 24 bytes : 0x18
+struct MyString {
+	char* str; //0x0 -> 0x7
+	longlong refCount; // 0x8
+	MyStringHeader* prevStringHeader; // 0x10
 };
 
 
@@ -65,11 +89,14 @@ struct ArchiveHeader {
 
 struct ResourceReaderHandle {
 	LONGLONG someValue; //0x0
-	FIELD(int, status, 0x10, 0x08);
-	FIELD(char*, entryPath, 0x20, 0x14);
-	char** fullPath;
-	FIELD(char**, errorString, 0x50, 0x30);
-	bool someBool1;
+	char padding[0x10 - 0x8];
+	int status; //0x10
+	char padding1[0x20 - 0x14];
+	char* entryPath;  //0x20
+	MyString* fullPath; //0x28
+	char padding2[0x20]; // padding to align to 0x50
+	MyString* errorString; // 0x50
+	bool someBool1; // 0x58
 };
 
 ASSERT_OFFSET(ResourceReaderHandle, status, 0x10);
@@ -77,3 +104,5 @@ ASSERT_OFFSET(ResourceReaderHandle, entryPath, 0x20);
 ASSERT_OFFSET(ResourceReaderHandle, fullPath, 0x28);
 ASSERT_OFFSET(ResourceReaderHandle, errorString, 0x50);
 ASSERT_OFFSET(ResourceReaderHandle, someBool1, 0x58);
+
+

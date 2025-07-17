@@ -1,11 +1,15 @@
 #pragma once
+#include <iostream>
+#include <Windows.h>
 #include <immintrin.h> // สำหรับ AVX, AVX2, SSE
 #include <DbgHelp.h>
+#include <cstdint>
+
 #pragma comment(lib, "Dbghelp.lib")
 
 std::ofstream m_logFile("log.txt", std::ios::trunc);
 
-void Log(const char* message)
+void log2(const char* message)
 {
 	auto now = std::chrono::system_clock::now();
 	auto in_time = std::chrono::system_clock::to_time_t(now);
@@ -13,7 +17,7 @@ void Log(const char* message)
 		<< message << std::endl;
 }
 
-void print(const char* format, ...)
+void log(const char* format, ...)
 {
 	// Format string
 	char buffer[1024];
@@ -23,7 +27,7 @@ void print(const char* format, ...)
 	va_end(args);
 
 	std::cout << buffer << std::endl;
-	Log(buffer);
+	log2(buffer);
 }
 
 
@@ -168,7 +172,7 @@ bool HookFunc(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
 		MessageBoxA(NULL, "Failed to enable hook", "Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
-	print("hooked function: %p", targetFunc);
+	log("hooked function: %p", targetFunc);
 
 }
 bool HookFunc(uintptr_t funcRva, LPVOID detour, LPVOID* originalBackup) {
@@ -192,12 +196,12 @@ bool IsMainThread() {
 }
 
 void  WaitForDebug() {
-	print("waiting for debugger to attach...");
+	log("waiting for debugger to attach...");
 	while (!IsDebuggerPresent())
 	{
 		Sleep(100);
 	}
-	print("some debug attached");
+	log("some debug attached");
 }
 
 int CustomStringCompare(LONGLONG param_1, char* param_2, int param_3)
@@ -257,7 +261,7 @@ typedef bool (*AreResourcesIdenticalOrCompatible_t)(ResourceHeader* resourceHead
 auto fpAreResourcesIdenticalOrCompatible = (AreResourcesIdenticalOrCompatible_t)GetFuncAddr(0x190b0a0);
 
 bool StringIsSame(LONGLONG* p_left, char** p_right) {
-	print("calling AreResourcesIdenticalOrCompatible");
+	log("calling AreResourcesIdenticalOrCompatible");
 
 	char* leftString = (char*)p_left;
 	char* rightString = *p_right;
@@ -275,18 +279,18 @@ bool StringIsSame(LONGLONG* p_left, char** p_right) {
 		return false;
 	}
 
-	print("try CustomStringCompare....");
+	log("try CustomStringCompare....");
 	auto reesult = CustomStringCompare((LONGLONG)leftString, rightString, *(int*)(leftString + -8));
-	print("CustomStringCompare result: %d", reesult);
+	log("CustomStringCompare result: %d", reesult);
 	return reesult == 0;
 }
 
-char* GetHexString(const uint8_t* data, size_t length) {
+char* GetHexString(void* data, size_t length) {
 	char* hex_str = (char*)malloc(length * 2 + 1);
 	if (!hex_str) return NULL;
 
 	for (size_t i = 0; i < length; i++)
-		sprintf(&hex_str[i * 2], "%02x", data[i]);
+		sprintf(&hex_str[i * 2], "%02x", ((uint8_t*)data)[i]);
 
 	hex_str[length * 2] = '\0'; // null-terminate
 	return hex_str;
@@ -301,7 +305,7 @@ void PrintStackTrace() {
 	std::ostringstream oss;
 	oss << boost::stacktrace::stacktrace();
 	std::string str = oss.str();
-	print("%s", str.c_str());
+	log("%s", str.c_str());
 }
 
 
@@ -335,7 +339,7 @@ void PrintCallerAddress() {
 			NULL)) break;
 
 		auto rva = frame.AddrPC.Offset - imageBase;
-		print("Frame %d: rva %llx", i, rva);
+		log("Frame %d: rva %llx", i, rva);
 	}
 }
 

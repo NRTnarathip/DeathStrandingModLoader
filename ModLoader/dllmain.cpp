@@ -1,13 +1,10 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
-
-#include "pch.h"
 #include <Windows.h>
 #include "MinHook.h"
 #include <stdio.h>
 #include <iostream>
 #include <cstdint>
 #include <cstdlib>
-#include <iomanip>
 #include <fstream>
 #include <chrono>
 #include <iomanip>
@@ -16,8 +13,6 @@
 #include <cstdio>
 #include <boost/stacktrace.hpp>
 #include <sstream>
-#include <windows.h>
-#include <stdio.h>
 #include <tchar.h>
 #include <string.h>
 #include <psapi.h>
@@ -25,33 +20,60 @@
 #include <string>
 #include <map>
 #include "helper.hpp"
-#include "hooks.hpp"
+#include "hooks.cpp"
 
 #pragma comment(lib, "libMinHook.x64.lib")
 
 bool enableLogMurmurHash3 = false;
 
+typedef int (*FuncPtrType)(void);
 
 typedef bool (*OpenResourceDevice_t)(ResourceReaderHandle* handleInfo,
 	LONGLONG* resourcePath, UINT param_flags,
 	UINT32 param_4, UINT32 param_5, int param_6);
 OpenResourceDevice_t fpOpenResourceDevice = nullptr;
 
+
 bool Hook_OpenResourceDevice(ResourceReaderHandle* reader, LONGLONG* resourcePath, UINT param_flags,
 	UINT32 param_4, UINT32 param_5, int param_6)
 {
-	print("[Hook] OpenResourceDevice called");
-	print("handleInfo: %p, ", reader);
+	log("[Hook] OpenResourceDevice called");
+	log("handleInfo: %p, ", reader);
+	log("param_4: %d", param_4);
+	log("param_5: %d", param_5);
+	log("param_6: %d", param_6);
+
 
 	// Call the original function
 	auto result = fpOpenResourceDevice(reader, resourcePath, param_flags, param_4, param_5, param_6);
-	print("result: %s", result ? "ok" : "failed");
-	print(" entryPath: %s", reader->entryPath);
-	print(" fullPath: %s", *reader->fullPath);
-	print(" error: %s", *reader->errorString);
-	print(" someBool 1: %s", reader->someBool1 ? "true" : "false");
+	log("result: %s", result ? "ok" : "failed");
+	log(" entryPath: %s", reader->entryPath);
+	log(" fullPath: %s", reader->fullPath->str);
+	log(" error: %s", reader->errorString->str);
+	log(" someBool 1: %s", reader->someBool1 ? "true" : "false");
 
-	print("[Hook End] OpenResourceDevice");
+	if (param_6 < 0) {
+		MyString* fullPath = reader->fullPath;
+		log("full path: %p", fullPath);
+		log("someObjectptr: %p", fullPath->prevStringHeader);
+		if (fullPath->prevStringHeader) {
+			MyStringHeader* prevString = (MyStringHeader*)fullPath->prevStringHeader;
+			log("prev string ptr: %p", prevString);
+			//print("prev string ref1: %d", prevString->refCount1);
+			//print("prev string flags: %d", prevString->someFlags);
+			log("prev string ref1: %llu", prevString->refCount1);
+			log("prev string ref2: %d", prevString->refCount2);
+			log("prev string reserve len: %u", prevString->reserveLength);
+			log("prev string str: %s", prevString->dataPtr);
+		}
+		//FuncPtrType func = *(FuncPtrType*)((char*)fullPath->someObjectPtr + 0x18);
+		//print("func: %p", func);
+		//auto myParam6 = func();
+		//print("my param6: %d", myParam6);
+	}
+
+
+	log("[Hook End] OpenResourceDevice");
 
 	return result;
 }
@@ -61,14 +83,14 @@ typedef ULONGLONG(*FUN_141929a50)(LONGLONG* param_1, void* param_2, ULONGLONG pa
 FUN_141929a50 fpFUN_141929a50 = nullptr;
 ULONGLONG Hook_FUN_141929a50(LONGLONG* param_1, void* param_2, ULONGLONG param_3, ULONGLONG param_4)
 {
-	print("[Hook] FUN_141929a50 called");
-	print("param_1: %p, *param_1: 0x%llX", param_1, *param_1);
-	print("param_2: %p", param_2);
-	print("param_3: 0x%llX", param_3);
-	print("param_4: 0x%llX", param_4);
+	log("[Hook] FUN_141929a50 called");
+	log("param_1: %p, *param_1: 0x%llX", param_1, *param_1);
+	log("param_2: %p", param_2);
+	log("param_3: 0x%llX", param_3);
+	log("param_4: 0x%llX", param_4);
 	auto result = fpFUN_141929a50(param_1, param_2, param_3, param_4);
-	print("result: 0x%llX", result);
-	print("[Hook End] FUN_141929a50");
+	log("result: 0x%llX", result);
+	log("[Hook End] FUN_141929a50");
 	return result;
 }
 
@@ -79,18 +101,27 @@ int hashingCounterInLoadArchiveBin = 0;
 
 void Hook_LoadArchiveBin(ResourceManager* resManager, MyString* loadResourceName, int loadIndex)
 {
-	print("[Hook] LoadArchiveBin called");
-	print("resManager: %p, loadResName: %s, loadIndex: %d", resManager, *loadResourceName, loadIndex);
-	print(" resourceTotal: %d", resManager->resourceTotal);
-
-
-	print("[Prefix] fpLoadArchiveBin");
+	log("[Hook] LoadArchiveBin called");
+	log("resManager: %p, loadResName: %s, loadIndex: %d", resManager, *loadResourceName, loadIndex);
 	enableLogMurmurHash3 = true;
-	hashingCounterInLoadArchiveBin = 0;
-	fpLoadArchiveBin(resManager, loadResourceName, loadIndex);
-	enableLogMurmurHash3 = false;
 
-	print("[Hook End] LoadArchiveBin");
+	hashingCounterInLoadArchiveBin = 0;
+
+
+	log("[Prefix]");
+
+	uint magicHeader = 0;
+
+
+	// Check if the resource name is valid
+	fpLoadArchiveBin(resManager, loadResourceName, loadIndex);
+
+
+	log("[Postfix]");
+
+
+	enableLogMurmurHash3 = false;
+	log("[Hook End] LoadArchiveBin");
 }
 
 typedef BOOL(WINAPI* ReadFile_t)(
@@ -108,7 +139,7 @@ BOOL WINAPI HookReadFile(
 		return fpReadFile(hFile, lpBuffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
 
 
-	print("[Hook Begin] ReadFile()");
+	log("[Hook Begin] ReadFile()");
 
 	LONGLONG currentPos = GetCurrentPos(hFile);
 	BOOL result = fpReadFile(hFile, lpBuffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
@@ -120,7 +151,7 @@ BOOL WINAPI HookReadFile(
 	else
 	{
 		DWORD error = GetLastError();
-		print("  -> GetOverlappedResult failed: %lu\n", error);
+		log("  -> GetOverlappedResult failed: %lu\n", error);
 		SetLastError(error); // Preserve the error from GetOverlappedResult
 		return FALSE;
 	}
@@ -133,13 +164,13 @@ BOOL WINAPI HookReadFile(
 			|| path.length() >= 220
 			|| bytesReaded < 4) {
 			//print("skip path: %s", path.c_str());
-			print("[Hook End] ReadFile");
+			log("[Hook End] ReadFile");
 			return result;
 		}
 
-		print("file path: %s", path.c_str());
-		print("request read length: %lu", nNumberOfBytesToRead);
-		print("beginPos: %I64d, endPos: %I64d", currentPos, endPos);
+		log("file path: %s", path.c_str());
+		log("request read length: %lu", nNumberOfBytesToRead);
+		log("beginPos: %I64d, endPos: %I64d", currentPos, endPos);
 
 		auto magicInt = reinterpret_cast<UINT8*>(lpBuffer);
 		BYTE magicBuffer[4] = { magicInt[0], magicInt[1], magicInt[2], magicInt[3] };
@@ -151,14 +182,14 @@ BOOL WINAPI HookReadFile(
 		magicCache[magic]++;
 
 		if (magicCache[magic] >= 2) {
-			print("found duplicate magic: %s, count: %d", magic.c_str(), magicCache[magic]);
+			log("found duplicate magic: %s, count: %d", magic.c_str(), magicCache[magic]);
 		}
 		else {
-			print("new magic: %s", magic.c_str());
+			log("new magic: %s", magic.c_str());
 		}
 		//print("Stack trace...");
 		//PrintCallStack();
-		print("[Hook End] ReadFile");
+		log("[Hook End] ReadFile");
 	}
 	catch (const std::exception& e) {
 		std::cout << "Exception caught: " << e.what() << std::endl;
@@ -170,28 +201,92 @@ BOOL WINAPI HookReadFile(
 using AddLoadedResourceIndex_t = int (*)(int* resourceCounterPtr, int resourceIndex, void* header);
 AddLoadedResourceIndex_t fpAddLoadedResourceIndex = nullptr;
 
-void __fastcall HookedAddLoadedResourceIndex(int* resourceCounterPtr, int resourceIndex, void* header)
+void __fastcall HookedAddLoadedResourceIndex(
+	ResourceList* resourceCounterPtr, int resourceIndex, ArchiveHeader* header)
 {
-	print("[Hook Begin] AddLoadedResourceIndex called");
-	print("resourceCounterPtr: %p, resourceIndex: %d, header: %p", resourceCounterPtr, resourceIndex, header);
-	print("resourceCounterPtr cast: %d", *resourceCounterPtr);
+	log("[Hook Begin] AddLoadedResourceIndex called");
+	log("resourceCounterPtr: %p, resourceIndex: %d, header: %p", resourceCounterPtr, resourceIndex, header);
 
-	ArchiveHeader* archiveHeader = (ArchiveHeader*)header;
-	print("archiveHeader->index: %d", archiveHeader->index);
-	print("archiveHeader->isEncrypted: %s", archiveHeader->isEncrypted ? "true" : "false");
-	print("archiveHeader->name: %s", archiveHeader->name);
-	//print("archiveHeader->p3: %d", archiveHeader->p3);
-	//print("archiveHeader->p4: %d", archiveHeader->p4);
-	print("archiveHeader->indexPtr: %p", archiveHeader->indexPtr);
+	log("archiveHeader->index: %d", header->index);
+	log("archiveHeader->isEncrypted: %s", header->isEncrypted ? "true" : "false");
+	log("archiveHeader->name: %s", header->name);
+	//print("archive->unknow %p", archiveHeader->gap10);
+	//print("archive->unknow %d", *(int*)archiveHeader->gap10);
+	//print("archive->unknow %lld", *((longlong*)(archiveHeader->gap10)));
+	//print("archive->unknow %lli", *((ulonglong*)(archiveHeader->gap10)));
+	//print("archive->unknow %s", archiveHeader->gap10);
+	//auto prevHeader = (ArchiveHeader*)archiveHeader->gap10;
+	//print("prevHeader: %p", prevHeader);
+	//print("prevHeader:name %s", prevHeader->name);
+	//print("archiveHeader->0x10: %s", (char*)archiveHeader->gap10);
+	//print("archiveHeader->0x10: %lld", archiveHeader->gap10);
+	//print("archiveHeader->indexPtr: %p", archiveHeader->indexPtr);
+	//print("archiveHeader->indexPtr: %d", *archiveHeader->indexPtr);
+	//print("archiveHeader->0x10: %p", (void*)archiveHeader->gap10);
+	//print("res list data: %p", resourceCounterPtr->data);
+	//auto dataPtr = (char*)archiveHeader;
+	//for (int i = 0; i < 4; i++) {
+	//	dataPtr += i * 0x20;
+	//	print("[%d] dump data: %s %s %s %s",
+	//		i,
+	//		GetHexString(dataPtr, 0x8),
+	//		GetHexString(dataPtr + 8, 0x8),
+	//		GetHexString(dataPtr + 16, 0x8),
+	//		GetHexString(dataPtr + 24, 0x8));
+	//}
+	//print("archiveHeader->0x10: %s", GetHexString(&archiveHeader->gap10, 8));
 
 	//if (archiveHeader->indexPtr == nullptr)
 	//	print("archiveHeader->indexPtr is NULL");
 	//else
 	//	print("archiveHeader->indexPtr value: %d", *archiveHeader->indexPtr);
+	//print("Prefix...");
+	//print("res list count: %d", resourceCounterPtr->count);
+	//print("res list capacity: %d", resourceCounterPtr->capacity);
+	ResourceManager* resManager = (ResourceManager*)((char*)(&resourceCounterPtr) - 0x38);
+	auto currentListPtrPtr = (ResourceList**)resManager->first;
+	auto resList = resManager->resourceListPtr;
+	auto endItemPtr = currentListPtrPtr + resList->count;
+	//print(" now list ptr: %p", resList);
+	//print(" end item ptr: %p", endItemPtr);
+	int i = 0;
+	auto archiveList = reinterpret_cast<ArchiveHeader**>(resList->data);
 
-	fpAddLoadedResourceIndex(resourceCounterPtr, resourceIndex, header);
+	for (; currentListPtrPtr != endItemPtr; ++currentListPtrPtr) {
+		auto archive = archiveList[i];
+		//print("loop index: %d", i);
+		//print(" resListPtrPtr: %p", currentListPtrPtr);
+		//auto a = (ArchiveHeader*)currentListPtrPtr;
+		//print("archive %s", archive->name);
+		//isSame = StringIsSame((longlong*)&(*resListPtrPtr)->likeData, &param_loadResourceName->str);
+		//if (isSame) goto Goto_CleanupReturnFunc;
+		i++;
+	}
+	//auto dataPtr = (char*)(header->indexPtr);
+	//for (int i = 0; i < 4; i++) {
+	//	dataPtr += i * 0x10;
+	//	print("[%d] dump data: %s %s",
+	//		i,
+	//		GetHexString(dataPtr, 0x8),
+	//		GetHexString(dataPtr + 8, 0x8));
+	//}
 
-	print("[Hook End] AddLoadedResourceIndex");
+	fpAddLoadedResourceIndex((int*)resourceCounterPtr, resourceIndex, header);
+	log("Postfix");
+	//uint64_t* puVar8 = (void*)(header->indexPtr + (longlong)(int)headerPtr1 * 8);
+	//auto dataPtr = (char*)(header->indexPtr);
+	//for (int i = 0; i < 16; i++) {
+	//	dataPtr += i * 0x10;
+	//	print("[%d] dump data: %s %s",
+	//		i,
+	//		GetHexString(dataPtr, 0x8),
+	//		GetHexString(dataPtr + 8, 0x8));
+	//}
+
+	//print("res list count: %d", resourceCounterPtr->count);
+	//print("res list capacity: %d", resourceCounterPtr->capacity);
+
+	log("[Hook End] AddLoadedResourceIndex");
 }
 
 typedef LONGLONG* (*MurmurHash3_t)(LONGLONG* hash, byte* data, ULONGLONG length);
@@ -203,16 +298,16 @@ LONGLONG* Hook_MurmurHash3_x64_128(LONGLONG* hash, byte* data, ULONGLONG length)
 	//if (enableLogMurmurHash3) {
 	hashingCounterInLoadArchiveBin++;
 	if (enableLogMurmurHash3) {
-		print("[Hook Begin] MurmurHash3 called");
-		print("[Info] hashingCounterInLoadArchiveBin: %d", hashingCounterInLoadArchiveBin);
-		print("[Info] data: %s", GetHexString(data, length));
-		print("[Info] length: %llu", length);
+		log("[Hook Begin] MurmurHash3 called");
+		log("[Info] hashingCounterInLoadArchiveBin: %d", hashingCounterInLoadArchiveBin);
+		log("[Info] data: %s", GetHexString(data, length));
+		log("[Info] length: %llu", length);
 
 		// simulate decode
 		//0x1928c8f
 		//if (IsCalledFromFuncRva(0x1928c94)) {
 		if (hashingCounterInLoadArchiveBin == 1) {
-			print("Some detecting..!!");
+			log("Some detecting..!!");
 
 #define vpshufd_avx _mm_shuffle_epi32
 #define ZEXT416 _mm_cvtsi32_si128
@@ -230,8 +325,8 @@ LONGLONG* Hook_MurmurHash3_x64_128(LONGLONG* hash, byte* data, ULONGLONG length)
 			CreateIntFromBytes(0x33, 0x2e, 0xe5, 0xd4, &headerKey1);
 			auto avx1 = vpblendw_avx(ConstKey128bit, vpshufd_avx(ZEXT416(headerKey1), 0), 3);
 			byte* testKey = (byte*)&avx1; // 16 bytes
-			print("local_e4 1: %s", GetHexString((byte*)&headerKey1, 4));
-			print("test hash 1: %s", GetHexString(testKey, 0x10));
+			log("local_e4 1: %s", GetHexString((byte*)&headerKey1, 4));
+			log("test hash 1: %s", GetHexString(testKey, 0x10));
 
 			// log local_e4
 			// B98A37B7D4E52E33
@@ -258,24 +353,24 @@ LONGLONG* Hook_MurmurHash3_x64_128(LONGLONG* hash, byte* data, ULONGLONG length)
 			//print("header name: %s", header->name ? header->name : "NULL");
 			//print("header->isEncrypted: %s", header->isEncrypted ? "true" : "false");
 		}
-		print("[Calling fpMurmurHash3]");
+		log("[Calling fpMurmurHash3]");
 	}
 	auto resultPtr = fpMurmurHash3(hash, data, length);
 	// look like hash32bit index ?,1,2,3 = ????????62ab1cf41c8176f33e9ea8d2
 	if (enableLogMurmurHash3) {
-		print("[Called fpMurmurHash3]");
-		print("[Info]: hash   %s", GetHexString((byte*)hash, 16));
-		print("[Info]: result %s", GetHexString((byte*)resultPtr, length));
+		log("[Called fpMurmurHash3]");
+		log("[Info]: hash   %s", GetHexString((byte*)hash, 16));
+		log("[Info]: result %s", GetHexString((byte*)resultPtr, length));
 		uint64_t* hash1 = (UINT64*)hash; // 64-bit áÃ¡
 		uint64_t* hash2 = (UINT64*)(hash + 1); // 64-bit áÃ¡
-		print("[Info] Hash1 = %s", GetHexString((byte*)hash1, 8));
-		print("[Info] Hash2 = %s", GetHexString((byte*)hash2, 8));
+		log("[Info] Hash1 = %s", GetHexString((byte*)hash1, 8));
+		log("[Info] Hash2 = %s", GetHexString((byte*)hash2, 8));
 
 
 		// get first 4 bytes of result
 		//uint32_t keyStream = (uint32_t)(result[0] >> 16);
 		//print("[Info] key stream: 0x%x", keyStream);
-		print("[Hook End] MurmurHash3");
+		log("[Hook End] MurmurHash3");
 	}
 
 	return resultPtr;
@@ -284,37 +379,37 @@ LONGLONG* Hook_MurmurHash3_x64_128(LONGLONG* hash, byte* data, ULONGLONG length)
 typedef void (*ProcessGameResources_t)(ResourceManager* resManager, const char** resNamePtr);
 ProcessGameResources_t fpProcessGameResources = nullptr;
 void ProcessGameResources(ResourceManager* resManager, const char** resNamePtr) {
-	print("[Hook Begin] ProcessGameResources called");
-	print("resManager: %p, param_2: 0x%llX", resManager, resNamePtr);
-	print("res name: %s", *resNamePtr);
-	print("resManager->resourceTotal: %d", resManager->resourceTotal);
+	log("[Hook Begin] ProcessGameResources called");
+	log("resManager: %p, param_2: 0x%llX", resManager, resNamePtr);
+	log("res name: %s", *resNamePtr);
+	//print("resManager->resourceTotal: %d", resManager->);
 
 	fpProcessGameResources(resManager, resNamePtr);
-	print("[Postfix] ProcessGameResources");
+	log("[Postfix] ProcessGameResources");
 
-	if (resManager->resourceListPtrPtr == nullptr) {
-		print("resManager->resourceList is NULL");
+	if (resManager->resourceListPtr == nullptr) {
+		log("resManager->resourceList is NULL");
 	}
 	else {
-		for (int i = 0; i < resManager->resourceTotal; i++) {
-			ResourceHeader* resource = resManager->resourceListPtrPtr[i];
-			if (resource != nullptr) {
-				print("resource ptr: %p", resource);
-				print("Resource[%d] header->index: %d", i, resource->index);
-				print("Resource[%d] header->unknow1: %d", i, resource->unknow1);
-				print("Resource[%d] header->name: %s", i, resource->name ? resource->name : "NULL");
-				print("Resource[%d] header->isEncrypted: %s", i, resource->isEncrypted ? "true" : "false");
-				if (resource->info != nullptr) {
-					print("info ptr: %p", resource->info);
-					print(" info->filePath: %s", resource->info->filePath ? resource->info->filePath : "NULL");
-					auto meta = resource->info->meta;
-					print(" info->meta: %p", meta);
+		/*	for (int i = 0; i < resManager->resourceTotal; i++) {
+				ResourceHeader* resource = resManager->resourceListPtr[i];
+				if (resource != nullptr) {
+					print("resource ptr: %p", resource);
+					print("Resource[%d] header->index: %d", i, resource->index);
+					print("Resource[%d] header->unknow1: %d", i, resource->unknow1);
+					print("Resource[%d] header->name: %s", i, resource->name ? resource->name : "NULL");
+					print("Resource[%d] header->isEncrypted: %s", i, resource->isEncrypted ? "true" : "false");
+					if (resource->info != nullptr) {
+						print("info ptr: %p", resource->info);
+						print(" info->filePath: %s", resource->info->filePath ? resource->info->filePath : "NULL");
+						auto meta = resource->info->meta;
+						print(" info->meta: %p", meta);
+					}
 				}
-			}
-		}
+			}*/
 	}
 
-	print("[Hook End] ProcessGameResources");
+	log("[Hook End] ProcessGameResources");
 }
 
 bool Start() {
@@ -322,9 +417,8 @@ bool Start() {
 	if (MH_Initialize() != MH_OK)
 		return false;
 
-	const bool enableDebug = false;
 
-	if (enableDebug) {
+	if (false) {
 		WaitForDebug();
 	}
 	else {
@@ -332,19 +426,19 @@ bool Start() {
 		//HookFunc(0x1924850, &My_LoadAllArchive, reinterpret_cast<LPVOID*>(&fpMy_LoadAllArchive));
 		//HookFunc(0x190b8b0, &My_StringBuildInitWithLength, reinterpret_cast<LPVOID*>(&fpMy_StringBuildInitWithLength));
 		//HookFunc(0x190adf0, &AssignRefCountedString, reinterpret_cast<LPVOID*>(&fpAssignRefCountedString));
-		HookFunc(0x1928ac0, &Hook_LoadArchiveBin, &fpLoadArchiveBin);
+		//HookFunc(0x1928ac0, &Hook_LoadArchiveBin, &fpLoadArchiveBin);
+		//HookFunc(0x1904030, &My_AddResourcePatch, &fpMy_AddResourcePatch);
 		//HookFunc(0x18fe890, &Hook_MurmurHash3_x64_128, reinterpret_cast<LPVOID*>(&fpMurmurHash3));
-		//HookFunc(0x1929a50, &Hook_CheckFileMagic, reinterpret_cast<LPVOID*>(&fpCheckFileMagic));
-
+		HookFunc(0x1929a50, &Hook_CheckFileMagic, reinterpret_cast<LPVOID*>(&fpCheckFileMagic));
+		//HookFunc(0x19280b0, &Hook_OpenResourceDevice, reinterpret_cast<LPVOID*>(&fpOpenResourceDevice));
+		//HookFunc(0x19042b0, &HookedAddLoadedResourceIndex, reinterpret_cast<LPVOID*>(&fpAddLoadedResourceIndex));
 	}
 
 	//HookFunc(0x1929a50, &Hook_FUN_141929a50, reinterpret_cast<LPVOID*>(&fpFUN_141929a50));
-	//HookFunc(0x19280b0, &Hook_OpenResourceDevice, reinterpret_cast<LPVOID*>(&fpOpenResourceDevice));
 
 	//HookFunc(&CreateFileW, &HookedCreateFileW, reinterpret_cast<LPVOID*>(&fpCreateFileW));
 	//HookFunc(&ReadFile, &HookReadFile, reinterpret_cast<LPVOID*>(&fpReadFile));
 
-	//HookFunc(0x19042b0, &HookedAddLoadedResourceIndex, reinterpret_cast<LPVOID*>(&fpAddLoadedResourceIndex));
 
 	//HookFunc(0x1924850, &ProcessGameResources, reinterpret_cast<LPVOID*>(&fpProcessGameResources));
 
