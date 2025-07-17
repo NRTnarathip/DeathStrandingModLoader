@@ -168,7 +168,7 @@ exit /b 0</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="classes.h" />
+    <ClInclude Include="classes.hpp" />
     <ClInclude Include="helper.hpp" />
     <ClInclude Include="hooks.cpp" />
   </ItemGroup>

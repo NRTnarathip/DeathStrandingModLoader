@@ -154,13 +154,7 @@ LONGLONG GetCurrentPos(HANDLE hFile) {
 	SetFilePointerEx(hFile, index, &index, FILE_CURRENT);
 	return index.QuadPart;
 }
-uintptr_t imageBase = -1;
-void* GetFuncAddr(uintptr_t rva) {
-	if (imageBase == -1)
-		imageBase = (uintptr_t)GetModuleHandleA(NULL); // ds.exe main exe
 
-	return (void*)(imageBase + rva);
-}
 bool HookFunc(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
 	if (MH_CreateHook(targetFunc, detour, originalBackup) != MH_OK) {
 		MessageBoxA(NULL, "Failed to create hook", "Error", MB_OK | MB_ICONERROR);
@@ -284,16 +278,35 @@ bool StringIsSame(LONGLONG* p_left, char** p_right) {
 	log("CustomStringCompare result: %d", reesult);
 	return reesult == 0;
 }
+template<typename T>
+const char* GetHexString(T& data) {
+	static_assert(std::is_trivially_copyable<T>::value, "GetHexString requires POD/trivial type");
+	const uint8_t* bytes = reinterpret_cast<const uint8_t*>(&data);
 
-char* GetHexString(void* data, size_t length) {
-	char* hex_str = (char*)malloc(length * 2 + 1);
-	if (!hex_str) return NULL;
+	std::string hex;
+	hex.reserve(sizeof(T) * 2);
 
-	for (size_t i = 0; i < length; i++)
-		sprintf(&hex_str[i * 2], "%02x", ((uint8_t*)data)[i]);
+	for (size_t i = 0; i < sizeof(T); ++i) {
+		char buf[3];
+		std::sprintf(buf, "%02X", bytes[i]);  // little endian
+		hex += buf;
+	}
 
-	hex_str[length * 2] = '\0'; // null-terminate
-	return hex_str;
+	return hex.c_str();
+}
+
+char* GetHexString(const void* data, size_t length) {
+	const uint8_t* bytes = static_cast<const uint8_t*>(data);
+
+	// Allocate string: 2 characters per byte + 1 for null terminator
+	char* hexStr = static_cast<char*>(malloc(length * 2 + 1));
+	if (!hexStr) return nullptr;
+
+	for (size_t i = 0; i < length; ++i)
+		std::sprintf(&hexStr[i * 2], "%02X", bytes[i]);
+
+	hexStr[length * 2] = '\0';
+	return hexStr;
 }
 
 void M128iToBytes(__m128i dataToHashVector, uint8_t out[16]) {

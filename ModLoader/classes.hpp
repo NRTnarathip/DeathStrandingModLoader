@@ -1,5 +1,8 @@
 #pragma once
+#include <cstdint>
+#include <cstring>
 #include <Windows.h>
+#include <emmintrin.h> 
 
 #define ulonglong ULONGLONG
 #define longlong LONGLONG
@@ -105,4 +108,17 @@ ASSERT_OFFSET(ResourceReaderHandle, fullPath, 0x28);
 ASSERT_OFFSET(ResourceReaderHandle, errorString, 0x50);
 ASSERT_OFFSET(ResourceReaderHandle, someBool1, 0x58);
 
+uintptr_t imageBase = (uintptr_t)GetModuleHandleA(NULL);
+void* GetFuncAddr(uintptr_t rva) {
+	return (void*)(imageBase + rva);
+}
 
+typedef LONGLONG* (*MurmurHash3_t)(void* hash, void* data, ULONGLONG length);
+MurmurHash3_t fpMurmurHash3 = (MurmurHash3_t)GetFuncAddr(0x18fe890);
+
+byte DAT_144f6d010_OrGlobalHashSalt[16] = {
+0x43, 0x94, 0x3A, 0xFA, 0x62, 0xAB, 0x1C, 0xF4,
+0x1C, 0x81, 0x76, 0xF3, 0x3E, 0x9E, 0xA8, 0xD2
+};
+
+__m128i GlobalHashSaltM128I = _mm_loadu_si128((__m128i*)DAT_144f6d010_OrGlobalHashSalt);

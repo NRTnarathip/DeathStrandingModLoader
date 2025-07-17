@@ -1,35 +1,82 @@
-#include "classes.h"
-#include "helper.hpp"
+typedef ulonglong(*ResourceReadBuffer_t)(
+	ResourceReaderHandle* reader, byte* buffer,
+	ulonglong readOffset, ulonglong readLength);
 
-typedef ulonglong(*CheckFileMagic_t)(
-	ResourceReaderHandle* reader, void* buffer,
-	void* readOffset, ulonglong readLength);
+ResourceReadBuffer_t fpResourceReadBuffer = nullptr;
 
-CheckFileMagic_t fpCheckFileMagic = nullptr;
-
-ulonglong Hook_CheckFileMagic(ResourceReaderHandle* reader, void* buffer,
-	void* readOffset, ulonglong readLength)
+ulonglong Hook_ResourceReadBuffer(ResourceReaderHandle* reader, byte* buffer,
+	ulonglong readOffset, ulonglong readLength)
 {
 	log("============================");
-	log("[Hook Begin] CheckFileMagic");
-	log("reader: %p, buffer: %p, param_3: %p, readLength: 0x%llX",
+	log("[Hook Begin] ResourceReadBuffer");
+	log("reader: %p, buffer: %p, readOffset: %llx, readLength: 0x%llx",
 		reader, buffer, readOffset, readLength);
 	MyString* fullPathString = (MyString*)reader->fullPath;
-	//auto DAT_144f6bd10 = (MyString*)GetDataSection(0x144f6bd10);
-
-	//log("Dump..");
-	//for (int i = 0; i < 0x28; i++) {
-	//	log("inputMagicPtr[%d]: %02X", i, ((unsigned char*)inputMagicPtr)[i]);
-	//}
-	//log("end dump");
-
+	log("path %s", fullPathString->str);
 	// Call the original function
-	log("read bytes len: %d", readLength);
-	log("before p3: %llu", readOffset);
-	auto result = fpCheckFileMagic(reader, buffer, readOffset, readLength);
+	//log("read offset: %llu", readOffset);
+	//log("read len   : %d", readLength);
+	auto result = fpResourceReadBuffer(reader, buffer, readOffset, readLength);
 	log("[Postfix]");
+	//log("read status 0x%x", (int)result);
+	//log("bytes: %s", GetHexString(buffer, readLength));
+	auto headerBufferPtr = buffer;
+
+	//using MurmurHash3_x64_128_t = long long* (*)(void* hash, byte* data, ULONGLONG length);
+	//auto MurmurHash3_x64_128 = (MurmurHash3_x64_128_t)GetFuncAddr(0x18fe890);
+
+	int magic = *(int*)buffer;
+	log("magic: %s", GetHexString(magic));
+
+	if (magic == 0x21304050) {
+
+		uint32_t headerKeyA = *((uint32_t*)headerBufferPtr + 1);
+		uint32_t headerKeyB = headerKeyA + 1;
+		log("header keyA: %s", GetHexString(headerKeyA));
+		log("header keyB: %s", GetHexString(headerKeyB));
+
+		uint8_t hashKeyA_128bit[16];
+		uint8_t temp16byteArray[16];
+
+		log("[Hash Step 1]");
+		__m128i temp1__m128i = _mm_set1_epi32(headerKeyA);  // shuffle 0 หมายถึง duplicate ค่า
+		__m128i temp16byte = _mm_blend_epi16(GlobalHashSaltM128I, temp1__m128i, 3);
+		_mm_storeu_si128((__m128i*)temp16byteArray, temp16byte);
+		auto resultHash128 = fpMurmurHash3(&hashKeyA_128bit, temp16byteArray, 16);
+		ULONGLONG decodeData[4] = {};
+		decodeData[0] ^= resultHash128[0];
+		decodeData[1] ^= resultHash128[1];
+
+		log("temp16byteArray: %s", GetHexString(temp16byteArray));
+		log("hash128: %s", GetHexString(resultHash128));
+		log("hash128_1 : 8byte: %s", GetHexString(resultHash128[0]));
+		log("hash128_2 : 8byte: %s", GetHexString(resultHash128[1]));
+
+		log("[Hash Step 2]");
+
+		auto temp2__m128i = _mm_set1_epi32(headerKeyB);  // shuffle 0 หมายถึง duplicate ค่า
+		auto temp16byte_2 = _mm_blend_epi16(GlobalHashSaltM128I, temp2__m128i, 3);
+		_mm_storeu_si128((__m128i*)temp16byteArray, temp16byte_2);
+		resultHash128 = fpMurmurHash3(&hashKeyA_128bit, temp16byteArray, 16);
+
+		log("temp16byteArray: %s", GetHexString(temp16byteArray));
+		log("hash128: %s", GetHexString(resultHash128));
+		log("hash128_1 : 8byte: %s", GetHexString(resultHash128[0]));
+		log("hash128_2 : 8byte: %s", GetHexString(resultHash128[1]));
+		decodeData[2] ^= resultHash128[2];
+		decodeData[3] ^= resultHash128[3];
+
+		log("[Finally Decoded]");
+		log("decodeData[0]: %s", GetHexString(decodeData[0]));
+		log("decodeData[1]: %s", GetHexString(decodeData[1]));
+		log("decodeData[2]: %s", GetHexString(decodeData[2]));
+		log("decodeData[3]: %s", GetHexString(decodeData[3]));
+	}
+	else {
+		log("no need to decode header");
+	}
+
 	//log("result: 0x%llX", result);
-	log("after p3: %llu", readOffset);
 
 	//log("Dump..");
 	//for (int i = 0; i < 0x28; i++) {
@@ -37,7 +84,7 @@ ulonglong Hook_CheckFileMagic(ResourceReaderHandle* reader, void* buffer,
 	//}
 	//log("end dump");
 
-	log("[Hook End] CheckFileMagic");
+	log("[Hook End] ResourceReadBuffer");
 	log("==========================");
 	return result;
 }
@@ -142,7 +189,7 @@ int My_AddResourcePatch(int* resourceCounterPtr, ArchiveHeader* header) {
 	log("resourceCounterPtr: %p, archiveHeader: %p", resourceCounterPtr, header);
 	log("resourceCounterPtr value: %d", *resourceCounterPtr);
 	log("archiveHeader->index: %d", header->index);
-	log("header key: %s", GetHexString(&header->encryptKey, 4));
+	log("header key: %s", GetHexString(header->encryptKey));
 	log("archiveHeader->isEncrypted: %s", header->isEncrypted ? "true" : "false");
 	log("archiveHeader->name: %s", header->name);
 	log("[Prefix]");
@@ -153,8 +200,8 @@ int My_AddResourcePatch(int* resourceCounterPtr, ArchiveHeader* header) {
 		dataPtr += i * 0x10;
 		log("[%d] dump data: %s %s",
 			i,
-			GetHexString(dataPtr, 0x8),
-			GetHexString(dataPtr + 8, 0x8));
+			GetHexString(*(long*)dataPtr),
+			GetHexString(*((long*)dataPtr + 1)));
 	}
 
 	auto result = fpMy_AddResourcePatch(resourceCounterPtr, header);

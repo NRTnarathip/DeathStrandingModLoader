@@ -9,7 +9,6 @@
 #include <chrono>
 #include <iomanip>
 #include <ctime>
-#include "classes.h"
 #include <cstdio>
 #include <boost/stacktrace.hpp>
 #include <sstream>
@@ -19,6 +18,8 @@
 #include <strsafe.h>
 #include <string>
 #include <map>
+
+#include "classes.hpp"
 #include "helper.hpp"
 #include "hooks.cpp"
 
@@ -289,10 +290,7 @@ void __fastcall HookedAddLoadedResourceIndex(
 	log("[Hook End] AddLoadedResourceIndex");
 }
 
-typedef LONGLONG* (*MurmurHash3_t)(LONGLONG* hash, byte* data, ULONGLONG length);
-MurmurHash3_t fpMurmurHash3 = nullptr;
-
-LONGLONG* Hook_MurmurHash3_x64_128(LONGLONG* hash, byte* data, ULONGLONG length)
+LONGLONG* Hook_MurmurHash3_x64_128(long long* hash, byte* data, ULONGLONG length)
 {
 	//print("[First] data: %s, length: %llu", (char*)data, length);
 	//if (enableLogMurmurHash3) {
@@ -315,18 +313,14 @@ LONGLONG* Hook_MurmurHash3_x64_128(LONGLONG* hash, byte* data, ULONGLONG length)
 
 			//LONGLONG testHashResult[2];
 			// 43943afa62ab1cf41c8176f33e9ea8d2
-			byte DAT_144f6d010[16] = {
-				0x43, 0x94, 0x3A, 0xFA, 0x62, 0xAB, 0x1C, 0xF4,
-				0x1C, 0x81, 0x76, 0xF3, 0x3E, 0x9E, 0xA8, 0xD2
-			};
-			__m128i auVar3;
-			const __m128i ConstKey128bit = _mm_loadu_si128((__m128i*)DAT_144f6d010);
-			UINT headerKey1;
-			CreateIntFromBytes(0x33, 0x2e, 0xe5, 0xd4, &headerKey1);
-			auto avx1 = vpblendw_avx(ConstKey128bit, vpshufd_avx(ZEXT416(headerKey1), 0), 3);
-			byte* testKey = (byte*)&avx1; // 16 bytes
-			log("local_e4 1: %s", GetHexString((byte*)&headerKey1, 4));
-			log("test hash 1: %s", GetHexString(testKey, 0x10));
+			//__m128i auVar3;
+			//const __m128i ConstKey128bit = _mm_loadu_si128((__m128i*)DAT_144f6d010);
+			//UINT headerKey1;
+			//CreateIntFromBytes(0x33, 0x2e, 0xe5, 0xd4, &headerKey1);
+			//auto avx1 = vpblendw_avx(ConstKey128bit, vpshufd_avx(ZEXT416(headerKey1), 0), 3);
+			//byte* testKey = (byte*)&avx1; // 16 bytes
+			//log("local_e4 1: %s", GetHexString((byte*)&headerKey1, 4));
+			//log("test hash 1: %s", GetHexString(testKey, 0x10));
 
 			// log local_e4
 			// B98A37B7D4E52E33
@@ -361,11 +355,10 @@ LONGLONG* Hook_MurmurHash3_x64_128(LONGLONG* hash, byte* data, ULONGLONG length)
 		log("[Called fpMurmurHash3]");
 		log("[Info]: hash   %s", GetHexString((byte*)hash, 16));
 		log("[Info]: result %s", GetHexString((byte*)resultPtr, length));
-		uint64_t* hash1 = (UINT64*)hash; // 64-bit áÃ¡
-		uint64_t* hash2 = (UINT64*)(hash + 1); // 64-bit áÃ¡
-		log("[Info] Hash1 = %s", GetHexString((byte*)hash1, 8));
-		log("[Info] Hash2 = %s", GetHexString((byte*)hash2, 8));
-
+		auto hash1 = hash[0]; // 64-bit first
+		auto hash2 = hash[1]; // 64-bit second
+		log("[Info] Hash1 = %s", GetHexString(&hash1, 8));
+		log("[Info] Hash2 = %s", GetHexString(&hash2, 8));
 
 		// get first 4 bytes of result
 		//uint32_t keyStream = (uint32_t)(result[0] >> 16);
@@ -426,10 +419,10 @@ bool Start() {
 		//HookFunc(0x1924850, &My_LoadAllArchive, reinterpret_cast<LPVOID*>(&fpMy_LoadAllArchive));
 		//HookFunc(0x190b8b0, &My_StringBuildInitWithLength, reinterpret_cast<LPVOID*>(&fpMy_StringBuildInitWithLength));
 		//HookFunc(0x190adf0, &AssignRefCountedString, reinterpret_cast<LPVOID*>(&fpAssignRefCountedString));
-		//HookFunc(0x1928ac0, &Hook_LoadArchiveBin, &fpLoadArchiveBin);
+		HookFunc(0x1928ac0, &Hook_LoadArchiveBin, &fpLoadArchiveBin);
 		//HookFunc(0x1904030, &My_AddResourcePatch, &fpMy_AddResourcePatch);
 		//HookFunc(0x18fe890, &Hook_MurmurHash3_x64_128, reinterpret_cast<LPVOID*>(&fpMurmurHash3));
-		HookFunc(0x1929a50, &Hook_CheckFileMagic, reinterpret_cast<LPVOID*>(&fpCheckFileMagic));
+		HookFunc(0x1929a50, &Hook_ResourceReadBuffer, reinterpret_cast<LPVOID*>(&fpResourceReadBuffer));
 		//HookFunc(0x19280b0, &Hook_OpenResourceDevice, reinterpret_cast<LPVOID*>(&fpOpenResourceDevice));
 		//HookFunc(0x19042b0, &HookedAddLoadedResourceIndex, reinterpret_cast<LPVOID*>(&fpAddLoadedResourceIndex));
 	}
