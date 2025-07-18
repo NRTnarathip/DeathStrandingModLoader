@@ -17,6 +17,8 @@
 
 #include "MinHook.h"
 
+#include "types.h"
+
 std::ofstream m_logFile("log.txt", std::ios::trunc);
 
 void log2(const char* message)

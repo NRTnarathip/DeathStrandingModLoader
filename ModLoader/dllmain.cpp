@@ -1,4 +1,7 @@
 
+#include "MinHook.h"
+#pragma comment(lib, "libMinHook.x64.lib")
+
 #include <Windows.h>
 #include <stdio.h>
 #include <iostream>
@@ -18,12 +21,9 @@
 #include <string>
 #include <map>
 
-#include "MinHook.h"
-#pragma comment(lib, "libMinHook.x64.lib")
-#pragma comment(linker, "/NODEFAULTLIB:LIBCMT")
-
 #include "hooks.h"
 #include "utils.h"
+#include "types.h"
 
 bool enableLogMurmurHash3 = false;
 OpenResourceDevice_t fpOpenResourceDevice;
@@ -292,55 +292,8 @@ ULONGLONG* Hook_MurmurHash3_x64_128(long long* hash, byte* data, ULONGLONG lengt
 		log("[Info] hashingCounterInLoadArchiveBin: %d", hashingCounterInLoadArchiveBin);
 		log("[Info] data: %s", GetHexString(data, length));
 		log("[Info] length: %llu", length);
-
-		// simulate decode
-		//0x1928c8f
-		//if (IsCalledFromFuncRva(0x1928c94)) {
-		if (hashingCounterInLoadArchiveBin == 1) {
-			log("Some detecting..!!");
-
-#define vpshufd_avx _mm_shuffle_epi32
-#define ZEXT416 _mm_cvtsi32_si128
-#define vpblendw_avx _mm_blend_epi16
-
-			//LONGLONG testHashResult[2];
-			// 43943afa62ab1cf41c8176f33e9ea8d2
-			//__m128i auVar3;
-			//const __m128i ConstKey128bit = _mm_loadu_si128((__m128i*)DAT_144f6d010);
-			//UINT headerKey1;
-			//CreateIntFromBytes(0x33, 0x2e, 0xe5, 0xd4, &headerKey1);
-			//auto avx1 = vpblendw_avx(ConstKey128bit, vpshufd_avx(ZEXT416(headerKey1), 0), 3);
-			//byte* testKey = (byte*)&avx1; // 16 bytes
-			//log("local_e4 1: %s", GetHexString((byte*)&headerKey1, 4));
-			//log("test hash 1: %s", GetHexString(testKey, 0x10));
-
-			// log local_e4
-			// B98A37B7D4E52E33
-			// E06E14A65570CEE6
-			// F4D4D9C0058D59F4
-
-			//fpMurmurHash3(testHashResult, testKey, 0x10);
-			//print("result test hash 1: %s", GetHexString((byte*)testHashResult, 0x10));
-
-
-			//UINT headerKey2 = *((UINT*)data + 4);
-			//byte* headerKey2Ptr = (byte*)&headerKey2;
-			//print("header key 2: %s", GetHexString(headerKey2Ptr, 4));
-			//auto avx2 = vpblendw_avx(key, vpshufd_avx(ZEXT416(headerKey2), 0), 3);
-			//dataToHash = (byte*)&avx2;
-			//print("dataToHash 2: %s", GetHexString((byte*)dataToHash, 0x10));
-			//fpMurmurHash3(hash64bitArray2, dataToHash, 0x10);
-			//print("result test hash 2: %s", GetHexString((byte*)hash64bitArray2, 0x10));
-
-			//ArchiveHeader* header = nullptr;
-			//header = (ArchiveHeader*)(*hash64bitArray2 ^ (ulonglong)header);
-			//print("decode header: %p", header);
-			//print("header->index: %d", header->index);
-			//print("header name: %s", header->name ? header->name : "NULL");
-			//print("header->isEncrypted: %s", header->isEncrypted ? "true" : "false");
-		}
-		log("[Calling fpMurmurHash3]");
 	}
+
 	auto resultPtr = fpMurmurHash3(hash, data, length);
 	// look like hash32bit index ?,1,2,3 = ????????62ab1cf41c8176f33e9ea8d2
 	if (enableLogMurmurHash3) {
@@ -397,9 +350,6 @@ void ProcessGameResources(ResourceManager* resManager, const char** resNamePtr) 
 	log("[Hook End] ProcessGameResources");
 }
 
-extern unsigned __int64 Hook_ResourceReadBuffer(
-	ResourceReaderHandle* reader, unsigned char* buffer,
-	unsigned __int64 readOffset, unsigned __int64 readLength);
 
 bool Start() {
 	SetupConsole();

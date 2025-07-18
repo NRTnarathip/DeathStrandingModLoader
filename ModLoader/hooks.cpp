@@ -150,3 +150,6 @@ int My_AddResourcePatch(int* resourceCounterPtr, ResourceArchiveHeader* header) 
 	return result;
 }
 
+extern void SetupHooks() {
+
+}

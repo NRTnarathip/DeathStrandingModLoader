@@ -1,8 +1,9 @@
 #pragma once
-
+#include <windows.h>
 #include <cstdint>	
 #include <string>
-#include "types.h"
+
+struct ResourceReaderHandle;
 
 void log2(const char* message);
 void log(const char* format, ...);
