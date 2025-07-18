@@ -1,12 +1,9 @@
 #pragma once
+
 #include <cstdint>
 #include <cstring>
 #include <Windows.h>
 #include <emmintrin.h> 
-
-#define ulonglong ULONGLONG
-#define longlong LONGLONG
-#define uint unsigned int
 
 #define ASSERT_OFFSET(struct_type, member, expected_offset) \
     static_assert(offsetof(struct_type, member) == expected_offset, \
@@ -55,7 +52,7 @@ struct ResourceManager
 	int resourcePatchTotal; // 0x40
 };
 
-struct ArchiveHeader {
+struct ResourceArchiveHeader {
 	int index; //0x0 - 0x3
 	uint32_t encryptKey; // 0x4 - 0x7
 	char* name; //0x08 - 0x0F
@@ -65,23 +62,24 @@ struct ArchiveHeader {
 	int p3;
 	int p4;
 	int* indexPtr; // 0x28 - 0x2F
-	longlong p5;   //0x30 > 0x37
+	LONGLONG p5;   //0x30 > 0x37
 	void* dataPtr; // 0x38 - 0x3F
 };
+
 //  size 24 bytes : 0x18
 struct  MyStringHeader {
 	//int refCount1; // 0x0
 	//int someFlags; // 0x4
-	ulonglong refCount1; // 0x0, using longlong for consistency with MyString
+	ULONGLONG refCount1; // 0x0, using longlong for consistency with MyString
 	int refCount2; // 0x8
-	uint reserveLength;  // 0xC
+	UINT reserveLength;  // 0xC
 	char* dataPtr; // 0x10
 };
 
 // size 24 bytes : 0x18
 struct MyString {
 	char* str; //0x0 -> 0x7
-	longlong refCount; // 0x8
+	LONGLONG refCount; // 0x8
 	MyStringHeader* prevStringHeader; // 0x10
 };
 
@@ -108,17 +106,3 @@ ASSERT_OFFSET(ResourceReaderHandle, fullPath, 0x28);
 ASSERT_OFFSET(ResourceReaderHandle, errorString, 0x50);
 ASSERT_OFFSET(ResourceReaderHandle, someBool1, 0x58);
 
-uintptr_t imageBase = (uintptr_t)GetModuleHandleA(NULL);
-void* GetFuncAddr(uintptr_t rva) {
-	return (void*)(imageBase + rva);
-}
-
-typedef LONGLONG* (*MurmurHash3_t)(void* hash, void* data, ULONGLONG length);
-MurmurHash3_t fpMurmurHash3 = (MurmurHash3_t)GetFuncAddr(0x18fe890);
-
-byte DAT_144f6d010_OrGlobalHashSalt[16] = {
-0x43, 0x94, 0x3A, 0xFA, 0x62, 0xAB, 0x1C, 0xF4,
-0x1C, 0x81, 0x76, 0xF3, 0x3E, 0x9E, 0xA8, 0xD2
-};
-
-__m128i GlobalHashSaltM128I = _mm_loadu_si128((__m128i*)DAT_144f6d010_OrGlobalHashSalt);

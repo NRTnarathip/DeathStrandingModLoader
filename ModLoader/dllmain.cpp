@@ -1,6 +1,5 @@
-// dllmain.cpp : Defines the entry point for the DLL application.
+
 #include <Windows.h>
-#include "MinHook.h"
 #include <stdio.h>
 #include <iostream>
 #include <cstdint>
@@ -19,21 +18,15 @@
 #include <string>
 #include <map>
 
-#include "classes.hpp"
-#include "helper.hpp"
-#include "hooks.cpp"
-
+#include "MinHook.h"
 #pragma comment(lib, "libMinHook.x64.lib")
+#pragma comment(linker, "/NODEFAULTLIB:LIBCMT")
+
+#include "hooks.h"
+#include "utils.h"
 
 bool enableLogMurmurHash3 = false;
-
-typedef int (*FuncPtrType)(void);
-
-typedef bool (*OpenResourceDevice_t)(ResourceReaderHandle* handleInfo,
-	LONGLONG* resourcePath, UINT param_flags,
-	UINT32 param_4, UINT32 param_5, int param_6);
-OpenResourceDevice_t fpOpenResourceDevice = nullptr;
-
+OpenResourceDevice_t fpOpenResourceDevice;
 
 bool Hook_OpenResourceDevice(ResourceReaderHandle* reader, LONGLONG* resourcePath, UINT param_flags,
 	UINT32 param_4, UINT32 param_5, int param_6)
@@ -103,7 +96,7 @@ int hashingCounterInLoadArchiveBin = 0;
 void Hook_LoadArchiveBin(ResourceManager* resManager, MyString* loadResourceName, int loadIndex)
 {
 	log("[Hook] LoadArchiveBin called");
-	log("resManager: %p, loadResName: %s, loadIndex: %d", resManager, *loadResourceName, loadIndex);
+	log("loadResName: %s, loadIndex: %d", loadResourceName->str, loadIndex);
 	enableLogMurmurHash3 = true;
 
 	hashingCounterInLoadArchiveBin = 0;
@@ -111,8 +104,7 @@ void Hook_LoadArchiveBin(ResourceManager* resManager, MyString* loadResourceName
 
 	log("[Prefix]");
 
-	uint magicHeader = 0;
-
+	UINT magicHeader = 0;
 
 	// Check if the resource name is valid
 	fpLoadArchiveBin(resManager, loadResourceName, loadIndex);
@@ -130,80 +122,80 @@ typedef BOOL(WINAPI* ReadFile_t)(
 ReadFile_t fpReadFile = nullptr;
 
 std::map<std::string, int> magicCache;
-
-BOOL WINAPI HookReadFile(
-	HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead,
-	LPDWORD lpNumberOfBytesRead, LPOVERLAPPED lpOverlapped)
-{
-	auto path = GetFileNameFromHandle(hFile);
-	if (lpOverlapped == nullptr || path.empty() || path.length() >= 200)
-		return fpReadFile(hFile, lpBuffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
-
-
-	log("[Hook Begin] ReadFile()");
-
-	LONGLONG currentPos = GetCurrentPos(hFile);
-	BOOL result = fpReadFile(hFile, lpBuffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
-	DWORD bytesReaded = 0;
-	if (GetOverlappedResult(hFile, lpOverlapped, &bytesReaded, TRUE /* bWait: TRUE for blocking */)) {
-		if (lpNumberOfBytesRead != NULL)
-			*lpNumberOfBytesRead = bytesReaded;
-	}
-	else
-	{
-		DWORD error = GetLastError();
-		log("  -> GetOverlappedResult failed: %lu\n", error);
-		SetLastError(error); // Preserve the error from GetOverlappedResult
-		return FALSE;
-	}
-
-	LONGLONG endPos = currentPos + bytesReaded;
-
-	try {
-		auto path = GetFileNameFromHandle(hFile);
-		if (path.empty() || path.length() <= 10
-			|| path.length() >= 220
-			|| bytesReaded < 4) {
-			//print("skip path: %s", path.c_str());
-			log("[Hook End] ReadFile");
-			return result;
-		}
-
-		log("file path: %s", path.c_str());
-		log("request read length: %lu", nNumberOfBytesToRead);
-		log("beginPos: %I64d, endPos: %I64d", currentPos, endPos);
-
-		auto magicInt = reinterpret_cast<UINT8*>(lpBuffer);
-		BYTE magicBuffer[4] = { magicInt[0], magicInt[1], magicInt[2], magicInt[3] };
-
-		auto magic = MagicToString(magicBuffer, 4);
-		if (magicCache.find(magic) == magicCache.end()) {
-			magicCache[magic] = 0;
-		}
-		magicCache[magic]++;
-
-		if (magicCache[magic] >= 2) {
-			log("found duplicate magic: %s, count: %d", magic.c_str(), magicCache[magic]);
-		}
-		else {
-			log("new magic: %s", magic.c_str());
-		}
-		//print("Stack trace...");
-		//PrintCallStack();
-		log("[Hook End] ReadFile");
-	}
-	catch (const std::exception& e) {
-		std::cout << "Exception caught: " << e.what() << std::endl;
-	}
-
-	return result;
-}
+//
+//BOOL WINAPI HookReadFile(
+//	HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead,
+//	LPDWORD lpNumberOfBytesRead, LPOVERLAPPED lpOverlapped)
+//{
+//	auto path = GetFileNameFromHandle(hFile);
+//	if (lpOverlapped == nullptr || path.empty() || path.length() >= 200)
+//		return fpReadFile(hFile, lpBuffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
+//
+//
+//	log("[Hook Begin] ReadFile()");
+//
+//	LONGLONG currentPos = GetCurrentPos(hFile);
+//	BOOL result = fpReadFile(hFile, lpBuffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
+//	DWORD bytesReaded = 0;
+//	if (GetOverlappedResult(hFile, lpOverlapped, &bytesReaded, TRUE /* bWait: TRUE for blocking */)) {
+//		if (lpNumberOfBytesRead != NULL)
+//			*lpNumberOfBytesRead = bytesReaded;
+//	}
+//	else
+//	{
+//		DWORD error = GetLastError();
+//		log("  -> GetOverlappedResult failed: %lu\n", error);
+//		SetLastError(error); // Preserve the error from GetOverlappedResult
+//		return FALSE;
+//	}
+//
+//	LONGLONG endPos = currentPos + bytesReaded;
+//
+//	try {
+//		auto path = GetFileNameFromHandle(hFile);
+//		if (path.empty() || path.length() <= 10
+//			|| path.length() >= 220
+//			|| bytesReaded < 4) {
+//			//print("skip path: %s", path.c_str());
+//			log("[Hook End] ReadFile");
+//			return result;
+//		}
+//
+//		log("file path: %s", path.c_str());
+//		log("request read length: %lu", nNumberOfBytesToRead);
+//		log("beginPos: %I64d, endPos: %I64d", currentPos, endPos);
+//
+//		auto magicInt = reinterpret_cast<UINT8*>(lpBuffer);
+//		BYTE magicBuffer[4] = { magicInt[0], magicInt[1], magicInt[2], magicInt[3] };
+//
+//		auto magic = MagicToString(magicBuffer, 4);
+//		if (magicCache.find(magic) == magicCache.end()) {
+//			magicCache[magic] = 0;
+//		}
+//		magicCache[magic]++;
+//
+//		if (magicCache[magic] >= 2) {
+//			log("found duplicate magic: %s, count: %d", magic.c_str(), magicCache[magic]);
+//		}
+//		else {
+//			log("new magic: %s", magic.c_str());
+//		}
+//		//print("Stack trace...");
+//		//PrintCallStack();
+//		log("[Hook End] ReadFile");
+//	}
+//	catch (const std::exception& e) {
+//		std::cout << "Exception caught: " << e.what() << std::endl;
+//	}
+//
+//	return result;
+//}
 
 using AddLoadedResourceIndex_t = int (*)(int* resourceCounterPtr, int resourceIndex, void* header);
 AddLoadedResourceIndex_t fpAddLoadedResourceIndex = nullptr;
 
 void __fastcall HookedAddLoadedResourceIndex(
-	ResourceList* resourceCounterPtr, int resourceIndex, ArchiveHeader* header)
+	ResourceList* resourceCounterPtr, int resourceIndex, ResourceArchiveHeader* header)
 {
 	log("[Hook Begin] AddLoadedResourceIndex called");
 	log("resourceCounterPtr: %p, resourceIndex: %d, header: %p", resourceCounterPtr, resourceIndex, header);
@@ -251,7 +243,7 @@ void __fastcall HookedAddLoadedResourceIndex(
 	//print(" now list ptr: %p", resList);
 	//print(" end item ptr: %p", endItemPtr);
 	int i = 0;
-	auto archiveList = reinterpret_cast<ArchiveHeader**>(resList->data);
+	auto archiveList = reinterpret_cast<ResourceArchiveHeader**>(resList->data);
 
 	for (; currentListPtrPtr != endItemPtr; ++currentListPtrPtr) {
 		auto archive = archiveList[i];
@@ -290,7 +282,7 @@ void __fastcall HookedAddLoadedResourceIndex(
 	log("[Hook End] AddLoadedResourceIndex");
 }
 
-LONGLONG* Hook_MurmurHash3_x64_128(long long* hash, byte* data, ULONGLONG length)
+ULONGLONG* Hook_MurmurHash3_x64_128(long long* hash, byte* data, ULONGLONG length)
 {
 	//print("[First] data: %s, length: %llu", (char*)data, length);
 	//if (enableLogMurmurHash3) {
@@ -405,6 +397,10 @@ void ProcessGameResources(ResourceManager* resManager, const char** resNamePtr) 
 	log("[Hook End] ProcessGameResources");
 }
 
+extern unsigned __int64 Hook_ResourceReadBuffer(
+	ResourceReaderHandle* reader, unsigned char* buffer,
+	unsigned __int64 readOffset, unsigned __int64 readLength);
+
 bool Start() {
 	SetupConsole();
 	if (MH_Initialize() != MH_OK)
@@ -422,7 +418,7 @@ bool Start() {
 		HookFunc(0x1928ac0, &Hook_LoadArchiveBin, &fpLoadArchiveBin);
 		//HookFunc(0x1904030, &My_AddResourcePatch, &fpMy_AddResourcePatch);
 		//HookFunc(0x18fe890, &Hook_MurmurHash3_x64_128, reinterpret_cast<LPVOID*>(&fpMurmurHash3));
-		HookFunc(0x1929a50, &Hook_ResourceReadBuffer, reinterpret_cast<LPVOID*>(&fpResourceReadBuffer));
+		HookFunc(0x1929a50, &Hook_ResourceReadBuffer, &fpResourceReadBuffer);
 		//HookFunc(0x19280b0, &Hook_OpenResourceDevice, reinterpret_cast<LPVOID*>(&fpOpenResourceDevice));
 		//HookFunc(0x19042b0, &HookedAddLoadedResourceIndex, reinterpret_cast<LPVOID*>(&fpAddLoadedResourceIndex));
 	}

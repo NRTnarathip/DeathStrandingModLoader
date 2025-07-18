@@ -154,6 +154,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>libMinHook.x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -168,13 +170,19 @@ exit /b 0</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="classes.hpp" />
-    <ClInclude Include="helper.hpp" />
+    <ClInclude Include="archive_reader.h" />
+    <ClInclude Include="types.h" />
     <ClInclude Include="hooks.cpp" />
+    <ClInclude Include="hooks.h" />
+    <ClInclude Include="MurmurHash3.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="archive_reader.cpp" />
+    <ClCompile Include="types.cpp" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="My_LoadArchive.cpp" />
+    <ClCompile Include="MurmurHash3.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
