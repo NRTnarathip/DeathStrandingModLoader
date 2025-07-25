@@ -2,27 +2,30 @@
 #include <fstream> 
 #include <Windows.h>
 #include <vector>
+#include <Windows.h>
 
-uintptr_t GetStackPointer() {
-}
-
-uint64_t GetRBP() {
-
+static void* mi_win_virtual_allocx(void* addr, size_t size, size_t try_alignment, DWORD flags) {
+	return VirtualAlloc(NULL, size, flags, PAGE_READWRITE);
 }
 
 int main()
 {
-	std::cout << "Hello World!\n";
+	mi_win_virtual_allocx(NULL, 1024 * 1024, MEM_COMMIT | MEM_RESERVE, 0x99999);
 
-	//const char* binPath = "E:\SteamLibrary\steamapps\common\DEATH STRANDING DIRECTORS CUT\data\59b95a781c9170b0d13773766e27ad90.bin";
+	DWORD dLastError = GetLastError();
+	LPCTSTR strErrorMessage = NULL;
 
-	//std::ifstream file(binPath, std::ios::binary);
+	FormatMessage(
+		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ARGUMENT_ARRAY | FORMAT_MESSAGE_ALLOCATE_BUFFER,
+		NULL,
+		dLastError,
+		0,
+		(LPWSTR)&strErrorMessage,
+		0,
+		NULL);
 
-	//const int length = 0x2000;
-	//std::vector<char> buffer(length);
-	//file.read(buffer.data(), length);
-
-	ULONG64 c = GetRBP();
+	//Prints debug output to the console
+	MessageBox(nullptr, strErrorMessage, TEXT("Information"), MB_OK);
 
 	printf("done read buffer\n");
 	system("pause");

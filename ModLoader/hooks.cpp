@@ -8,8 +8,10 @@ unsigned __int64 Hook_ResourceReadBuffer(
 {
 	log("============================");
 	log("[Hook Begin] ResourceReadBuffer");
-	log("reader: %p, buffer: %p, readOffset: %llx, readLength: 0x%llx",
+	log("reader ptr: %p, buffer ptr: %p, readOffset: %llx, readLength: 0x%llx",
 		reader, buffer, readOffset, readLength);
+	auto bufferAddr = (UINT64)buffer;
+	log("buffer ptr addr bytes: %s", GetHexString(&bufferAddr, 8));
 	MyString* fullPathString = (MyString*)reader->fullPath;
 	// Call the original function
 	//log("read offset: %llu", readOffset);
@@ -21,6 +23,7 @@ unsigned __int64 Hook_ResourceReadBuffer(
 	if (readOffset == 0 && readLength == 0x28) {
 		auto archiveReader = new ArchiveReader();
 		archiveReader->readArchive(reader);
+		archiveReader->LogInfo();
 	}
 
 	log("[Hook End] ResourceReadBuffer");
@@ -134,14 +137,14 @@ int My_AddResourcePatch(int* resourceCounterPtr, ResourceArchiveHeader* header) 
 	log("[Prefix]");
 
 
-	auto dataPtr = (char*)(header->indexPtr);
-	for (int i = 0; i < 4; i++) {
-		dataPtr += i * 0x10;
-		log("[%d] dump data: %s %s",
-			i,
-			GetHexString(*(long*)dataPtr),
-			GetHexString(*((long*)dataPtr + 1)));
-	}
+	//auto dataPtr = (char*)(header->indexPtr);
+	//for (int i = 0; i < 4; i++) {
+	//	dataPtr += i * 0x10;
+	//	log("[%d] dump data: %s %s",
+	//		i,
+	//		GetHexString(*(long*)dataPtr),
+	//		GetHexString(*((long*)dataPtr + 1)));
+	//}
 
 	auto result = fpMy_AddResourcePatch(resourceCounterPtr, header);
 	log("[Postfix]");
@@ -150,6 +153,38 @@ int My_AddResourcePatch(int* resourceCounterPtr, ResourceArchiveHeader* header) 
 	return result;
 }
 
-extern void SetupHooks() {
+AddResourceIndex_t fpMy_AddResourceIndex = nullptr;
 
+int My_AddResourceIndex(ResourceList* resourceCounterPtr,
+	int resourceIndex, ResourceArchiveHeader* resPtr)
+{
+	log("[Hook Begin] My_AddResourceIndex");
+	log("resourceCounterPtr: %p, resourceIndex: %d, header: %p", resourceCounterPtr, resourceIndex, resPtr);
+
+	auto header = *(ArchiveBinHeader*)((byte*)resPtr + 0x0);
+	log("dump bytes: %s", GetHexString((byte*)resPtr, 0x40));
+
+	ArchiveFileEntry* fileTableListPtr = (ArchiveFileEntry*)((byte*)resPtr + 0x28);
+	for (int i = 0; i < header.fileTableCount; i++) {
+		ArchiveFileEntry* fileTable = (ArchiveFileEntry*)((byte*)fileTableListPtr + i * 0x20);
+		log("loop:%d file table num: %u", i, fileTable->entryNum);
+	}
+
+	//if (header.magic == 0x21304050 || header.magic == 0x20304050) {
+	//	log("  Magic: %s", GetHexString(header.magic));
+	//	log("  Key: %s", GetHexString(header.key));
+	//	log("  File Size: %llu", header.fileSize);
+	//	log("  Data Size: %llu", header.dataSize);
+	//	log("  File Table Count: %llu", header.fileTableCount);
+	//	log("  Chunk Table Count: %u", header.chunkTableCount);
+	//	log("  Max Chunk Size: %u", header.maxChunkSize);
+	//}
+
+	auto result = fpMy_AddResourceIndex(resourceCounterPtr, resourceIndex, resPtr);
+
+	log("Postfix");
+
+	log("[Hook End] My_AddResourceIndex");
+
+	return result;
 }

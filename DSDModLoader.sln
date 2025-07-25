@@ -9,6 +9,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModLoader", "ModLoader\ModL
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LearningConsoleApp", "LearningConsoleApp\LearningConsoleApp.vcxproj", "{CA8131F1-22A6-4D29-BFA4-5D4F010EE5C0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LaernNumaNode", "LaernNumaNode\LaernNumaNode.vcxproj", "{192EA225-58A5-475D-91FD-69A9445A1BEE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DSWinlatorLauncher", "DSWinlatorLauncher\DSWinlatorLauncher.vcxproj", "{9F1BE5FF-FD68-4807-B10B-D001AA93CF34}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -41,6 +45,22 @@ Global
 		{CA8131F1-22A6-4D29-BFA4-5D4F010EE5C0}.Release|x64.Build.0 = Release|x64
 		{CA8131F1-22A6-4D29-BFA4-5D4F010EE5C0}.Release|x86.ActiveCfg = Release|Win32
 		{CA8131F1-22A6-4D29-BFA4-5D4F010EE5C0}.Release|x86.Build.0 = Release|Win32
+		{192EA225-58A5-475D-91FD-69A9445A1BEE}.Debug|x64.ActiveCfg = Debug|x64
+		{192EA225-58A5-475D-91FD-69A9445A1BEE}.Debug|x64.Build.0 = Debug|x64
+		{192EA225-58A5-475D-91FD-69A9445A1BEE}.Debug|x86.ActiveCfg = Debug|Win32
+		{192EA225-58A5-475D-91FD-69A9445A1BEE}.Debug|x86.Build.0 = Debug|Win32
+		{192EA225-58A5-475D-91FD-69A9445A1BEE}.Release|x64.ActiveCfg = Release|x64
+		{192EA225-58A5-475D-91FD-69A9445A1BEE}.Release|x64.Build.0 = Release|x64
+		{192EA225-58A5-475D-91FD-69A9445A1BEE}.Release|x86.ActiveCfg = Release|Win32
+		{192EA225-58A5-475D-91FD-69A9445A1BEE}.Release|x86.Build.0 = Release|Win32
+		{9F1BE5FF-FD68-4807-B10B-D001AA93CF34}.Debug|x64.ActiveCfg = Debug|x64
+		{9F1BE5FF-FD68-4807-B10B-D001AA93CF34}.Debug|x64.Build.0 = Debug|x64
+		{9F1BE5FF-FD68-4807-B10B-D001AA93CF34}.Debug|x86.ActiveCfg = Debug|Win32
+		{9F1BE5FF-FD68-4807-B10B-D001AA93CF34}.Debug|x86.Build.0 = Debug|Win32
+		{9F1BE5FF-FD68-4807-B10B-D001AA93CF34}.Release|x64.ActiveCfg = Release|x64
+		{9F1BE5FF-FD68-4807-B10B-D001AA93CF34}.Release|x64.Build.0 = Release|x64
+		{9F1BE5FF-FD68-4807-B10B-D001AA93CF34}.Release|x86.ActiveCfg = Release|Win32
+		{9F1BE5FF-FD68-4807-B10B-D001AA93CF34}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

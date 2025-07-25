@@ -13,7 +13,7 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="utils">
+    <Filter Include="Source Files\utils">
       <UniqueIdentifier>{93987006-6eee-447d-848e-cc8f05d9036d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -28,9 +28,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MurmurHash3.h">
-      <Filter>utils</Filter>
+      <Filter>Source Files\utils</Filter>
     </ClInclude>
     <ClInclude Include="hooks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="winlator_patch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -48,9 +51,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MurmurHash3.cpp">
-      <Filter>utils</Filter>
+      <Filter>Source Files\utils</Filter>
     </ClCompile>
     <ClCompile Include="hooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="winlator_patch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

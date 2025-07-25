@@ -22,13 +22,10 @@ ArchiveReader::ArchiveReader() {
 }
 
 void ArchiveReader::readArchive(ResourceReaderHandle* reader) {
-	log("fullPath: %s", ((MyString*)reader->fullPath)->str);
+	//log("fullPath: %s", ((MyString*)reader->fullPath)->str);
 
 	Seek(0);
 	ReadBuffer(reader, &header, sizeof(ArchiveBinHeader));
-
-	log("header.magic: %s", GetHexString(header.magic));
-	log("header.key: %s", GetHexString(header.key));
 
 	// process header
 	isEncrypted = (header.magic == 0x21304050);
@@ -37,19 +34,12 @@ void ArchiveReader::readArchive(ResourceReaderHandle* reader) {
 		decode128bit(header.key, header.key + 1, headerPtr + 8);
 	}
 	else {
-		log("No decryption needed.");
 	}
-
-	log("header.fileSize: %llu", header.fileSize);
-	log("header.dataSize: %llu", header.dataSize);
-	log("header.fileTableCount: %llu", header.fileTableCount);
-	log("header.chunkTableCount: %u", header.chunkTableCount);
-	log("header.maxChunkSize: %u", header.maxChunkSize);
 
 	// process file table
 	for (size_t i = 0; i < header.fileTableCount; ++i) {
-		BinFileEntry entry = {};
-		ReadBuffer(reader, &entry, sizeof(BinFileEntry));
+		ArchiveFileEntry entry = {};
+		ReadBuffer(reader, &entry, sizeof(ArchiveFileEntry));
 
 		if (isEncrypted) {
 			auto saveKey1 = entry.key1;
@@ -62,11 +52,10 @@ void ArchiveReader::readArchive(ResourceReaderHandle* reader) {
 		fileTableList.push_back(entry);
 	}
 
-	log("try process chunk entries ...");
 	for (int i = 0; i < header.chunkTableCount; i++) {
 
-		BinChunkEntry chunkEntry;
-		ReadBuffer(reader, &chunkEntry, sizeof(BinChunkEntry));
+		ArchiveChunkEntry chunkEntry;
+		ReadBuffer(reader, &chunkEntry, sizeof(ArchiveChunkEntry));
 		if (isEncrypted) {
 			auto saveKey = chunkEntry.key;
 			auto saveKey2 = chunkEntry.key2;
@@ -110,3 +99,24 @@ void ArchiveReader::decode128bit(int keyA, int keyB, void* dataInOut) {
 	//log("Decode success!");
 }
 
+void ArchiveReader::LogInfo() {
+	log("ArchiveReader Info:");
+	log("  Magic: %s", GetHexString(header.magic));
+	log("  Key: %s", GetHexString(header.key));
+	log("  File Size: %llu", header.fileSize);
+	log("  Data Size: %llu", header.dataSize);
+	log("  File Table Count: %llu", header.fileTableCount);
+	log("  Chunk Table Count: %u", header.chunkTableCount);
+	log("  Max Chunk Size: %u", header.maxChunkSize);
+	//for (size_t i = 0; i < fileTableList.size(); ++i) {
+	//	const auto& entry = fileTableList[i];
+	//	log("File Entry[%zu]: Num: %u, Key1: %s, Hash: %llu, Offset: %llu, Size: %u, Key2: %u",
+	//		i, entry.entryNum, GetHexString(entry.key1), entry.hash, entry.offset, entry.size, entry.key2);
+	//}
+	//for (size_t i = 0; i < chunkEntryList.size(); ++i) {
+	//	const auto& chunk = chunkEntryList[i];
+	//	log("Chunk Entry[%zu]: Uncompressed Offset: %llu, Uncompressed Size: %u, Key: %u, Compressed Offset: %llu, Compressed Size: %u, Key2: %u",
+	//		i, chunk.uncompressedOffset, chunk.uncompressedSize, chunk.key,
+	//		chunk.compressedOffset, chunk.compressedSize, chunk.key2);
+	//}
+}

@@ -58,12 +58,6 @@ struct ResourceArchiveHeader {
 	char* name; //0x08 - 0x0F
 	void* gap10; //0x10 - 0x17
 	bool isEncrypted; //0x18 - 0x19
-	char padding4[7]; // 
-	int p3;
-	int p4;
-	int* indexPtr; // 0x28 - 0x2F
-	LONGLONG p5;   //0x30 > 0x37
-	void* dataPtr; // 0x38 - 0x3F
 };
 
 //  size 24 bytes : 0x18

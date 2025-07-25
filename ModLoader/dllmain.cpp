@@ -25,6 +25,8 @@
 #include "utils.h"
 #include "types.h"
 
+#include "winlator_patch.h"
+
 bool enableLogMurmurHash3 = false;
 OpenResourceDevice_t fpOpenResourceDevice;
 
@@ -190,98 +192,6 @@ std::map<std::string, int> magicCache;
 //
 //	return result;
 //}
-
-using AddLoadedResourceIndex_t = int (*)(int* resourceCounterPtr, int resourceIndex, void* header);
-AddLoadedResourceIndex_t fpAddLoadedResourceIndex = nullptr;
-
-void __fastcall HookedAddLoadedResourceIndex(
-	ResourceList* resourceCounterPtr, int resourceIndex, ResourceArchiveHeader* header)
-{
-	log("[Hook Begin] AddLoadedResourceIndex called");
-	log("resourceCounterPtr: %p, resourceIndex: %d, header: %p", resourceCounterPtr, resourceIndex, header);
-
-	log("archiveHeader->index: %d", header->index);
-	log("archiveHeader->isEncrypted: %s", header->isEncrypted ? "true" : "false");
-	log("archiveHeader->name: %s", header->name);
-	//print("archive->unknow %p", archiveHeader->gap10);
-	//print("archive->unknow %d", *(int*)archiveHeader->gap10);
-	//print("archive->unknow %lld", *((longlong*)(archiveHeader->gap10)));
-	//print("archive->unknow %lli", *((ulonglong*)(archiveHeader->gap10)));
-	//print("archive->unknow %s", archiveHeader->gap10);
-	//auto prevHeader = (ArchiveHeader*)archiveHeader->gap10;
-	//print("prevHeader: %p", prevHeader);
-	//print("prevHeader:name %s", prevHeader->name);
-	//print("archiveHeader->0x10: %s", (char*)archiveHeader->gap10);
-	//print("archiveHeader->0x10: %lld", archiveHeader->gap10);
-	//print("archiveHeader->indexPtr: %p", archiveHeader->indexPtr);
-	//print("archiveHeader->indexPtr: %d", *archiveHeader->indexPtr);
-	//print("archiveHeader->0x10: %p", (void*)archiveHeader->gap10);
-	//print("res list data: %p", resourceCounterPtr->data);
-	//auto dataPtr = (char*)archiveHeader;
-	//for (int i = 0; i < 4; i++) {
-	//	dataPtr += i * 0x20;
-	//	print("[%d] dump data: %s %s %s %s",
-	//		i,
-	//		GetHexString(dataPtr, 0x8),
-	//		GetHexString(dataPtr + 8, 0x8),
-	//		GetHexString(dataPtr + 16, 0x8),
-	//		GetHexString(dataPtr + 24, 0x8));
-	//}
-	//print("archiveHeader->0x10: %s", GetHexString(&archiveHeader->gap10, 8));
-
-	//if (archiveHeader->indexPtr == nullptr)
-	//	print("archiveHeader->indexPtr is NULL");
-	//else
-	//	print("archiveHeader->indexPtr value: %d", *archiveHeader->indexPtr);
-	//print("Prefix...");
-	//print("res list count: %d", resourceCounterPtr->count);
-	//print("res list capacity: %d", resourceCounterPtr->capacity);
-	ResourceManager* resManager = (ResourceManager*)((char*)(&resourceCounterPtr) - 0x38);
-	auto currentListPtrPtr = (ResourceList**)resManager->first;
-	auto resList = resManager->resourceListPtr;
-	auto endItemPtr = currentListPtrPtr + resList->count;
-	//print(" now list ptr: %p", resList);
-	//print(" end item ptr: %p", endItemPtr);
-	int i = 0;
-	auto archiveList = reinterpret_cast<ResourceArchiveHeader**>(resList->data);
-
-	for (; currentListPtrPtr != endItemPtr; ++currentListPtrPtr) {
-		auto archive = archiveList[i];
-		//print("loop index: %d", i);
-		//print(" resListPtrPtr: %p", currentListPtrPtr);
-		//auto a = (ArchiveHeader*)currentListPtrPtr;
-		//print("archive %s", archive->name);
-		//isSame = StringIsSame((longlong*)&(*resListPtrPtr)->likeData, &param_loadResourceName->str);
-		//if (isSame) goto Goto_CleanupReturnFunc;
-		i++;
-	}
-	//auto dataPtr = (char*)(header->indexPtr);
-	//for (int i = 0; i < 4; i++) {
-	//	dataPtr += i * 0x10;
-	//	print("[%d] dump data: %s %s",
-	//		i,
-	//		GetHexString(dataPtr, 0x8),
-	//		GetHexString(dataPtr + 8, 0x8));
-	//}
-
-	fpAddLoadedResourceIndex((int*)resourceCounterPtr, resourceIndex, header);
-	log("Postfix");
-	//uint64_t* puVar8 = (void*)(header->indexPtr + (longlong)(int)headerPtr1 * 8);
-	//auto dataPtr = (char*)(header->indexPtr);
-	//for (int i = 0; i < 16; i++) {
-	//	dataPtr += i * 0x10;
-	//	print("[%d] dump data: %s %s",
-	//		i,
-	//		GetHexString(dataPtr, 0x8),
-	//		GetHexString(dataPtr + 8, 0x8));
-	//}
-
-	//print("res list count: %d", resourceCounterPtr->count);
-	//print("res list capacity: %d", resourceCounterPtr->capacity);
-
-	log("[Hook End] AddLoadedResourceIndex");
-}
-
 ULONGLONG* Hook_MurmurHash3_x64_128(long long* hash, byte* data, ULONGLONG length)
 {
 	//print("[First] data: %s, length: %llu", (char*)data, length);
@@ -350,12 +260,12 @@ void ProcessGameResources(ResourceManager* resManager, const char** resNamePtr) 
 	log("[Hook End] ProcessGameResources");
 }
 
-
 bool Start() {
 	SetupConsole();
+	printf("Starting mod loader...");
+
 	if (MH_Initialize() != MH_OK)
 		return false;
-
 
 	if (false) {
 		WaitForDebug();
@@ -365,26 +275,26 @@ bool Start() {
 		//HookFunc(0x1924850, &My_LoadAllArchive, reinterpret_cast<LPVOID*>(&fpMy_LoadAllArchive));
 		//HookFunc(0x190b8b0, &My_StringBuildInitWithLength, reinterpret_cast<LPVOID*>(&fpMy_StringBuildInitWithLength));
 		//HookFunc(0x190adf0, &AssignRefCountedString, reinterpret_cast<LPVOID*>(&fpAssignRefCountedString));
-		HookFunc(0x1928ac0, &Hook_LoadArchiveBin, &fpLoadArchiveBin);
+		//HookFunc(0x1928ac0, &Hook_LoadArchiveBin, &fpLoadArchiveBin);
 		//HookFunc(0x1904030, &My_AddResourcePatch, &fpMy_AddResourcePatch);
 		//HookFunc(0x18fe890, &Hook_MurmurHash3_x64_128, reinterpret_cast<LPVOID*>(&fpMurmurHash3));
-		HookFunc(0x1929a50, &Hook_ResourceReadBuffer, &fpResourceReadBuffer);
+		//HookFunc(0x1929a50, &Hook_ResourceReadBuffer, &fpResourceReadBuffer);
 		//HookFunc(0x19280b0, &Hook_OpenResourceDevice, reinterpret_cast<LPVOID*>(&fpOpenResourceDevice));
-		//HookFunc(0x19042b0, &HookedAddLoadedResourceIndex, reinterpret_cast<LPVOID*>(&fpAddLoadedResourceIndex));
+		//HookFunc(0x19042b0, &My_AddResourceIndex, reinterpret_cast<LPVOID*>(&fpMy_AddResourceIndex));
+		//HookFunc(0x1929a50, &Hook_FUN_141929a50, reinterpret_cast<LPVOID*>(&fpFUN_141929a50));
+		//HookFunc(&CreateFileW, &HookedCreateFileW, reinterpret_cast<LPVOID*>(&fpCreateFileW));
+		//HookFunc(&ReadFile, &HookReadFile, reinterpret_cast<LPVOID*>(&fpReadFile));
+		//HookFunc(0x1924850, &ProcessGameResources, reinterpret_cast<LPVOID*>(&fpProcessGameResources));
+
+		// setup hooks for winlator
+		SetupWinlatorPatch();
 	}
 
-	//HookFunc(0x1929a50, &Hook_FUN_141929a50, reinterpret_cast<LPVOID*>(&fpFUN_141929a50));
 
-	//HookFunc(&CreateFileW, &HookedCreateFileW, reinterpret_cast<LPVOID*>(&fpCreateFileW));
-	//HookFunc(&ReadFile, &HookReadFile, reinterpret_cast<LPVOID*>(&fpReadFile));
-
-
-	//HookFunc(0x1924850, &ProcessGameResources, reinterpret_cast<LPVOID*>(&fpProcessGameResources));
-
-
+	printf("Successfully setup mod loader");
+	//system("pause");
 	return true;
 }
-
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
 	LPVOID lpReserved
@@ -393,8 +303,11 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
-		if (Start() == false)
+		if (Start() == false) {
+			system("pause");
 			exit(EXIT_FAILURE);
+		}
+
 		break;
 	case DLL_THREAD_ATTACH:
 	case DLL_THREAD_DETACH:
