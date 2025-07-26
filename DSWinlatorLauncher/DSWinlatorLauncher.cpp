@@ -1,7 +1,9 @@
-
+#include <filesystem>
 #include <iostream>
 #include <Windows.h>
 #include <TlHelp32.h>
+#include <vector>
+
 int InjectDLL(DWORD dwProcessID, const char* dllFullPath) {
 	printf("[DLL Injector]\n");
 	printf("Process ID : %i\n\n", (int)dwProcessID);
@@ -58,7 +60,10 @@ int InjectDLL(DWORD dwProcessID, const char* dllFullPath) {
 	printf("DLL Injected !\n");
 }
 
-int InjectGame(LPSTR exe_path, LPSTR dllPath, DWORD* gamePID) {
+int InjectGame(const char* gamePathPtr, const char* dllPathPtr, DWORD* gamePID)
+{
+	LPSTR gamePath = const_cast<LPSTR>(gamePathPtr);
+	LPSTR dllPath = const_cast<LPSTR>(dllPathPtr);
 	int i, len;
 	void* page;
 	STARTUPINFO si = { 0 };
@@ -67,11 +72,12 @@ int InjectGame(LPSTR exe_path, LPSTR dllPath, DWORD* gamePID) {
 
 	// Execute the process in suspended mode.
 	si.cb = sizeof(STARTUPINFO);
-	if (!CreateProcessA(NULL, exe_path, NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi)) {
-		fprintf(stderr, "CreateProcess(\"%s\") failed; error code = 0x%08X\n", exe_path, GetLastError());
+
+	if (!CreateProcessA(NULL, gamePath, NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi)) {
+		fprintf(stderr, "CreateProcess(\"%s\") failed; error code = 0x%08X\n", gamePath, GetLastError());
 		return 1;
 	}
-	*gamePID = pi.dwProcessId; // Store the PID of the created processkj
+	*gamePID = pi.dwProcessId; // Store the PID of the created process
 
 	// Allocate a page in memory for the arguments of LoadLibrary.
 	page = VirtualAllocEx(pi.hProcess, NULL, MAX_PATH, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
@@ -114,9 +120,19 @@ int InjectGame(LPSTR exe_path, LPSTR dllPath, DWORD* gamePID) {
 		fprintf(stderr, "WaitForSingleObject failed; error code = 0x%08X\n", GetLastError());
 		return 1;
 	}
-	printf("done dll main return");
+	printf("done dll main return\n");
 
-	// Cleanup.
+	DWORD exitCode = 0;
+	if (!GetExitCodeThread(hThread, &exitCode)) {
+		fprintf(stderr, "GetExitCodeThread failed; error code = 0x%08X\n", GetLastError());
+	}
+	else if (exitCode == 0) {
+		fprintf(stderr, "LoadLibrary failed in remote process.\n");
+	}
+	else {
+		printf("[+] DLL injected successfully at 0x%p\n", (LPVOID)exitCode);
+	}
+
 	CloseHandle(hThread);
 
 	// Resume the execution of the process, once all libraries have been injected
@@ -127,10 +143,13 @@ int InjectGame(LPSTR exe_path, LPSTR dllPath, DWORD* gamePID) {
 	}
 
 	// Cleanup.
+	VirtualFreeEx(pi.hProcess, page, 0, MEM_RELEASE);
+	CloseHandle(pi.hThread);
 	CloseHandle(pi.hProcess);
-	VirtualFreeEx(pi.hProcess, page, MAX_PATH, MEM_RELEASE);
+
 	return 0;
 }
+
 
 uint64_t GetProcessCreateTimeFromPID(DWORD pid) {
 	HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
@@ -153,7 +172,6 @@ uint64_t GetProcessCreateTimeFromPID(DWORD pid) {
 	CloseHandle(hProc);
 	return li.QuadPart; // 100-nanosecond intervals since Jan 1, 1601 UTC
 }
-
 DWORD GetPIDByProcessName(const char* processName)
 {
 	DWORD PID = 0;
@@ -212,6 +230,24 @@ bool IsModuleLoaded(DWORD pid, const wchar_t* moduleName) {
 	CloseHandle(hSnap);
 	return false; // module ¬—ß‰¡Ë∂Ÿ°‚À≈¥
 }
+std::string GetCurrentExePath() {
+	std::vector<char> pathBuf(MAX_PATH);
+	DWORD result = GetModuleFileNameA(NULL, pathBuf.data(), pathBuf.size());
+
+	if (result == 0) {
+		// Handle error, e.g., using GetLastError()
+		return "";
+	}
+	else if (result < pathBuf.size()) {
+		return std::string(pathBuf.data());
+	}
+	else {
+		// Buffer was too small, handle by resizing and retrying
+		// (simplified for brevity, a robust solution would loop)
+		return "";
+	}
+}
+
 int main() {
 	UINT64 lastCreateTime = 0;
 	if (GetPIDByProcessName("ds.exe")) {
@@ -220,12 +256,21 @@ int main() {
 		return 0;
 	}
 
+	auto currentExePath = GetCurrentExePath();
+	const char* dllFileName = "mod_test.dll";
+	//const char* dllFileName = "mod_loader.dll";
+	auto dllPathStr = currentExePath.substr(0, currentExePath.find_last_of('\\') + 1) + dllFileName;
+	auto gamePathStr = currentExePath.substr(0, currentExePath.find_last_of('\\') + 1) + "ds.exe";
+	DWORD injectPID;
+	InjectGame(gamePathStr.c_str(), dllPathStr.c_str(), &injectPID);
+	system("pause");
+
+	return 0;
+
 	// starting
-	const char* gamePath = "E:\\SteamLibrary\\steamapps\\common\\DEATH STRANDING DIRECTORS CUT\\ds.exe";
-	const char* dllPath = "E:\\SteamLibrary\\steamapps\\common\\DEATH STRANDING DIRECTORS CUT\\mod_loader.dll";
-
-	ShellExecute(NULL, "open", gamePath, NULL, NULL, SW_SHOWDEFAULT);
-
+	printf("starting game...\n");
+	ShellExecute(NULL, "open", "ds.exe", NULL, NULL, SW_SHOWDEFAULT);
+	printf("waiting for game to start...\n");
 	int injectCount = 0;
 	while (true) {
 		DWORD pid = GetPIDByProcessName("ds.exe");
@@ -236,11 +281,12 @@ int main() {
 		auto checkCreateTime = GetProcessCreateTimeFromPID(pid);
 		if (checkCreateTime == lastCreateTime)
 			continue;
+
 		lastCreateTime = checkCreateTime;
 
 		if (!IsModuleLoaded(pid, L"mod_loader.dll")) {
 			printf("starting inject dll\n");
-			InjectDLL(pid, dllPath);
+			InjectDLL(pid, dllPathStr.c_str());
 			injectCount++;
 			if (injectCount == 2)
 				break;

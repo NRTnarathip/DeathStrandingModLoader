@@ -125,6 +125,12 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>
+copy /Y "$(SolutionDir)$(PlatformTarget)\Release\DSWinlatorLauncher.exe" "E:\SteamLibrary\steamapps\common\DEATH STRANDING DIRECTORS CUT\DSWinlatorLauncher.exe"
+
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DSWinlatorLauncher.cpp" />

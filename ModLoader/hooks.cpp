@@ -106,7 +106,7 @@ MyString* AssignRefCountedString(MyString* leftString, MyString* rightString) {
 		auto leftStringLength = (UINT*)(leftString->str + -0x10);
 		log("left string length ptr: %p", leftStringLength);
 		log("left string length: %d", *leftStringLength);
-		auto someDat = (UINT*)GetDataSection(0x4562ca0);
+		auto someDat = (UINT*)GetAddressFromRva(0x4562ca0);
 		log("someDat ptr: %p", someDat);
 		log("someDat val: %d", *someDat);
 	}

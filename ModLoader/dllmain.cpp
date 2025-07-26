@@ -260,41 +260,77 @@ void ProcessGameResources(ResourceManager* resManager, const char** resNamePtr) 
 	log("[Hook End] ProcessGameResources");
 }
 
+
+typedef void* (*My_AllocateMemForDummy2_t)(LONGLONG* a1_tlsPtr,
+	ULONGLONG a2_allocateSize, ULONGLONG a3_alignedSize,
+	ULONGLONG* a4_alignmentOffsetOut, byte a5_zeroInitFlag);
+My_AllocateMemForDummy2_t fpMy_AllocateMemForDummy2 = nullptr;
+
+#include <winternl.h> 
+PVOID GetThreadLocalStoragePointer()
+{
+	return (PVOID)__readgsqword(0x58);
+}
+
+typedef void* (*My_AllocateMemForDummyRoot_t)(ULONGLONG a1, ULONGLONG a2);
+My_AllocateMemForDummyRoot_t fpMy_AllocateMemForDummyRoot = nullptr;
+void* HookMy_AllocateMemForDummyRoot(ULONGLONG a1, ULONGLONG a2)
+{
+	uintptr_t tlsIndex = *(uintptr_t*)GetAddressFromRva(0x7E9D280);
+	log("tlsIndex: %zu", tlsIndex);
+	uintptr_t tlsArray = (uintptr_t)GetThreadLocalStoragePointer();
+	log("tlsArray: %p", (void*)tlsArray);
+	uintptr_t tlsSlotPtr = *(uintptr_t*)(tlsArray + tlsIndex * sizeof(void*));
+	log("tlsSlotPtr: %p", (void*)tlsSlotPtr);
+	uintptr_t targetPtr = *(uintptr_t*)(tlsSlotPtr + 0x2C8);
+	log("targetPtr: %p", (void*)targetPtr);
+	auto result = fpMy_AllocateMemForDummy2((LONGLONG*)targetPtr, a1, a2, 0x0, 0x0);
+	log("called fpMy_AllocateMemForDummy2");
+	log("result: %p", result);
+	return result;
+}
+
 bool Start() {
 	SetupConsole();
-	printf("Starting mod loader...");
+	log("Starting mod loader...");
 
-	if (MH_Initialize() != MH_OK)
+	//RestorePatchBytes();
+
+	log("try to setup MinHook");
+	if (MH_Initialize() != MH_OK) {
+		log("minhook initialization failed");
 		return false;
-
-	if (false) {
-		WaitForDebug();
-	}
-	else {
-		//HookFunc(0x190aa00, &BuildStringBuffer, reinterpret_cast<LPVOID*>(&fpBuildStringBuffer));
-		//HookFunc(0x1924850, &My_LoadAllArchive, reinterpret_cast<LPVOID*>(&fpMy_LoadAllArchive));
-		//HookFunc(0x190b8b0, &My_StringBuildInitWithLength, reinterpret_cast<LPVOID*>(&fpMy_StringBuildInitWithLength));
-		//HookFunc(0x190adf0, &AssignRefCountedString, reinterpret_cast<LPVOID*>(&fpAssignRefCountedString));
-		//HookFunc(0x1928ac0, &Hook_LoadArchiveBin, &fpLoadArchiveBin);
-		//HookFunc(0x1904030, &My_AddResourcePatch, &fpMy_AddResourcePatch);
-		//HookFunc(0x18fe890, &Hook_MurmurHash3_x64_128, reinterpret_cast<LPVOID*>(&fpMurmurHash3));
-		//HookFunc(0x1929a50, &Hook_ResourceReadBuffer, &fpResourceReadBuffer);
-		//HookFunc(0x19280b0, &Hook_OpenResourceDevice, reinterpret_cast<LPVOID*>(&fpOpenResourceDevice));
-		//HookFunc(0x19042b0, &My_AddResourceIndex, reinterpret_cast<LPVOID*>(&fpMy_AddResourceIndex));
-		//HookFunc(0x1929a50, &Hook_FUN_141929a50, reinterpret_cast<LPVOID*>(&fpFUN_141929a50));
-		//HookFunc(&CreateFileW, &HookedCreateFileW, reinterpret_cast<LPVOID*>(&fpCreateFileW));
-		//HookFunc(&ReadFile, &HookReadFile, reinterpret_cast<LPVOID*>(&fpReadFile));
-		//HookFunc(0x1924850, &ProcessGameResources, reinterpret_cast<LPVOID*>(&fpProcessGameResources));
-
-		// setup hooks for winlator
-		SetupWinlatorPatch();
 	}
 
+	//HookFunc(0x190aa00, &BuildStringBuffer, reinterpret_cast<LPVOID*>(&fpBuildStringBuffer));
+	//HookFunc(0x1924850, &My_LoadAllArchive, reinterpret_cast<LPVOID*>(&fpMy_LoadAllArchive));
+	//HookFunc(0x190b8b0, &My_StringBuildInitWithLength, reinterpret_cast<LPVOID*>(&fpMy_StringBuildInitWithLength));
+	//HookFunc(0x190adf0, &AssignRefCountedString, reinterpret_cast<LPVOID*>(&fpAssignRefCountedString));
+	//HookFunc(0x1928ac0, &Hook_LoadArchiveBin, &fpLoadArchiveBin);
+	//HookFunc(0x1904030, &My_AddResourcePatch, &fpMy_AddResourcePatch);
+	//HookFunc(0x18fe890, &Hook_MurmurHash3_x64_128, reinterpret_cast<LPVOID*>(&fpMurmurHash3));
+	//HookFunc(0x1929a50, &Hook_ResourceReadBuffer, &fpResourceReadBuffer);
+	//HookFunc(0x19280b0, &Hook_OpenResourceDevice, reinterpret_cast<LPVOID*>(&fpOpenResourceDevice));
+	//HookFunc(0x19042b0, &My_AddResourceIndex, reinterpret_cast<LPVOID*>(&fpMy_AddResourceIndex));
+	//HookFunc(0x1929a50, &Hook_FUN_141929a50, reinterpret_cast<LPVOID*>(&fpFUN_141929a50));
+	//HookFunc(&CreateFileW, &HookedCreateFileW, reinterpret_cast<LPVOID*>(&fpCreateFileW));
+	//HookFunc(&ReadFile, &HookReadFile, reinterpret_cast<LPVOID*>(&fpReadFile));
+	//HookFunc(0x1924850, &ProcessGameResources, reinterpret_cast<LPVOID*>(&fpProcessGameResources));
 
-	printf("Successfully setup mod loader");
-	//system("pause");
+	// setup hooks for winlator
+	SetupWinlatorPatch();
+
+
+	log("Successfully setup mod loader");
+	system("pause");
 	return true;
 }
+
+extern "C" __declspec(dllexport) void StartAPI() {
+	//Start();
+	printf("empty");
+}
+
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
 	LPVOID lpReserved
@@ -307,13 +343,9 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 			system("pause");
 			exit(EXIT_FAILURE);
 		}
-
-		break;
-	case DLL_THREAD_ATTACH:
-	case DLL_THREAD_DETACH:
-	case DLL_PROCESS_DETACH:
 		break;
 	}
+
 	return TRUE;
 }
 

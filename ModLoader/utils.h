@@ -46,7 +46,9 @@ static const char* GetHexString(T& data) {
 
 void PrintStackTrace();
 
-extern void* GetDataSection(int fileOffset);
+bool WriteMovRaxInstruction(void* addr, uintptr_t value);
+
+extern void* GetAddressFromRva(int fileOffset);
 extern void* GetFuncAddr(uintptr_t rva);
 
 typedef ULONGLONG* (*MurmurHash3_t)(void* hash, void* data, ULONGLONG length);

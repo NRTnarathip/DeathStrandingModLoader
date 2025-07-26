@@ -16,18 +16,13 @@
 #include <tchar.h>
 
 #include "MinHook.h"
-
 #include "types.h"
 
-std::ofstream m_logFile("log.txt", std::ios::trunc);
+#define ENABLE_LOG
 
-void log2(const char* message)
-{
-	auto now = std::chrono::system_clock::now();
-	auto in_time = std::chrono::system_clock::to_time_t(now);
-	m_logFile << "[" << std::put_time(std::localtime(&in_time), "%F %T") << "] "
-		<< message << std::endl;
-}
+#ifdef ENABLE_LOG
+std::ofstream m_logFile("log.txt", std::ios::trunc);
+#endif
 
 void log(const char* format, ...)
 {
@@ -38,8 +33,13 @@ void log(const char* format, ...)
 	vsnprintf(buffer, sizeof(buffer), format, args);
 	va_end(args);
 
+#ifdef ENABLE_LOG
 	std::cout << buffer << std::endl;
-	log2(buffer);
+	auto now = std::chrono::system_clock::now();
+	auto in_time = std::chrono::system_clock::to_time_t(now);
+	m_logFile << "[" << std::put_time(std::localtime(&in_time), "%F %T")
+		<< "] " << buffer << std::endl;
+#endif
 }
 
 bool HookFunc(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
@@ -61,8 +61,9 @@ uintptr_t imageBase = (uintptr_t)GetModuleHandleA(NULL);
 void* GetFuncAddr(uintptr_t rva) {
 	return (void*)(imageBase + rva);
 }
-void* GetDataSection(int fileOffset) {
-	return (void*)(imageBase + fileOffset);
+
+void* GetAddressFromRva(int rva) {
+	return (void*)(imageBase + rva);
 }
 bool HookFunc(uintptr_t funcRva, LPVOID detour, void* originalBackup) {
 	return HookFunc(GetFuncAddr(funcRva), detour, reinterpret_cast<LPVOID*>(originalBackup));
@@ -100,3 +101,28 @@ void PrintStackTrace() {
 	log("%s", str.c_str());
 }
 
+bool WriteMovRaxInstruction(void* addr, uintptr_t value)
+{
+	DWORD oldProtect;
+	const size_t instrSize = 10; // 2 (opcode) + 8 (immediate64)
+
+	// เปลี่ยน memory protection ให้เขียนได้
+	if (!VirtualProtect(addr, instrSize, PAGE_EXECUTE_READWRITE, &oldProtect))
+	{
+		std::cerr << "VirtualProtect failed: " << GetLastError() << std::endl;
+		return false;
+	}
+
+	uint8_t* p = (uint8_t*)addr;
+	p[0] = 0x48;      // REX.W prefix
+	p[1] = 0xB8;      // mov rax, imm64 opcode
+
+	// เขียน immediate64 ตามหลัง opcode
+	*(uintptr_t*)(p + 2) = value;
+
+	// คืนค่า protection เดิม
+	DWORD tmp;
+	VirtualProtect(addr, instrSize, oldProtect, &tmp);
+
+	return true;
+}
