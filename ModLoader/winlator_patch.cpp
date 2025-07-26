@@ -13,6 +13,9 @@ void* HookedVirtualAllocX(LPVOID a1_addr, size_t a2_allocSize, size_t try_alignm
 	void* returnResult = fpVirtualAllocX(a1_addr, a2_allocSize, try_alignment, a4_flags);
 	log("VirtualAllocX result: %p", returnResult);
 
+	auto _mi_os_page_size = *(size_t*)GetAddressFromRva(0x4f53748);
+	log("_mi_os_page_size: %x\n", _mi_os_page_size);
+
 	if (returnResult == NULL) {
 		DWORD err = GetLastError();
 		log("VirtualAllocX failed with error: %x", err);
@@ -24,11 +27,7 @@ void* HookedVirtualAllocX(LPVOID a1_addr, size_t a2_allocSize, size_t try_alignm
 		else {
 			log("try allocate with VirtualAlloc v2");
 
-			PVirtualAlloc2 pVirtualAlloc2 = (PVirtualAlloc2)GetAddressFromRva(0x7e6e150);
-			log("pVirtualAlloc2: %p\n", pVirtualAlloc2);
-
-			auto _mi_os_page_size = (size_t)GetAddressFromRva(0x4f53748);
-			log("_mi_os_page_size: %x\n", _mi_os_page_size);
+			PVirtualAlloc2 pVirtualAlloc2 = (PVirtualAlloc2)(*(uintptr_t*)GetAddressFromRva(0x7e6e150));
 
 			if (try_alignment > 0 && (try_alignment % _mi_os_page_size) == 0 && pVirtualAlloc2 != NULL) {
 				MEM_ADDRESS_REQUIREMENTS reqs = { 0, 0, 0 };
@@ -36,7 +35,8 @@ void* HookedVirtualAllocX(LPVOID a1_addr, size_t a2_allocSize, size_t try_alignm
 				MEM_EXTENDED_PARAMETER param = { {0, 0}, {0} };
 				param.Type = MemExtendedParameterAddressRequirements;
 				param.Pointer = &reqs;
-				returnResult = (*pVirtualAlloc2)(GetCurrentProcess(), a1_addr, a2_allocSize, a4_flags, PAGE_READWRITE, &param, 1);
+				returnResult = pVirtualAlloc2(GetCurrentProcess(), a1_addr, a2_allocSize, a4_flags, PAGE_READWRITE, &param, 1);
+				log("VirtualAllocV2 result: %p", returnResult);
 			}
 		}
 	}

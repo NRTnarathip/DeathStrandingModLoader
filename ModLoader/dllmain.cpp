@@ -322,7 +322,7 @@ bool Start() {
 
 
 	log("Successfully setup mod loader");
-	system("pause");
+	//system("pause");
 	return true;
 }
 
