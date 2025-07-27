@@ -9,6 +9,8 @@ void log2(const char* message);
 void log(const char* format, ...);
 bool HookFunc(uintptr_t funcRva, LPVOID detour, void* originalBackup);
 
+bool IsWineEnvironment();
+
 void SetupConsole();
 bool IsMainThread();
 void WaitForDebug();
@@ -48,6 +50,10 @@ void PrintStackTrace();
 
 bool WriteMovRaxInstruction(void* addr, uintptr_t value);
 
+std::string GetCurrentExePath();
+
+std::string GetCurrentExeDir();
+
 extern void* GetAddressFromRva(int fileOffset);
 extern void* GetFuncAddr(uintptr_t rva);
 
@@ -63,4 +69,5 @@ typedef bool (*OpenResourceDevice_t)(ResourceReaderHandle* handleInfo,
 	LONGLONG* resourcePath, UINT param_flags,
 	UINT32 param_4, UINT32 param_5, int param_6);
 extern OpenResourceDevice_t fpOpenResourceDevice;
+
 

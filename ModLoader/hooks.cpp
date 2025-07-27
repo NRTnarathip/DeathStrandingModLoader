@@ -136,16 +136,6 @@ int My_AddResourcePatch(int* resourceCounterPtr, ResourceArchiveHeader* header) 
 	log("archiveHeader->name: %s", header->name);
 	log("[Prefix]");
 
-
-	//auto dataPtr = (char*)(header->indexPtr);
-	//for (int i = 0; i < 4; i++) {
-	//	dataPtr += i * 0x10;
-	//	log("[%d] dump data: %s %s",
-	//		i,
-	//		GetHexString(*(long*)dataPtr),
-	//		GetHexString(*((long*)dataPtr + 1)));
-	//}
-
 	auto result = fpMy_AddResourcePatch(resourceCounterPtr, header);
 	log("[Postfix]");
 	log("result: %d", result);
@@ -161,14 +151,22 @@ int My_AddResourceIndex(ResourceList* resourceCounterPtr,
 	log("[Hook Begin] My_AddResourceIndex");
 	log("resourceCounterPtr: %p, resourceIndex: %d, header: %p", resourceCounterPtr, resourceIndex, resPtr);
 
-	auto header = *(ArchiveBinHeader*)((byte*)resPtr + 0x0);
-	log("dump bytes: %s", GetHexString((byte*)resPtr, 0x40));
+	// crash some archive
+	//try {
+	//	log("res name: %s", resPtr->name);
+	//}
+	//catch (const std::exception& e) {
+	//	log("Exception: %s", e.what());
+	//}
 
-	ArchiveFileEntry* fileTableListPtr = (ArchiveFileEntry*)((byte*)resPtr + 0x28);
-	for (int i = 0; i < header.fileTableCount; i++) {
-		ArchiveFileEntry* fileTable = (ArchiveFileEntry*)((byte*)fileTableListPtr + i * 0x20);
-		log("loop:%d file table num: %u", i, fileTable->entryNum);
-	}
+	//auto header = *(ArchiveBinHeader*)((byte*)resPtr + 0x0);
+
+
+	//ArchiveFileEntry* fileTableListPtr = (ArchiveFileEntry*)((byte*)resPtr + 0x28);
+	//for (int i = 0; i < header.fileTableCount; i++) {
+	//	ArchiveFileEntry* fileTable = (ArchiveFileEntry*)((byte*)fileTableListPtr + i * 0x20);
+	//	log("loop:%d file table num: %u", i, fileTable->entryNum);
+	//}
 
 	//if (header.magic == 0x21304050 || header.magic == 0x20304050) {
 	//	log("  Magic: %s", GetHexString(header.magic));
@@ -188,3 +186,20 @@ int My_AddResourceIndex(ResourceList* resourceCounterPtr,
 
 	return result;
 }
+
+My_GetBuildDateID_t fpMy_GetBuildDateID = nullptr;
+__int64* Hook_GetBuildDateID() {
+	log("[Hook Begin] My_GetBuildDateID called");
+	auto result = fpMy_GetBuildDateID();
+	log("result: %p", result);
+	log("result: %s", (char*)*result);
+	if (result) {
+		log("build date id: %s", GetHexString(result, 8));
+	}
+	else {
+		log("build date id is null");
+	}
+	log("[Hook End] My_GetBuildDateID");
+	return result;
+}
+

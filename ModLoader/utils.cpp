@@ -14,6 +14,7 @@
 #include <map>
 #include <string>
 #include <tchar.h>
+#include <cstdio>
 
 #include "MinHook.h"
 #include "types.h"
@@ -72,12 +73,33 @@ bool HookFunc(uintptr_t funcRva, LPVOID detour, void* originalBackup) {
 MurmurHash3_t  fpMurmurHash3 = (MurmurHash3_t)GetFuncAddr(0x18fe890);
 ResourceReadBuffer_t  fpResourceReadBuffer = (ResourceReadBuffer_t)GetFuncAddr(0x1929a50);
 
+bool IsWineEnvironment() {
+	HKEY hKey;
+	if (RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\Wine", 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+		RegCloseKey(hKey);
+		return true;
+	}
+	return false;
+}
+
+
 void SetupConsole()
 {
-	AllocConsole(); // fallback
+	AllocConsole();
 	freopen("CONOUT$", "w", stdout);
 	freopen("CONOUT$", "w", stderr);
 	freopen("CONIN$", "r", stdin);
+
+	if (IsWineEnvironment()) {
+		freopen("console.txt", "w", stdout);
+		freopen("console.txt", "w", stderr);
+	}
+
+	//HWND hWnd = GetConsoleWindow();
+	//SetWindowPos(hWnd, HWND_TOPMOST,
+	//	0, 0, 0, 0,
+	//	SWP_NOMOVE | SWP_NOSIZE);
+	//log("Console window set to topmost.");
 }
 DWORD g_mainThreadId = GetCurrentThreadId();
 bool IsMainThread() {
@@ -125,4 +147,14 @@ bool WriteMovRaxInstruction(void* addr, uintptr_t value)
 	VirtualProtect(addr, instrSize, oldProtect, &tmp);
 
 	return true;
+}
+std::string GetCurrentExePath() {
+	char buffer[MAX_PATH];
+	GetModuleFileNameA(NULL, buffer, MAX_PATH);
+	return std::string(buffer);
+}
+std::string GetCurrentExeDir() {
+	std::string path = GetCurrentExePath();
+	size_t pos = path.find_last_of("\\/");
+	return (pos != std::string::npos) ? path.substr(0, pos) : path;
 }

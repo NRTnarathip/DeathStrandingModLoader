@@ -311,11 +311,12 @@ bool Start() {
 	//HookFunc(0x18fe890, &Hook_MurmurHash3_x64_128, reinterpret_cast<LPVOID*>(&fpMurmurHash3));
 	//HookFunc(0x1929a50, &Hook_ResourceReadBuffer, &fpResourceReadBuffer);
 	//HookFunc(0x19280b0, &Hook_OpenResourceDevice, reinterpret_cast<LPVOID*>(&fpOpenResourceDevice));
-	//HookFunc(0x19042b0, &My_AddResourceIndex, reinterpret_cast<LPVOID*>(&fpMy_AddResourceIndex));
+	HookFunc(0x19042b0, &My_AddResourceIndex, &fpMy_AddResourceIndex);
 	//HookFunc(0x1929a50, &Hook_FUN_141929a50, reinterpret_cast<LPVOID*>(&fpFUN_141929a50));
 	//HookFunc(&CreateFileW, &HookedCreateFileW, reinterpret_cast<LPVOID*>(&fpCreateFileW));
 	//HookFunc(&ReadFile, &HookReadFile, reinterpret_cast<LPVOID*>(&fpReadFile));
 	//HookFunc(0x1924850, &ProcessGameResources, reinterpret_cast<LPVOID*>(&fpProcessGameResources));
+	//HookFunc(0x1a13610, &Hook_GetBuildDateID, &fpMy_GetBuildDateID);
 
 	// setup hooks for winlator
 	SetupWinlatorPatch();
