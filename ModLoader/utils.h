@@ -7,7 +7,13 @@ struct ResourceReaderHandle;
 
 void log2(const char* message);
 void log(const char* format, ...);
-bool HookFunc(uintptr_t funcRva, LPVOID detour, void* originalBackup);
+
+bool DisableHook(LPVOID targetFunc);
+
+bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup);
+
+bool HookFuncRva(uintptr_t funcRva, LPVOID detour, void* originalBackup);
+bool HookFuncModule(const char* moduleName, uintptr_t funvRva, LPVOID detour, void* backup);
 
 bool IsWineEnvironment();
 
@@ -53,6 +59,12 @@ bool WriteMovRaxInstruction(void* addr, uintptr_t value);
 std::string GetCurrentExePath();
 
 std::string GetCurrentExeDir();
+
+bool FillBytes(uintptr_t start, void* bytes, int size);
+
+bool FillNopStartEnd(uintptr_t start, uintptr_t end);
+
+const char* GetModuleNameFromAddress(uintptr_t funcAddr);
 
 extern void* GetAddressFromRva(int fileOffset);
 extern void* GetFuncAddr(uintptr_t rva);

@@ -22,7 +22,7 @@
 #define ENABLE_LOG
 
 #ifdef ENABLE_LOG
-std::ofstream m_logFile("log.txt", std::ios::trunc);
+std::ofstream m_logFile("log.txt", std::ios::out | std::ios::trunc);
 #endif
 
 void log(const char* format, ...)
@@ -42,8 +42,17 @@ void log(const char* format, ...)
 		<< "] " << buffer << std::endl;
 #endif
 }
+bool DisableHook(LPVOID targetFunc) {
+	//auto targetFunc = GetFuncAddr(funcRva);
+	if (MH_DisableHook(targetFunc) != MH_OK)
+	{
+		MessageBoxA(NULL, "Failed to disable hook", "Error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+	return true;
+}
 
-bool HookFunc(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
+bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
 	if (MH_CreateHook(targetFunc, detour, originalBackup) != MH_OK) {
 		MessageBoxA(NULL, "Failed to create hook", "Error", MB_OK | MB_ICONERROR);
 		return false;
@@ -54,8 +63,7 @@ bool HookFunc(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
 		MessageBoxA(NULL, "Failed to enable hook", "Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
-	log("hooked function: %p", targetFunc);
-
+	//log("hooked function: %p", targetFunc);
 }
 
 uintptr_t imageBase = (uintptr_t)GetModuleHandleA(NULL);
@@ -66,8 +74,13 @@ void* GetFuncAddr(uintptr_t rva) {
 void* GetAddressFromRva(int rva) {
 	return (void*)(imageBase + rva);
 }
-bool HookFunc(uintptr_t funcRva, LPVOID detour, void* originalBackup) {
-	return HookFunc(GetFuncAddr(funcRva), detour, reinterpret_cast<LPVOID*>(originalBackup));
+bool HookFuncRva(uintptr_t funcRva, LPVOID detour, void* backup) {
+	return HookFuncAddr(GetFuncAddr(funcRva), detour, reinterpret_cast<LPVOID*>(backup));
+}
+
+bool HookFuncModule(const char* moduleName, uintptr_t funvRva, LPVOID detour, void* backup) {
+	auto hModule = GetModuleHandleA(moduleName);
+	return HookFuncAddr((void*)(hModule + funvRva), detour, reinterpret_cast<LPVOID*>(backup));
 }
 
 MurmurHash3_t  fpMurmurHash3 = (MurmurHash3_t)GetFuncAddr(0x18fe890);
@@ -157,4 +170,53 @@ std::string GetCurrentExeDir() {
 	std::string path = GetCurrentExePath();
 	size_t pos = path.find_last_of("\\/");
 	return (pos != std::string::npos) ? path.substr(0, pos) : path;
+}
+bool FillBytes(uintptr_t startRva, void* bytes, int size) {
+	DWORD oldProtect;
+	auto addr = GetAddressFromRva(startRva);
+
+	// เปลี่ยนสิทธิ์ memory เป็น writable
+	if (!VirtualProtect(addr, size, PAGE_EXECUTE_READWRITE, &oldProtect))
+		return false;
+
+	memcpy(addr, bytes, size);
+	auto hProc = GetCurrentProcess();
+	size_t writeBytes;
+	WriteProcessMemory(hProc, addr, bytes, size, &writeBytes);
+	FlushInstructionCache(hProc, addr, size);
+	VirtualProtect(addr, size, oldProtect, &oldProtect);
+	return true;
+}
+
+bool FillNopStartEnd(uintptr_t startRva, uintptr_t endRva) {
+	if (startRva >= endRva)
+		return false;
+
+	auto size = endRva - startRva;
+	std::vector<char> bytes(size, static_cast<char>(0x90));
+	if (FillBytes(startRva, bytes.data(), size)) {
+		log("filled nop start %x --> %x", startRva, endRva);
+	}
+	else {
+		log("Error can't fill nop");
+	}
+}
+
+
+const char* GetModuleNameFromAddress(uintptr_t funcAddr) {
+	HMODULE hMod = nullptr;
+	if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCTSTR)funcAddr, &hMod)) {
+		char moduleName[MAX_PATH];
+		if (GetModuleFileNameA(hMod, moduleName, MAX_PATH)) {
+			return moduleName;
+		}
+		else {
+			std::cout << "GetModuleFileNameA failed.\n";
+			return "empty";
+		}
+	}
+	else {
+		std::cout << "GetModuleHandleEx failed.\n";
+		return "empty";
+	}
 }

@@ -59,8 +59,17 @@
     <ClCompile Include="winlator_patch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mydx12.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="note.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="post-build.cmd">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

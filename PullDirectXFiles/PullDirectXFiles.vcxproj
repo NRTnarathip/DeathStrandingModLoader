@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{fb834da4-c092-4bed-903a-f0e0863c3b40}</ProjectGuid>
-    <RootNamespace>Patcher</RootNamespace>
+    <ProjectGuid>{4eddf76a-2c8b-4613-8d6f-095b4c561ef2}</ProjectGuid>
+    <RootNamespace>PullDirectXFiles</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -127,7 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Patcher.cpp" />
+    <ClCompile Include="PullDirectXFiles.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

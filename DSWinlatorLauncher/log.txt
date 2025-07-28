@@ -1,5 +1,0 @@
-[2025-07-26 06:25:29] hooked function: 00007FF666F1ED90
-[2025-07-26 06:25:29] [Hook] VirtualAllocX called
-[2025-07-26 06:25:29] addr: 0000000000000000, allocSize: 268435456, try_alignedSize: 4194304, flags: 0x2000
-[2025-07-26 06:25:29] result: 000005FC87800000
-[2025-07-26 06:25:29] [Hook End] VirtualAllocX
