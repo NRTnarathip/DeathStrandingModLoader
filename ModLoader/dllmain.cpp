@@ -3,6 +3,7 @@
 #pragma comment(lib, "libMinHook.x64.lib")
 
 #include <Windows.h>
+#include <winternl.h> 
 #include <stdio.h>
 #include <iostream>
 #include <cstdint>
@@ -266,7 +267,6 @@ typedef void* (*My_AllocateMemForDummy2_t)(LONGLONG* a1_tlsPtr,
 	ULONGLONG* a4_alignmentOffsetOut, byte a5_zeroInitFlag);
 My_AllocateMemForDummy2_t fpMy_AllocateMemForDummy2 = nullptr;
 
-#include <winternl.h> 
 PVOID GetThreadLocalStoragePointer()
 {
 	return (PVOID)__readgsqword(0x58);
@@ -291,15 +291,19 @@ void* HookMy_AllocateMemForDummyRoot(ULONGLONG a1, ULONGLONG a2)
 }
 
 bool Start() {
-	SetupConsole();
-	log("Starting mod loader...");
+	SetupLogger();
+	log("starting mod loader...");
 
-	log("try to setup MinHook");
 	if (MH_Initialize() != MH_OK) {
 		log("minhook initialization failed");
 		return false;
 	}
 
+	// setup hooks for winlator | gamehub
+	SetupWinlatorPatcher();
+
+	// debug
+#if false
 	//HookFunc(0x190aa00, &BuildStringBuffer, reinterpret_cast<LPVOID*>(&fpBuildStringBuffer));
 	//HookFunc(0x1924850, &My_LoadAllArchive, reinterpret_cast<LPVOID*>(&fpMy_LoadAllArchive));
 	//HookFunc(0x190b8b0, &My_StringBuildInitWithLength, reinterpret_cast<LPVOID*>(&fpMy_StringBuildInitWithLength));
@@ -314,17 +318,14 @@ bool Start() {
 	//HookFunc(&ReadFile, &HookReadFile, reinterpret_cast<LPVOID*>(&fpReadFile));
 	//HookFunc(0x1924850, &ProcessGameResources, reinterpret_cast<LPVOID*>(&fpProcessGameResources));
 	//HookFunc(0x1a13610, &Hook_GetBuildDateID, &fpMy_GetBuildDateID);
-	HookFuncRva(0x19042b0, &My_AddResourceIndex, &fpMy_AddResourceIndex);
+	//HookFuncRva(0x19042b0, &My_AddResourceIndex, &fpMy_AddResourceIndex);
+#endif
 
-	// setup hooks for winlator
-	SetupWinlatorPatch();
-
-	log("Successfully setup mod loader");
+	log("successfully setup mod loader");
 	return true;
 }
 
 extern "C" __declspec(dllexport) void StartAPI() {
-	//Start();
 	printf("empty");
 }
 

@@ -5,8 +5,9 @@
 
 struct ResourceReaderHandle;
 
-void log2(const char* message);
 void log(const char* format, ...);
+
+void SetupLogger();
 
 bool DisableHook(LPVOID targetFunc);
 
@@ -17,7 +18,6 @@ bool HookFuncModule(const char* moduleName, uintptr_t funvRva, LPVOID detour, vo
 
 bool IsWineEnvironment();
 
-void SetupConsole();
 bool IsMainThread();
 void WaitForDebug();
 
@@ -64,7 +64,7 @@ bool FillBytes(uintptr_t start, void* bytes, int size);
 
 bool FillNopStartEnd(uintptr_t start, uintptr_t end);
 
-const char* GetModuleNameFromAddress(uintptr_t funcAddr);
+const char* GetModuleNameFromAddress(void* addr);
 
 extern void* GetAddressFromRva(int fileOffset);
 extern void* GetFuncAddr(uintptr_t rva);

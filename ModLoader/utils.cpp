@@ -1,6 +1,7 @@
 #include "utils.h"
-
 #include <Windows.h>
+#include <dbghelp.h>
+#pragma comment(lib, "dbghelp.lib")
 #include <iostream>
 #include <cstdio>
 #include <fstream>
@@ -19,11 +20,8 @@
 #include "MinHook.h"
 #include "types.h"
 
-#define ENABLE_LOG
-
-#ifdef ENABLE_LOG
-std::ofstream m_logFile("log.txt", std::ios::out | std::ios::trunc);
-#endif
+std::ofstream m_logFile;
+bool m_isEnableLogFile = true;
 
 void log(const char* format, ...)
 {
@@ -34,14 +32,30 @@ void log(const char* format, ...)
 	vsnprintf(buffer, sizeof(buffer), format, args);
 	va_end(args);
 
-#ifdef ENABLE_LOG
-	std::cout << buffer << std::endl;
-	auto now = std::chrono::system_clock::now();
-	auto in_time = std::chrono::system_clock::to_time_t(now);
-	m_logFile << "[" << std::put_time(std::localtime(&in_time), "%F %T")
-		<< "] " << buffer << std::endl;
-#endif
+	if (m_isEnableLogFile) {
+		std::cout << buffer << std::endl;
+		auto now = std::chrono::system_clock::now();
+		auto in_time = std::chrono::system_clock::to_time_t(now);
+		m_logFile << "[" << std::put_time(std::localtime(&in_time), "%F %T")
+			<< "] " << buffer << std::endl;
+	}
 }
+void SetupLogger() {
+	// initialize logger
+	m_isEnableLogFile = std::getenv("DSMOD_LOGFILE") ? true : false;
+	if (m_isEnableLogFile) {
+		m_logFile.open("mod_log.txt", std::ios::out | std::ios::trunc);
+	}
+
+	AllocConsole();
+	freopen("CONOUT$", "w", stdout);
+	freopen("CONOUT$", "w", stderr);
+	freopen("CONIN$", "r", stdin);
+
+	// ready logger
+	log("done setup logger");
+}
+
 bool DisableHook(LPVOID targetFunc) {
 	//auto targetFunc = GetFuncAddr(funcRva);
 	if (MH_DisableHook(targetFunc) != MH_OK)
@@ -98,21 +112,6 @@ bool IsWineEnvironment() {
 
 void SetupConsole()
 {
-	AllocConsole();
-	freopen("CONOUT$", "w", stdout);
-	freopen("CONOUT$", "w", stderr);
-	freopen("CONIN$", "r", stdin);
-
-	if (IsWineEnvironment()) {
-		freopen("console.txt", "w", stdout);
-		freopen("console.txt", "w", stderr);
-	}
-
-	//HWND hWnd = GetConsoleWindow();
-	//SetWindowPos(hWnd, HWND_TOPMOST,
-	//	0, 0, 0, 0,
-	//	SWP_NOMOVE | SWP_NOSIZE);
-	//log("Console window set to topmost.");
 }
 DWORD g_mainThreadId = GetCurrentThreadId();
 bool IsMainThread() {
@@ -129,11 +128,21 @@ void  WaitForDebug() {
 }
 
 
-void PrintStackTrace() {
-	std::ostringstream oss;
-	oss << boost::stacktrace::stacktrace();
-	std::string str = oss.str();
-	log("%s", str.c_str());
+void PrintStackTrace()
+{
+	void* stack[64];
+	HANDLE process = GetCurrentProcess();
+	SymInitialize(process, nullptr, TRUE);
+	USHORT frames = CaptureStackBackTrace(0, 64, stack, nullptr);
+
+	for (USHORT i = 0; i < frames; ++i)
+	{
+		DWORD64 addr = (DWORD64)(stack[i]);
+		auto modName = GetModuleNameFromAddress((void*)addr);
+		auto modBase = GetModuleHandleA(modName);
+		auto rva = addr - (DWORD64)modBase;
+		log("Func[%d] : %s + 0x%x", i, modName, rva);
+	}
 }
 
 bool WriteMovRaxInstruction(void* addr, uintptr_t value)
@@ -203,20 +212,18 @@ bool FillNopStartEnd(uintptr_t startRva, uintptr_t endRva) {
 }
 
 
-const char* GetModuleNameFromAddress(uintptr_t funcAddr) {
-	HMODULE hMod = nullptr;
-	if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCTSTR)funcAddr, &hMod)) {
+
+const char* GetModuleNameFromAddress(void* addr) {
+	MEMORY_BASIC_INFORMATION mbi;
+	char moduleName[MAX_PATH];
+	if (VirtualQuery(addr, &mbi, sizeof(mbi))) {
+		HMODULE hModule = (HMODULE)mbi.AllocationBase;
 		char moduleName[MAX_PATH];
-		if (GetModuleFileNameA(hMod, moduleName, MAX_PATH)) {
-			return moduleName;
-		}
-		else {
-			std::cout << "GetModuleFileNameA failed.\n";
-			return "empty";
+		if (GetModuleFileNameA(hModule, moduleName, MAX_PATH)) {
+			const char* lastSlash = strrchr(moduleName, '\\');
+			return lastSlash + 1;
 		}
 	}
-	else {
-		std::cout << "GetModuleHandleEx failed.\n";
-		return "empty";
-	}
+
+	return moduleName;
 }

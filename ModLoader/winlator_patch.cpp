@@ -125,44 +125,136 @@ typedef HRESULT(*CreateCommittedResource_t)(
 	REFIID riidResource,
 	_COM_Outptr_opt_  void** ppvResource);
 
+int m_createCommittedResourceCallCounter = 0;
 CreateCommittedResource_t fpCreateCommittedResource = nullptr;
 HRESULT Hook_CreateCommittedResource(
 	ID3D12Device* self,
 	_In_  const D3D12_HEAP_PROPERTIES* pHeapProperties,
 	D3D12_HEAP_FLAGS HeapFlags,
-	_In_  const D3D12_RESOURCE_DESC* des,
+	_In_  D3D12_RESOURCE_DESC* desc,
 	D3D12_RESOURCE_STATES InitialResourceState,
 	_In_opt_  const D3D12_CLEAR_VALUE* pOptimizedClearValue,
 	REFIID riidResource,
 	_COM_Outptr_opt_  void** ppvResource)
 {
+	m_createCommittedResourceCallCounter++;
 
-	log("Hook Begin CreateCommittedResource");
+	log("Hook Begin CreateCommittedResource | call time: %d", m_createCommittedResourceCallCounter);
 	log("D3D12_RESOURCE_DESC:");
-	log(" - format: 0x%x", des->Format);
-	log(" - w: %d, h: %d", des->Width, des->Height);
-	log(" - dimension: %d", des->Dimension);
-	log(" - sample.count: %d", des->SampleDesc.Count);
-	log(" - sample.quality: %d", des->SampleDesc.Quality);
-	log(" - mipmapLevels: %d", des->MipLevels);
-	log(" - flags: %d", des->Flags);
-	log(" - layout: %d", des->Layout);
-	log(" - alignment: %d", des->Alignment);
+	log(" - format: 0x%x", desc->Format);
+	log(" - w: %d, h: %d", desc->Width, desc->Height);
+	log(" - dimension: %d", desc->Dimension);
+	log(" - sample.count: %d", desc->SampleDesc.Count);
+	log(" - sample.quality: %d", desc->SampleDesc.Quality);
+	log(" - mipmapLevels: %d", desc->MipLevels);
+	log(" - flags: %d", desc->Flags);
+	log(" - layout: %d", desc->Layout);
+	log(" - alignment: %d", desc->Alignment);
+	log("HeapFlags: %d", HeapFlags);
+	log("Initial States: %d", InitialResourceState);
+
+
+	//if (HeapFlags & D3D12_HEAP_FLAG_SHARED) {
+	//	HeapFlags &= ~D3D12_HEAP_FLAG_SHARED;
+	//	log("patch HeapFlags delete: D3D12_HEAP_FLAG_NONE");
+	//}
+
+	//if (HeapFlags & D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER) {
+	//	HeapFlags &= ~D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER;
+	//	log("patch HeapFlags removed: D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER");
+	//}
+
+
+	//UINT descFlags = static_cast<UINT>(desc->Flags);
+	//if (m_createCommittedResourceCallCounter >= 0) {
+	//	descFlags &= ~D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+
+	//	desc->Flags = static_cast<decltype(desc->Flags)>(descFlags);
+	//	log("patch desc->Flags removed: ALLOW_UNORDERED_ACCESS");
+
+	//	//descFlags &= ~D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS;
+	//	//log("patch desc->Flags removed: D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS");
+	//}
+
+
+	//if (desc->Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D) {
+	//	// Force compatible formats for Android GPU drivers
+	//	switch (desc->Format) {
+	//	case DXGI_FORMAT_BC1_UNORM:
+	//	case DXGI_FORMAT_BC2_UNORM:
+	//	case DXGI_FORMAT_BC3_UNORM:
+	//		desc->Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	//		log("patch Format: BC -> R8G8B8A8_UNORM");
+	//		break;
+	//	}
+
+	//	// Limit sample count for problematic resources
+	//	if (desc->SampleDesc.Count > 1) {
+	//		desc->SampleDesc.Count = 1;
+	//		desc->SampleDesc.Quality = 0;
+	//		log("patch SampleDesc: forced to 1x MSAA (call #%d)");
+	//	}
+	//}
+
 
 	log("calling func..");
-	auto result = fpCreateCommittedResource(self, pHeapProperties, HeapFlags, des, InitialResourceState, pOptimizedClearValue, riidResource, ppvResource);
+	auto result = fpCreateCommittedResource(self, pHeapProperties, HeapFlags, desc, InitialResourceState, pOptimizedClearValue, riidResource, ppvResource);
 	log("result: %x", result);
+
 	log("Hook End CreateCommittedResource");
 	return result;
 }
 
 
-typedef __int64 (*MySetupDXGIFactory2_t)(uint64_t* param_1, int param_2,
-	int param_3, char param_4);
-MySetupDXGIFactory2_t fpHook_MySetupDXGIFactory2 = nullptr;
+// Additional patch for CreatePlacedResource
+int m_PatchCreatePlacedResourceCallCounter = 0;
+typedef HRESULT(*PatchCreatePlacedResource_t)(
+	ID3D12Device* device,
+	ID3D12Heap* pHeap,
+	UINT64 HeapOffset,
+	const D3D12_RESOURCE_DESC* pDesc,
+	D3D12_RESOURCE_STATES InitialState,
+	const D3D12_CLEAR_VALUE* pOptimizedClearValue,
+	REFIID riid,
+	void** ppvResource);
+PatchCreatePlacedResource_t fpCreatePlacedResource = nullptr;
+
+HRESULT HK_CreatePlacedResource(
+	ID3D12Device* device,
+	ID3D12Heap* pHeap,
+	UINT64 HeapOffset,
+	const D3D12_RESOURCE_DESC* pDesc,
+	D3D12_RESOURCE_STATES InitialState,
+	const D3D12_CLEAR_VALUE* pOptimizedClearValue,
+	REFIID riid,
+	void** ppvResource
+) {
+	m_PatchCreatePlacedResourceCallCounter++;
+	D3D12_RESOURCE_DESC modifiedDesc = *pDesc;
+
+	// Apply similar patches as CreateCommittedResource
+	UINT descFlags = static_cast<UINT>(modifiedDesc.Flags);
+
+	log("Hook Begin: CreatePlacedResource");
+	log("desc flags: 0x%x", pDesc->Flags);
+
+	if (descFlags & D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS) {
+		descFlags &= ~D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS;
+		modifiedDesc.Flags = static_cast<D3D12_RESOURCE_FLAGS>(descFlags);
+		log("patch CreatePlacedResource: removed ALLOW_SIMULTANEOUS_ACCESS");
+	}
+
+	auto res = fpCreatePlacedResource(
+		device, pHeap, HeapOffset, &modifiedDesc,
+		InitialState, pOptimizedClearValue, riid, ppvResource
+	);
+	log("result: 0x%x", res);
+	log("Hook End: CreatePlacedResource");
+	return res;
+}
 
 void LogFuncPtr(void* funcPtr) {
-	auto modName = GetModuleNameFromAddress((uintptr_t)funcPtr);
+	auto modName = GetModuleNameFromAddress(funcPtr);
 	log("[LogFuncPtr Begin]");
 	log("func ptr %p", funcPtr);
 	log("mod name: %s", modName);
@@ -171,48 +263,77 @@ void LogFuncPtr(void* funcPtr) {
 	log("[LogFuncPtr End]");
 }
 
-__int64 Hook_MySetupDXGIFactory2(uint64_t* param_1, int param_2, int param_3, char param_4)
+typedef __int64 (*MyCreateDefaultRenderer_t)(uint64_t* param_1, int param_2,
+	int param_3, char param_4);
+MyCreateDefaultRenderer_t fpMyCreateDefaultRenderer = nullptr;
+__int64 HK_MyCreateDefaultRenderer(uint64_t* param_1, int param_2, int param_3, char param_4)
 {
-	log("Hook Begin Hook_MySetupDXGIFactory2");
+	log("Hook Begin HK_MyCreateDefaultRenderer");
 
-	log("calling fpHook_MySetupDXGIFactory2");
+	log("calling HK_MyCreateDefaultRenderer");
 	ID3D12Device* device = *(ID3D12Device**)GetAddressFromRva(0x5558FA0);
-	log("device ptr: %p", device);
+	//log("device ptr: %p", device);
 	void** vtable = *(void***)device;
-	LogFuncPtr(vtable[27]);
-	LogFuncPtr(vtable[25]);
-	system("pause");
+	//LogFuncPtr(vtable[27]);
+	//LogFuncPtr(vtable[25]);
 
 	if (fpCreateCommittedResource == nullptr) {
 		DisableHook(GetFuncAddr(0x19ab970));
+
 		HookFuncAddr(vtable[27], &Hook_CreateCommittedResource, reinterpret_cast<LPVOID*>(&fpCreateCommittedResource));
 		log("setup hook CreateCommittedResource");
+
+		//HookFuncAddr(vtable[29], &HK_CreatePlacedResource, reinterpret_cast<LPVOID*>(&fpCreatePlacedResource));
+		//log("setup hook HK_CreatePlacedResource");
 	}
 
-	auto res = fpHook_MySetupDXGIFactory2(param_1, param_2, param_3, param_4);
+	auto res = fpMyCreateDefaultRenderer(param_1, param_2, param_3, param_4);
 	log("result: %d", res);
-	log("Hook End Hook_MySetupDXGIFactory2");
-
+	log("Hook End HK_MyCreateDefaultRenderer");
 
 	return res;
 }
 
-extern void SetupWinlatorPatch() {
+typedef uint64_t(*HK_MyCreateCommitRes3_t)(uint64_t a1);
+HK_MyCreateCommitRes3_t fpHK_MyCreateCommitRes3;
+__int64 HK_MyCreateCommitRes3(__int64 a1) {
+	log("Hooking HK_MyCreateCommitRes3");
+	log("a1: %d", a1);
+	auto res = fpHK_MyCreateCommitRes3(a1);
+	log("result: %d", res);
+	log("Hook End HK_MyCreateCommitRes3");
+	return res;
+}
+
+typedef HRESULT(*DXGI_Present_t)(UINT SyncInterval, UINT Flags);
+DXGI_Present_t fpDXGI_Present;
+HRESULT HK_DXGIPresent(UINT syncInterval, UINT flags) {
+	log("Begin HK_DXGI_Present");
+	auto res = fpDXGI_Present(syncInterval, flags);
+	log("result: %x", res);
+	log("End HK_DXGI_Present");
+	return res;
+}
+
+extern void SetupWinlatorPatcher() {
+	log("starting winlator patcher...");
 	// set false debug on Windows!
-#if false
-	if (!IsWineEnvironment()) {
-		log("Not running in Wine environment, skipping winlator patch.");
+	if (IsWineEnvironment() == false) {
+		log("Not running in Wine environment, skipping winlator patcher");
 		return;
 	}
+
+	HookFuncRva(0x38fed90, &HookedVirtualAllocX, &fpVirtualAllocX);
+
+#if false
+	// debug zone
+	//HookFuncRva(0x19ab970, &HK_MyCreateDefaultRenderer, &fpMyCreateDefaultRenderer);
+	//HookFuncRva(0x1963570, &HK_MyCreateCommitRes3, &fpHK_MyCreateCommitRes3);
+
+	//SetupHookRenderer();
+	// hook vtable
 #endif
 
-	log("starting patch for winlator...");
-	if (IsWineEnvironment()) {
-		HookFuncRva(0x38fed90, &HookedVirtualAllocX, &fpVirtualAllocX);
-	}
-
-	HookFuncRva(0x19ab970, &Hook_MySetupDXGIFactory2, &fpHook_MySetupDXGIFactory2);
-	//HookFunc(0x1978800, &HookMySus2, &fpMySus2);
 	log("winlator patch completed successfully.");
 }
 

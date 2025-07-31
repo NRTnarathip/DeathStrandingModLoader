@@ -153,7 +153,7 @@ int My_AddResourceIndex(ResourceList* resourceCounterPtr,
 
 	// crash some archive
 	//try {
-	//	log("res name: %s", resPtr->name);
+	//log("res name: %s", resPtr->name);
 	//}
 	//catch (const std::exception& e) {
 	//	log("Exception: %s", e.what());
