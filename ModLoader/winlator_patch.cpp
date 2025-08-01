@@ -22,7 +22,7 @@ size_t _mi_os_page_size() {
 }
 
 void* HookedVirtualAllocX(LPVOID a1_addr, size_t a2_allocSize, size_t try_alignment, DWORD a4_flags) {
-	//log("[Hook Begin] VirtualAllocX calling");
+	//log("[Hook Begin] mimalloc VirtualAllocX calling");
 	//log("addr: %p, allocSize: %zu, try_alignedSize: %zu, flags: 0x%X", a1_addr, a2_allocSize, try_alignment, a4_flags);
 	//log("calling..");
 	void* returnResult = fpVirtualAllocX(a1_addr, a2_allocSize, try_alignment, a4_flags);
@@ -54,8 +54,7 @@ void* HookedVirtualAllocX(LPVOID a1_addr, size_t a2_allocSize, size_t try_alignm
 	}
 
 	//log("result: %p", returnResult);
-
-	//log("[Hook End] VirtualAllocX");
+	//log("[Hook End] mimalloc VirtualAllocX");
 	return returnResult;
 }
 

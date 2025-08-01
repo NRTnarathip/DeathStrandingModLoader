@@ -7,21 +7,18 @@
 bool InjectDLL(HANDLE hProcess, const char* dllPath) {
 	size_t pathLen = strlen(dllPath) + 1;
 
-	// จองหน่วยความจำใน process เป้าหมาย
 	LPVOID allocMem = VirtualAllocEx(hProcess, NULL, pathLen, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 	if (!allocMem) {
 		std::cerr << "VirtualAllocEx failed\n";
 		return false;
 	}
 
-	// เขียน path DLL ลงใน process เป้าหมาย
 	if (!WriteProcessMemory(hProcess, allocMem, dllPath, pathLen, NULL)) {
 		std::cerr << "WriteProcessMemory failed\n";
 		VirtualFreeEx(hProcess, allocMem, 0, MEM_RELEASE);
 		return false;
 	}
 
-	// ดึง address ของ LoadLibraryA จาก kernel32.dll
 	LPTHREAD_START_ROUTINE loadLibAddr = (LPTHREAD_START_ROUTINE)GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
 	if (!loadLibAddr) {
 		std::cerr << "GetProcAddress failed\n";
@@ -29,7 +26,6 @@ bool InjectDLL(HANDLE hProcess, const char* dllPath) {
 		return false;
 	}
 
-	// สร้าง thread ใน process เป้าหมายเพื่อเรียก LoadLibraryA(dllPath)
 	HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, loadLibAddr, allocMem, 0, NULL);
 	if (!hThread) {
 		std::cerr << "CreateRemoteThread failed\n";
@@ -42,6 +38,7 @@ bool InjectDLL(HANDLE hProcess, const char* dllPath) {
 	VirtualFreeEx(hProcess, allocMem, 0, MEM_RELEASE);
 	return true;
 }
+
 void SetupSteamAppIDFile() {
 	const char* steam_appidFileName = "steam_appid.txt";
 	if (std::filesystem::exists(steam_appidFileName))
@@ -59,11 +56,12 @@ void SetupSteamAppIDFile() {
 
 int main()
 {
-	printf("Launching...");
+	printf("Launching...\n");
 	const char* exePath = "ds.exe";
 	const char* dllPath = (std::filesystem::current_path() / "mod_loader.dll").string().c_str();
 
-	// สร้าง process แบบไม่รันทันที (CREATE_SUSPENDED)
+	SetupSteamAppIDFile();
+
 	STARTUPINFOA si = { sizeof(si) };
 	PROCESS_INFORMATION pi;
 	if (!CreateProcessA(exePath, NULL, NULL, NULL, FALSE,
@@ -74,7 +72,6 @@ int main()
 		return 1;
 	}
 
-	// inject dll เข้า process ที่ถูก suspend ไว้
 	if (!InjectDLL(pi.hProcess, dllPath)) {
 		std::cerr << "DLL Injection failed\n";
 		TerminateProcess(pi.hProcess, 1);
@@ -85,10 +82,7 @@ int main()
 		return 1;
 	}
 
-	// resume thread หลักของ process ให้มันเริ่มทำงาน
 	ResumeThread(pi.hThread);
-
-	// ปิด handle ไม่ลบ process
 	CloseHandle(pi.hThread);
 	CloseHandle(pi.hProcess);
 
