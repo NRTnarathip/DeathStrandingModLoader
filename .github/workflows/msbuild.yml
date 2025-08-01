@@ -6,15 +6,11 @@
 name: MSBuild
 
 on:
+  push:
   workflow_dispatch:
 
 env:
-  # Path to the solution file relative to the root of the project.
   SOLUTION_FILE_PATH: .
-
-  # Configuration type to build.
-  # You can convert this to a build matrix if you need coverage of multiple configuration types.
-  # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
   BUILD_CONFIGURATION: Release
 
 permissions:
@@ -43,7 +39,7 @@ jobs:
     - name: Upload Mod Launcher Files
       uses: actions/upload-artifact@v4
       with:
-        name: death-stranding-mod-launcher
+        name: DeathStranding-ModLauncher-v${{ github.run_number }}
         path: |
           x64/Release/mod_loader.dll
           x64/Release/ModLauncher.exe
