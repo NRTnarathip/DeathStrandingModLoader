@@ -260,6 +260,7 @@ exit /b 0</Command>
   <ItemGroup>
     <ClInclude Include="archive_reader.h" />
     <ClInclude Include="hooks.h" />
+    <ClInclude Include="include\MinHook.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="MurmurHash3.h" />
     <ClInclude Include="utils.h" />
