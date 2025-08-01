@@ -141,7 +141,7 @@
     <ResourceCompile Include="ModLauncher.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\..\..\Documents\DeathStrandingAndroid\CliffU.ico" />
+    <Image Include="cliff.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="post-build.cmd" />
