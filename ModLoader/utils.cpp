@@ -11,11 +11,11 @@
 #include <ctime>
 #include <cstdarg>
 #include <sstream>
-#include <boost/stacktrace.hpp>
 #include <map>
 #include <string>
 #include <tchar.h>
 #include <cstdio>
+#include <vector>
 
 #include "MinHook.h"
 #include "types.h"

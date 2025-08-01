@@ -13,7 +13,6 @@
 #include <iomanip>
 #include <ctime>
 #include <cstdio>
-#include <boost/stacktrace.hpp>
 #include <sstream>
 #include <tchar.h>
 #include <string.h>
