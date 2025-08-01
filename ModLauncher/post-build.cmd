@@ -1,0 +1,1 @@
+adb push "../x64/Release/ModLauncher.exe" "/sdcard/DS"

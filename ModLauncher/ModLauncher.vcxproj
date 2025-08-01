@@ -126,6 +126,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>call "$(ProjectDir)post-build.cmd"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ModLauncher.cpp" />
@@ -138,6 +141,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\..\Documents\DeathStrandingAndroid\CliffU.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="post-build.cmd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

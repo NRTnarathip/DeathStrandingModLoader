@@ -57,13 +57,19 @@ void SetupSteamAppIDFile() {
 int main()
 {
 	printf("Launching...\n");
-	const char* exePath = "ds.exe";
-	const char* dllPath = (std::filesystem::current_path() / "mod_loader.dll").string().c_str();
 
 	SetupSteamAppIDFile();
 
+	auto currentDir = std::filesystem::current_path();
+	auto exePathStr = (currentDir / "ds.exe").string();
+	auto dllPathStr = (currentDir / "mod_loader.dll").string();
+	const char* exePath = exePathStr.c_str();
+	const char* dllPath = dllPathStr.c_str();
+
 	STARTUPINFOA si = { sizeof(si) };
 	PROCESS_INFORMATION pi;
+	printf("exe path: %s\n", exePath);
+	printf("mod loader dll path: %s\n", dllPath);
 	if (!CreateProcessA(exePath, NULL, NULL, NULL, FALSE,
 		CREATE_SUSPENDED, NULL, NULL, &si, &pi)) {
 		std::cerr << "CreateProcess failed\n";
