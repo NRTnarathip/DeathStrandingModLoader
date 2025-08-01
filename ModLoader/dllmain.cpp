@@ -21,7 +21,8 @@
 #include <strsafe.h>
 #include <string>
 #include <map>
-
+#include <filesystem>
+#include <iostream>
 #include "hooks.h"
 #include "utils.h"
 #include "types.h"
@@ -290,6 +291,7 @@ void* HookMy_AllocateMemForDummyRoot(ULONGLONG a1, ULONGLONG a2)
 	return result;
 }
 
+
 bool Start() {
 	SetupLogger();
 	log("starting mod loader...");
@@ -326,7 +328,7 @@ bool Start() {
 }
 
 extern "C" __declspec(dllexport) void StartAPI() {
-	printf("empty");
+	printf("empty\n");
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule,

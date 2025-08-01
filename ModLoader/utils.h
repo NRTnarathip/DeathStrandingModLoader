@@ -66,6 +66,8 @@ bool FillNopStartEnd(uintptr_t start, uintptr_t end);
 
 const char* GetModuleNameFromAddress(void* addr);
 
+bool FileExists(const std::string& filename);
+
 extern void* GetAddressFromRva(int fileOffset);
 extern void* GetFuncAddr(uintptr_t rva);
 

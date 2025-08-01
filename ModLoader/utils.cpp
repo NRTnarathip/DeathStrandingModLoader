@@ -21,21 +21,21 @@
 #include "types.h"
 
 std::ofstream m_logFile;
-bool m_isEnableLogFile = true;
+bool m_isEnableLogFile = false;
 
 void log(const char* format, ...)
 {
-	// Format string
 	char buffer[1024];
 	va_list args;
 	va_start(args, format);
 	vsnprintf(buffer, sizeof(buffer), format, args);
 	va_end(args);
+	auto now = std::chrono::system_clock::now();
+	auto in_time = std::chrono::system_clock::to_time_t(now);
+	std::cout << "[" << std::put_time(std::localtime(&in_time), "%F %T")
+		<< "] " << buffer << std::endl;
 
 	if (m_isEnableLogFile) {
-		std::cout << buffer << std::endl;
-		auto now = std::chrono::system_clock::now();
-		auto in_time = std::chrono::system_clock::to_time_t(now);
 		m_logFile << "[" << std::put_time(std::localtime(&in_time), "%F %T")
 			<< "] " << buffer << std::endl;
 	}
@@ -226,4 +226,9 @@ const char* GetModuleNameFromAddress(void* addr) {
 	}
 
 	return moduleName;
+}
+
+bool FileExists(const std::string& filename) {
+	std::ifstream file(filename);
+	return file.good();
 }

@@ -316,13 +316,13 @@ HRESULT HK_DXGIPresent(UINT syncInterval, UINT flags) {
 }
 
 extern void SetupWinlatorPatcher() {
-	log("starting winlator patcher...");
 	// set false debug on Windows!
 	if (IsWineEnvironment() == false) {
 		log("Not running in Wine environment, skipping winlator patcher");
 		return;
 	}
 
+	log("starting winlator patcher...");
 	HookFuncRva(0x38fed90, &HookedVirtualAllocX, &fpVirtualAllocX);
 
 #if false
