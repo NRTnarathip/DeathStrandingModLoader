@@ -36,7 +36,7 @@
     <ClInclude Include="winlator_patch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\MinHook.h">
+    <ClInclude Include="MinHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
