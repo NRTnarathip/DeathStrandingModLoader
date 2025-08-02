@@ -1,5 +1,5 @@
 # Death Stranding Mod Launcher
-## Features:
+## Features
 - Experiment Patch for compatibility with Android emulators such as Winlator and GameHub      
 - - Crash on sd 8s gen4, 8 Elite, Adreno 800++, other...
 - - Works on sd 8 gen3 - Adreno 750 - RAM 16gb

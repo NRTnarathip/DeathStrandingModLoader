@@ -38,7 +38,29 @@ jobs:
     - name: Upload Mod Launcher Files
       uses: actions/upload-artifact@v4
       with:
-        name: DeathStranding-ModLauncher-v${{ github.run_number }}
+        name: DeathStranding-ModLauncher-${{ github.ref_name }}
         path: |
           x64/Release/mod_loader.dll
           x64/Release/ModLauncher.exe
+
+  release:
+    needs: build  
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: DeathStranding-ModLauncher-${{ github.ref_name }}
+          path: downloaded/
+
+      - name: Create Draft Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          draft: true
+          files: downloaded/*.zip
