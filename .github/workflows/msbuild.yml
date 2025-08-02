@@ -45,14 +45,26 @@ jobs:
       contents: write
     
     steps:
+      - name: Show current directory
+        shell: pwsh
+        run: pwd
+
+      - name: List x64 folder contents
+        shell: pwsh
+        run: dir x64
+
+      - name: List x64/Release folder contents
+        shell: pwsh
+        run: dir x64\Release
+
       - name: Pack Zip Files
         run: |
           mkdir -p release
-          powershell -Command "Compress-Archive -Path 'x64/Release/ModLauncher.exe','x64/Release/mod_loader.dll' -DestinationPath release/DS-ModLauncher-${{ github.ref_name }}.zip"
+          powershell -Command "Compress-Archive -Path 'x64\Release\ModLauncher.exe','x64\Release\mod_loader.dll' -DestinationPath release\DS-ModLauncher-${{ github.ref_name }}.zip"
       - name: Create Draft Release
         uses: softprops/action-gh-release@v2
         with:
           name: Release ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
           draft: true
-          files: release/*.zip
+          files: release\*.zip
