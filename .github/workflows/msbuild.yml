@@ -6,7 +6,9 @@
 name: MSBuild
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
 
 env:
   SOLUTION_FILE_PATH: .
@@ -35,32 +37,22 @@ jobs:
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
     
-    - name: Upload Mod Launcher Files
-      uses: actions/upload-artifact@v4
-      with:
-        name: DeathStranding-ModLauncher-${{ github.ref_name }}
-        path: |
-          x64/Release/mod_loader.dll
-          x64/Release/ModLauncher.exe
-
   release:
     needs: build  
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     permissions:
       contents: write
-
+    
     steps:
-      - name: Download Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: DeathStranding-ModLauncher-${{ github.ref_name }}
-          path: downloaded/
-
+      - name: Pack Zip Files
+        run: |
+          mkdir -p release
+          powershell -Force -Command "Compress-Archive -Path 'x64/Release/ModLauncher.exe','x64/Release/mod_loader.dll' -DestinationPath release/DS-ModLauncher-${{ github.ref_name }}.zip"
       - name: Create Draft Release
         uses: softprops/action-gh-release@v2
         with:
           name: Release ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
           draft: true
-          files: downloaded/*.zip
+          files: release/*.zip
