@@ -31,28 +31,17 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: nuget restore ${{env.SOLUTION_FILE_PATH}}
 
-    - name: Build
+    - name: Build Project Solution
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
     
-    - name: Show current directory
-      shell: pwsh
-      run: pwd
-
-    - name: List x64 folder contents
-      shell: pwsh
-      run: dir x64
-
-    - name: List x64/Release folder contents
-      shell: pwsh
-      run: dir x64\Release
-
-    - name: Pack Zip Files
+    - name: Pack Zip Release
       run: |
         mkdir -p release
         powershell -Command "Compress-Archive -Path 'x64\Release\ModLauncher.exe','x64\Release\mod_loader.dll' -DestinationPath release\DS-ModLauncher-${{ github.ref_name }}.zip"
+    
     - name: Create Draft Release
       uses: softprops/action-gh-release@v2
       with:
