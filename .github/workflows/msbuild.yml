@@ -15,10 +15,10 @@ env:
   BUILD_CONFIGURATION: Release
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  build:
+  build-release:
     runs-on: windows-latest
 
     steps:
@@ -37,34 +37,26 @@ jobs:
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
     
-  release:
-    needs: build  
-    runs-on: windows-latest
+    - name: Show current directory
+      shell: pwsh
+      run: pwd
 
-    permissions:
-      contents: write
-    
-    steps:
-      - name: Show current directory
-        shell: pwsh
-        run: pwd
+    - name: List x64 folder contents
+      shell: pwsh
+      run: dir x64
 
-      - name: List x64 folder contents
-        shell: pwsh
-        run: dir x64
+    - name: List x64/Release folder contents
+      shell: pwsh
+      run: dir x64\Release
 
-      - name: List x64/Release folder contents
-        shell: pwsh
-        run: dir x64\Release
-
-      - name: Pack Zip Files
-        run: |
-          mkdir -p release
-          powershell -Command "Compress-Archive -Path 'x64\Release\ModLauncher.exe','x64\Release\mod_loader.dll' -DestinationPath release\DS-ModLauncher-${{ github.ref_name }}.zip"
-      - name: Create Draft Release
-        uses: softprops/action-gh-release@v2
-        with:
-          name: Release ${{ github.ref_name }}
-          tag_name: ${{ github.ref_name }}
-          draft: true
-          files: release\*.zip
+    - name: Pack Zip Files
+      run: |
+        mkdir -p release
+        powershell -Command "Compress-Archive -Path 'x64\Release\ModLauncher.exe','x64\Release\mod_loader.dll' -DestinationPath release\DS-ModLauncher-${{ github.ref_name }}.zip"
+    - name: Create Draft Release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: Release ${{ github.ref_name }}
+        tag_name: ${{ github.ref_name }}
+        draft: true
+        files: release\*.zip
