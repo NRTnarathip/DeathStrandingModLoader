@@ -12,9 +12,11 @@ void SetupLogger();
 bool DisableHook(LPVOID targetFunc);
 
 bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup);
-
+bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, void* originalBackup);
 bool HookFuncRva(uintptr_t funcRva, LPVOID detour, void* originalBackup);
 bool HookFuncModule(const char* moduleName, uintptr_t funvRva, LPVOID detour, void* backup);
+
+bool HookFuncModule(const char* moduleName, const char* funcName, LPVOID detour, void* backup);
 
 bool IsWineEnvironment();
 

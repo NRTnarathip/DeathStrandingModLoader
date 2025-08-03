@@ -127,8 +127,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>call "$(ProjectDir)post-build.cmd"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

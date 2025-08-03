@@ -30,14 +30,21 @@ void log(const char* format, ...)
 	va_start(args, format);
 	vsnprintf(buffer, sizeof(buffer), format, args);
 	va_end(args);
+
 	auto now = std::chrono::system_clock::now();
 	auto in_time = std::chrono::system_clock::to_time_t(now);
-	std::cout << "[" << std::put_time(std::localtime(&in_time), "%F %T")
-		<< "] " << buffer << std::endl;
+	DWORD tid = GetCurrentThreadId();
+
+	std::stringstream sstream;
+	sstream << "[" << std::put_time(std::localtime(&in_time), "%F %T")
+		<< "] [TID:" << tid << "] " << buffer << std::endl;
+
+	std::cout << sstream.str();
 
 	if (m_isEnableLogFile) {
-		m_logFile << "[" << std::put_time(std::localtime(&in_time), "%F %T")
-			<< "] " << buffer << std::endl;
+		//m_logFile << "[" << std::put_time(std::localtime(&in_time), "%F %T")
+		//	<< "] " << buffer << std::endl;
+		m_logFile << sstream.str();
 	}
 }
 void SetupLogger() {
@@ -80,6 +87,10 @@ bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
 	//log("hooked function: %p", targetFunc);
 }
 
+bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, void* originalBackup) {
+	return HookFuncAddr(targetFunc, detour, reinterpret_cast<LPVOID*>(originalBackup));
+}
+
 uintptr_t imageBase = (uintptr_t)GetModuleHandleA(NULL);
 void* GetFuncAddr(uintptr_t rva) {
 	return (void*)(imageBase + rva);
@@ -95,6 +106,21 @@ bool HookFuncRva(uintptr_t funcRva, LPVOID detour, void* backup) {
 bool HookFuncModule(const char* moduleName, uintptr_t funvRva, LPVOID detour, void* backup) {
 	auto hModule = GetModuleHandleA(moduleName);
 	return HookFuncAddr((void*)(hModule + funvRva), detour, reinterpret_cast<LPVOID*>(backup));
+}
+bool HookFuncModule(const char* moduleName, const char* funcName, LPVOID detour, void* backup) {
+	auto hModule = GetModuleHandleA(moduleName);
+	if (hModule == NULL) {
+		log("failed not found module: %s", moduleName);
+
+		return false;
+	}
+
+	auto funcAddr = GetProcAddress(hModule, funcName);
+	if (funcAddr == NULL) {
+		log("failed not found export func: %s", funcName);
+		return false;
+	}
+	return HookFuncAddr(funcAddr, detour, reinterpret_cast<LPVOID*>(backup));
 }
 
 MurmurHash3_t  fpMurmurHash3 = (MurmurHash3_t)GetFuncAddr(0x18fe890);
