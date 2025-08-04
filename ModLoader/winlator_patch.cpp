@@ -15,6 +15,58 @@
 #include <windows.h>
 #include <stdio.h>
 #include <mutex>
+#include <vector>
+#include <map>
+#include <unordered_map>
+
+//global, static variable
+// allocatorAddr, cmdListAddr
+std::unordered_map<uintptr_t, uintptr_t> m_allocatorCmdListMap;
+IDXGISwapChain3* my_swapChain;
+std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> m_renderTargetViewList;
+
+int GetHighestID3D12DeviceVersion(ID3D12Device* pDevice)
+{
+	for (int i = 14; i >= 1; --i)
+	{
+		IID iid;
+		switch (i)
+		{
+		case 14: iid = __uuidof(ID3D12Device14); break;
+		case 13: iid = __uuidof(ID3D12Device13); break;
+		case 12: iid = __uuidof(ID3D12Device12); break;
+		case 11: iid = __uuidof(ID3D12Device11); break;
+		case 10: iid = __uuidof(ID3D12Device10); break;
+		case 9:  iid = __uuidof(ID3D12Device9);  break;
+		case 8:  iid = __uuidof(ID3D12Device8);  break;
+		case 7:  iid = __uuidof(ID3D12Device7);  break;
+		case 6:  iid = __uuidof(ID3D12Device6);  break;
+		case 5:  iid = __uuidof(ID3D12Device5);  break;
+		case 4:  iid = __uuidof(ID3D12Device4);  break;
+		case 3:  iid = __uuidof(ID3D12Device3);  break;
+		case 2:  iid = __uuidof(ID3D12Device2);  break;
+		case 1:  iid = __uuidof(ID3D12Device1);  break;
+		default: continue;
+		}
+
+		IUnknown* pUnknown = nullptr;
+		if (SUCCEEDED(pDevice->QueryInterface(iid, (void**)&pUnknown)))
+		{
+			pUnknown->Release();
+			return i;
+		}
+	}
+
+	return 0; // Only ID3D12Device base supported
+}
+
+ID3D12Device** my_ppeDvice = (ID3D12Device**)GetAddressFromRva(0x5558FA0);
+ID3D12Device* GetDxDevice() {
+	return *my_ppeDvice;
+}
+HRESULT GetDeviceRemoveCode() {
+	return GetDxDevice()->GetDeviceRemovedReason();
+}
 
 typedef void* (*mi_win_virtual_allocx)(LPVOID a1_addr, size_t a2_allocSize, size_t a3_try_alignedSize, DWORD a4_flags);
 mi_win_virtual_allocx fpVirtualAllocX = nullptr;
@@ -64,7 +116,6 @@ void* HookedVirtualAllocX(LPVOID a1_addr, size_t a2_allocSize, size_t try_alignm
 
 typedef char(*My_Sus2_t)(__int64 a1, __int64 a2, HWND a3, char a4);
 My_Sus2_t fpMySus2 = nullptr;
-
 char HookMySus2(__int64 param1, __int64 param2, HWND param3, char param4) {
 	// disable de bugger
 	log("Hook Begin Sus2");
@@ -118,6 +169,7 @@ char HookMySus2(__int64 param1, __int64 param2, HWND param3, char param4) {
 	return 1;
 }
 
+int m_createCommittedResourceCallCounter = 0;
 typedef HRESULT(*CreateCommittedResource_t)(
 	ID3D12Device* self,
 	_In_  const D3D12_HEAP_PROPERTIES* pHeapProperties,
@@ -127,10 +179,8 @@ typedef HRESULT(*CreateCommittedResource_t)(
 	_In_opt_  const D3D12_CLEAR_VALUE* pOptimizedClearValue,
 	REFIID riidResource,
 	_COM_Outptr_opt_  void** ppvResource);
-
-int m_createCommittedResourceCallCounter = 0;
-CreateCommittedResource_t fpCreateCommittedResource = nullptr;
-HRESULT Hook_CreateCommittedResource(
+CreateCommittedResource_t backup_CreateCommittedResource = nullptr;
+HRESULT HK_CreateCommittedResource(
 	ID3D12Device* self,
 	_In_  const D3D12_HEAP_PROPERTIES* pHeapProperties,
 	D3D12_HEAP_FLAGS HeapFlags,
@@ -144,17 +194,17 @@ HRESULT Hook_CreateCommittedResource(
 
 	log("Hook Begin CreateCommittedResource | call time: %d", m_createCommittedResourceCallCounter);
 	log("D3D12_RESOURCE_DESC:");
-	log(" - format: 0x%x", desc->Format);
+	//log(" - format: 0x%x", desc->Format);
 	log(" - w: %d, h: %d", desc->Width, desc->Height);
-	log(" - dimension: %d", desc->Dimension);
-	log(" - sample.count: %d", desc->SampleDesc.Count);
-	log(" - sample.quality: %d", desc->SampleDesc.Quality);
-	log(" - mipmapLevels: %d", desc->MipLevels);
-	log(" - flags: %d", desc->Flags);
-	log(" - layout: %d", desc->Layout);
-	log(" - alignment: %d", desc->Alignment);
-	log("HeapFlags: %d", HeapFlags);
-	log("Initial States: %d", InitialResourceState);
+	//log(" - dimension: %d", desc->Dimension);
+	//log(" - sample.count: %d", desc->SampleDesc.Count);
+	//log(" - sample.quality: %d", desc->SampleDesc.Quality);
+	//log(" - mipmapLevels: %d", desc->MipLevels);
+	//log(" - flags: %d", desc->Flags);
+	//log(" - layout: %d", desc->Layout);
+	//log(" - alignment: %d", desc->Alignment);
+	log("  HeapFlags: %d", HeapFlags);
+	log("  Initial States: %d", InitialResourceState);
 
 	HRESULT result = 0;
 	if (m_createCommittedResourceCallCounter == 1) {
@@ -163,12 +213,37 @@ HRESULT Hook_CreateCommittedResource(
 	}
 
 	log("calling original func..");
-	result = fpCreateCommittedResource(self, pHeapProperties, HeapFlags, desc, InitialResourceState, pOptimizedClearValue, riidResource, ppvResource);
-	log("Hook End CreateCommittedResource");
+	result = backup_CreateCommittedResource(self, pHeapProperties, HeapFlags, desc, InitialResourceState, pOptimizedClearValue, riidResource, ppvResource);
 	log("	result: %x", result);
+	log("device remove code: %x", GetDeviceRemoveCode());
+
+	log("Hook End CreateCommittedResource");
 	return result;
 }
 
+typedef HRESULT(*CreateSharedHandle_t)(
+	ID3D12Device* self,
+	_In_  ID3D12DeviceChild* pObject,
+	_In_opt_  const SECURITY_ATTRIBUTES* pAttributes,
+	DWORD Access,
+	_In_opt_  LPCWSTR Name,
+	_Out_  HANDLE* pHandle);
+CreateSharedHandle_t backup_CreateSharedHandle;
+HRESULT HK_CreateSharedHandle(
+	ID3D12Device* self,
+	_In_  ID3D12DeviceChild* pObject,
+	_In_opt_  const SECURITY_ATTRIBUTES* pAttributes,
+	DWORD Access,
+	_In_opt_  LPCWSTR Name,
+	_Out_  HANDLE* pHandle)
+{
+	log("Hook Begin: HK_CreateSharedHandle");
+	log(" pOjbect: %p", pObject);
+	log(" Name: %ls", Name);
+	auto res = backup_CreateSharedHandle(self, pObject, pAttributes, Access, Name, pHandle);
+	log("Hook End: HK_CreateSharedHandle");
+	return res;
+}
 
 // Additional patch for CreatePlacedResource
 int m_PatchCreatePlacedResourceCallCounter = 0;
@@ -227,6 +302,99 @@ void LogFuncPtr(void* funcPtr) {
 	log("[LogFuncPtr End]");
 }
 
+size_t callCounter_ExecuteCommandLists;
+typedef void (*ExecuteCommandLists_t)(
+	ID3D12CommandQueue* self,
+	_In_  UINT NumCommandLists,
+	_In_reads_(NumCommandLists)  ID3D12CommandList* const* ppCommandLists);
+ExecuteCommandLists_t backup_ExecuteCommandLists;
+void STDMETHODCALLTYPE HK_ExecuteCommandLists(
+	ID3D12CommandQueue* self,
+	_In_  UINT NumCommandLists,
+	_In_reads_(NumCommandLists)  ID3D12CommandList* const* ppCommandLists)
+{
+	callCounter_ExecuteCommandLists++;
+
+	log("Hook Begin: HK_ExecuteCommandLists");
+	log("call counter: %d", callCounter_ExecuteCommandLists);
+	log("pre: device fail code: %x", GetDeviceRemoveCode());
+	log("  numCommandLists: %d", NumCommandLists);
+	log("  ppCmdLists: %p", ppCommandLists);
+
+	std::vector<ID3D12CommandList*> filteredCmdLists;
+	for (int i = 0; i < NumCommandLists; ++i)
+	{
+		ID3D12CommandList* cmd = ppCommandLists[i];
+		D3D12_COMMAND_LIST_TYPE type = cmd->GetType();
+
+		if (NumCommandLists == 2 && i == 0) {
+			log("skip [%d] cmd list: %p, list type: %d", i, cmd, type);
+			log("try reset & manual draw back buffer");
+			auto allocatorPtr = (ID3D12CommandAllocator*)(m_allocatorCmdListMap[(uintptr_t)cmd]);
+			auto graphicsCmd = (ID3D12GraphicsCommandList*)cmd;
+			log("allocator ptr: %p", allocatorPtr);
+			auto resetHR = graphicsCmd->Reset(allocatorPtr, nullptr);
+			log("reseted hr: %x", resetHR);
+			log("device code: %x", GetDeviceRemoveCode());
+			// 1. Transition render target to render target state (if needed)
+			UINT backBufferIndex = my_swapChain->GetCurrentBackBufferIndex();
+			log("current back buffer index: %d", backBufferIndex);
+
+			ID3D12Resource* backBufferResource = nullptr;
+			HRESULT hr = my_swapChain->GetBuffer(backBufferIndex, IID_PPV_ARGS(&backBufferResource));
+			D3D12_RESOURCE_BARRIER barrier = {};
+			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+			barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+			barrier.Transition.pResource = backBufferResource;
+			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+			barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+			graphicsCmd->ResourceBarrier(1, &barrier);
+
+			// 2. Set the render target
+			for (int i = 0; i <= 1; i++) {
+				//int rtvIndex = min(0, m_renderTargetViewList.size() - 1);
+				int rtvIndex = i;
+				log("rtv index: %d", rtvIndex);
+				D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_renderTargetViewList[rtvIndex];
+				graphicsCmd->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+				log("set OM rtv to: %p", rtvHandle.ptr);
+
+				// 3. Clear to gray color (RGBA format)
+				float grayColor[4] = { 0.5f, 0.5f, 0.5f, 1.0f }; // Gray color
+				graphicsCmd->ClearRenderTargetView(rtvHandle, grayColor, 0, nullptr);
+				log("clear color gray");
+			}
+
+			// 4. Transition back to present state before executing
+			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+			graphicsCmd->ResourceBarrier(1, &barrier);
+
+			// 5. Close and execute the command list
+			graphicsCmd->Close();
+			log("closed cmd list");
+		}
+
+		filteredCmdLists.push_back(cmd);
+		log("added [%d] cmd list: %p, list type: %d", i, cmd, type);
+	}
+
+	// patch command lists
+	{
+		ppCommandLists = filteredCmdLists.data();
+		NumCommandLists = filteredCmdLists.size();
+	}
+
+	log("calling original func");
+	backup_ExecuteCommandLists(self, NumCommandLists, ppCommandLists);
+
+	log("post: device fail code: %x", GetDeviceRemoveCode());
+	log("Hook End: HK_ExecuteCommandLists");
+}
+
+
 typedef  HRESULT(*CreateCommandQueue_t)(
 	ID3D12Device* self,
 	_In_  const D3D12_COMMAND_QUEUE_DESC* pDesc,
@@ -247,13 +415,21 @@ HRESULT __stdcall HK_CreateCommandQueue(
 		log("	desc type: %d", pDesc->Type);
 		log("	desc priority: %d", pDesc->Priority);
 	}
+	HRESULT result = 0;
 	log("calling original function...");
-	auto result = origin_CreateCommandQueue(self, pDesc, riid, ppCommandQueue);
+	result = origin_CreateCommandQueue(self, pDesc, riid, ppCommandQueue);
+	ID3D12CommandQueue* pCommandQueue = *(ID3D12CommandQueue**)ppCommandQueue;
+
+	if (backup_ExecuteCommandLists == NULL) {
+		void** vtable = *(void***)pCommandQueue;
+		HookFuncAddr(vtable[10], &HK_ExecuteCommandLists, &backup_ExecuteCommandLists);
+		log("setup hook ID3D12CommandQueue");
+	}
+
 	log("Hook End: HK_CreateCommandQueue");
 	log("	result: %d", result);
 	return result;
 }
-
 
 typedef __int64 (*MyCreateDefaultRenderer_t)(uint64_t* param_1, int param_2,
 	int param_3, char param_4);
@@ -266,19 +442,7 @@ __int64 HK_MyCreateDefaultRenderer(uint64_t* param_1, int param_2, int param_3, 
 	ID3D12Device* device = *(ID3D12Device**)GetAddressFromRva(0x5558FA0);
 	void** vtable = *(void***)device;
 
-	if (fpCreateCommittedResource == nullptr) {
-		DisableHook(GetFuncAddr(0x19ab970));
-
-		HookFuncAddr(vtable[27], &Hook_CreateCommittedResource, reinterpret_cast<LPVOID*>(&fpCreateCommittedResource));
-		log("setup hook CreateCommittedResource");
-
-		//HookFuncAddr(vtable[29], &HK_CreatePlacedResource, reinterpret_cast<LPVOID*>(&fpCreatePlacedResource));
-		//log("setup hook HK_CreatePlacedResource");
-
-		HookFuncAddr(vtable[8], &HK_CreateCommandQueue, &origin_CreateCommandQueue);
-		log("hook create command queue");
-
-	}
+	DisableHook(GetFuncAddr(0x19ab970));// disable CreateDefaultRenderer
 
 	auto res = fpMyCreateDefaultRenderer(param_1, param_2, param_3, param_4);
 	log("Hook End HK_MyCreateDefaultRenderer");
@@ -287,26 +451,61 @@ __int64 HK_MyCreateDefaultRenderer(uint64_t* param_1, int param_2, int param_3, 
 	return res;
 }
 
-typedef uint64_t(*HK_MyCreateCommitRes3_t)(uint64_t a1);
-HK_MyCreateCommitRes3_t fpHK_MyCreateCommitRes3;
-__int64 HK_MyCreateCommitRes3(__int64 a1) {
-	log("Hooking HK_MyCreateCommitRes3");
-	log("a1: %d", a1);
-	auto res = fpHK_MyCreateCommitRes3(a1);
-	log("result: %d", res);
-	log("Hook End HK_MyCreateCommitRes3");
-	return res;
+typedef void (*CreateRenderTargetView_t)(
+	ID3D12Device* device,
+	_In_opt_  ID3D12Resource* pResource,
+	_In_opt_  const D3D12_RENDER_TARGET_VIEW_DESC* pDesc,
+	_In_  D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor);
+CreateRenderTargetView_t backup_CreateRenderTargetView;
+void HK_CreateRenderTargetView(
+	ID3D12Device* device,
+	_In_opt_  ID3D12Resource* pResource,
+	_In_opt_  const D3D12_RENDER_TARGET_VIEW_DESC* pDesc,
+	_In_  D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor)
+{
+	log("Hook Begin CreateRenderTargetView");
+	log("  format: 0x%x", pDesc->Format);
+	log("  dimension: 0x%x", pDesc->ViewDimension);
+	//auto resDesc = pResource->GetDesc();
+	//log("resource desc");
+	//log("  w: %d, h: %d", resDesc.Width, resDesc.Height);
+	backup_CreateRenderTargetView(device, pResource, pDesc, DestDescriptor);
+	m_renderTargetViewList.push_back(DestDescriptor);
+	log("Hook End CreateRenderTargetView");
 }
 
+size_t callCounter_DXGI_Present;
 typedef HRESULT(*DXGI_Present_t)(IDXGISwapChain* self, UINT SyncInterval, UINT Flags);
 DXGI_Present_t backup_DXGI_Present;
 HRESULT HK_DXGIPresent(IDXGISwapChain* self, UINT syncInterval, UINT flags) {
+	callCounter_DXGI_Present++;
 	log("Begin HK_DXGI_Present");
+	log("call counter: %d", callCounter_DXGI_Present);
 	log("syncInternal: %d", syncInterval);
 	log("flags: 0x%x", flags);
-	auto res = backup_DXGI_Present(self, syncInterval, flags);
-	log("End HK_DXGI_Present");
+
+	IDXGISwapChain3* swap3 = nullptr;
+	UINT renderIndex = -1;
+	if (SUCCEEDED(my_swapChain->QueryInterface(IID_PPV_ARGS(&swap3)))) {
+		renderIndex = swap3->GetCurrentBackBufferIndex();
+		log("BackBuffer Index: %d", renderIndex);
+		swap3->Release();
+	}
+	else {
+		log("failed to request QueryInterface");
+	}
+
+	log("pre: device remove code: %x", GetDeviceRemoveCode());
+	log("calling original function");
+	//log("skip render present");
+	HRESULT res = 0;
+	if (callCounter_DXGI_Present >= 500) {
+		res = backup_DXGI_Present(self, syncInterval, flags);
+	}
+
 	log("  result: %x", res);
+	log("post: device remove code: %x", GetDeviceRemoveCode());
+	log("End HK_DXGI_Present");
 	return res;
 }
 
@@ -320,7 +519,6 @@ typedef HRESULT(*CreateSwapChainForHwnd_t)(
 	IDXGISwapChain1** ppSwapChain
 	);
 CreateSwapChainForHwnd_t backup_CreateSwapChainForHwnd;
-IDXGISwapChain1** my_ppSwapChain;
 
 HRESULT HK_CreateSwapChainForHwnd(
 	IDXGIFactory2* self,
@@ -332,11 +530,11 @@ HRESULT HK_CreateSwapChainForHwnd(
 	IDXGISwapChain1** ppSwapChain
 ) {
 	log("Hook Begin HK_CreateSwapChainForHwnd");
-	my_ppSwapChain = ppSwapChain;
 	auto res = backup_CreateSwapChainForHwnd(
 		self,
 		pDevice, hWnd, pDesc,
 		pFullscreenDesc, pRestrictToOutput, ppSwapChain);
+	my_swapChain = *(IDXGISwapChain3**)ppSwapChain;
 	log("Hook End HK_CreateSwapChainForHwnd");
 	log("  result: 0x%x", res);
 
@@ -349,6 +547,47 @@ HRESULT HK_CreateSwapChainForHwnd(
 	HookFuncAddr(presentFuncAddr, &HK_DXGIPresent, &backup_DXGI_Present);
 	log("hook HK_DXGIPresent");
 
+	return res;
+}
+
+
+typedef HRESULT(*CreateCommandList_t)(
+	ID3D12Device* self,
+	_In_  UINT nodeMask,
+	_In_  D3D12_COMMAND_LIST_TYPE type,
+	_In_  ID3D12CommandAllocator* pCommandAllocator,
+	_In_opt_  ID3D12PipelineState* pInitialState,
+	REFIID riid,
+	_COM_Outptr_  void** ppCommandList
+	);
+CreateCommandList_t backup_CreateCommandList;
+HRESULT STDMETHODCALLTYPE HK_CreateCommandList(
+	ID3D12Device* self,
+	_In_  UINT nodeMask,
+	_In_  D3D12_COMMAND_LIST_TYPE type,
+	_In_  ID3D12CommandAllocator* pCommandAllocator,
+	_In_opt_  ID3D12PipelineState* pInitialState,
+	REFIID riid,
+	_COM_Outptr_  void** ppCommandList)
+{
+	log("Hook Begin: CreateCommandList");
+	log("  nodeMask: %d", nodeMask);
+	log("  type: %d", type);
+	log("  pCmdAllocator: %p", pCommandAllocator);
+	log("  pInitState: %p", pInitialState);
+	log("pre: device remove code: %x", GetDeviceRemoveCode());
+	log("calling backup_CreateCommandList");
+	auto res = backup_CreateCommandList(
+		self, nodeMask, type, pCommandAllocator,
+		pInitialState, riid, ppCommandList);
+	log("  result: %d", res);
+	log("  pCommandList: %p", *ppCommandList);
+	log("  ppCommandList: %p", ppCommandList);
+	ID3D12CommandList* pCmdList = *(ID3D12CommandList**)ppCommandList;
+	m_allocatorCmdListMap[(uintptr_t)pCmdList] = (uintptr_t)pCommandAllocator;
+
+	log("post: device remove code: %x", GetDeviceRemoveCode());
+	log("Hook End: CreateCommandList");
 	return res;
 }
 
@@ -371,6 +610,19 @@ HRESULT HK_MySetupDx12(
 		HookFuncAddr(target, &HK_CreateSwapChainForHwnd, &backup_CreateSwapChainForHwnd);
 	}
 
+	ID3D12Device* device = GetDxDevice();
+	log("device ptr: %p", device);
+	log("device level: %d", GetHighestID3D12DeviceVersion(device));
+
+	{
+		void** vtable = *(void***)device;
+		HookFuncAddr(vtable[8], &HK_CreateCommandQueue, &origin_CreateCommandQueue);
+		HookFuncAddr(vtable[12], &HK_CreateCommandList, &backup_CreateCommandList);
+		HookFuncAddr(vtable[27], &HK_CreateCommittedResource, &backup_CreateCommittedResource);
+		HookFuncAddr(vtable[31], &HK_CreateSharedHandle, &backup_CreateSharedHandle);
+		HookFuncAddr(vtable[20], &HK_CreateRenderTargetView, &backup_CreateRenderTargetView);
+	}
+
 	return result;
 }
 
@@ -385,7 +637,7 @@ extern void SetupWinlatorPatcher() {
 
 #if true
 	// debug zone
-	HookFuncRva(0x19ab970, &HK_MyCreateDefaultRenderer, &fpMyCreateDefaultRenderer);
+	//HookFuncRva(0x19ab970, &HK_MyCreateDefaultRenderer, &fpMyCreateDefaultRenderer);
 	HookFuncRva(0x19a6980, &HK_MySetupDx12, &backup_MySetupDx12);
 	//HookFuncRva(0x1963570, &HK_MyCreateCommitRes3, &fpHK_MyCreateCommitRes3);
 

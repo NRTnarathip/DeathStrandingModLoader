@@ -36,7 +36,7 @@ void log(const char* format, ...)
 	DWORD tid = GetCurrentThreadId();
 
 	std::stringstream sstream;
-	sstream << "[" << std::put_time(std::localtime(&in_time), "%F %T")
+	sstream << "[" << std::put_time(std::localtime(&in_time), "%T")
 		<< "] [TID:" << tid << "] " << buffer << std::endl;
 
 	std::cout << sstream.str();

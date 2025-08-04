@@ -282,6 +282,7 @@ exit /b 0</Command>
     <None Include="post-build.cmd" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="device_support.txt" />
     <Text Include="temp_codes.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

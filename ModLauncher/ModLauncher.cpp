@@ -93,4 +93,5 @@ int main()
 	CloseHandle(pi.hProcess);
 
 	std::cout << "Process launched and DLL injected successfully\n";
+	system("pause");
 }
