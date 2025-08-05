@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <cstdint>	
 #include <string>
+#include <vector>
 
 struct ResourceReaderHandle;
 
@@ -62,9 +63,9 @@ std::string GetCurrentExePath();
 
 std::string GetCurrentExeDir();
 
-bool FillBytes(uintptr_t start, void* bytes, int size);
-
-bool FillNopStartEnd(uintptr_t start, uintptr_t end);
+bool PatchBytesRva(uintptr_t start, void* bytes, int size);
+bool PatchBytesRva(uintptr_t startRva, std::vector<char> bytes);
+bool PatchNopStartEndRva(uintptr_t start, uintptr_t end);
 
 const char* GetModuleNameFromAddress(void* addr);
 

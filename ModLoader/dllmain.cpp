@@ -303,6 +303,10 @@ bool Start() {
 	// setup hooks for winlator | gamehub
 	SetupWinlatorPatcher();
 
+	// general utils
+	log("disable save corruption check...");
+	PatchBytesRva(0x1a02945, { (char)0xEB });
+
 	// debug
 #if false
 	//HookFunc(0x190aa00, &BuildStringBuffer, reinterpret_cast<LPVOID*>(&fpBuildStringBuffer));

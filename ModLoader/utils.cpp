@@ -22,9 +22,14 @@
 
 std::ofstream m_logFile;
 bool m_isEnableLogFile = false;
+bool m_isEnableLogConsole = false;
 
 void log(const char* format, ...)
 {
+	if (m_isEnableLogConsole == false
+		&& m_isEnableLogFile == false)
+		return;
+
 	char buffer[1024];
 	va_list args;
 	va_start(args, format);
@@ -39,16 +44,16 @@ void log(const char* format, ...)
 	sstream << "[" << std::put_time(std::localtime(&in_time), "%T")
 		<< "] [TID:" << tid << "] " << buffer << std::endl;
 
-	std::cout << sstream.str();
+	if (m_isEnableLogConsole)
+		std::cout << sstream.str();
 
-	if (m_isEnableLogFile) {
-		//m_logFile << "[" << std::put_time(std::localtime(&in_time), "%F %T")
-		//	<< "] " << buffer << std::endl;
+	if (m_isEnableLogFile)
 		m_logFile << sstream.str();
-	}
+
 }
 void SetupLogger() {
 	// initialize logger
+	m_isEnableLogConsole = std::getenv("DSMOD_LOG_CONSOLE") ? true : false;
 	m_isEnableLogFile = std::getenv("DSMOD_LOGFILE") ? true : false;
 	if (m_isEnableLogFile) {
 		m_logFile.open("mod_log.txt", std::ios::out | std::ios::trunc);
@@ -206,11 +211,10 @@ std::string GetCurrentExeDir() {
 	size_t pos = path.find_last_of("\\/");
 	return (pos != std::string::npos) ? path.substr(0, pos) : path;
 }
-bool FillBytes(uintptr_t startRva, void* bytes, int size) {
+bool PatchBytesRva(uintptr_t startRva, void* bytes, int size) {
 	DWORD oldProtect;
 	auto addr = GetAddressFromRva(startRva);
 
-	// เปลี่ยนสิทธิ์ memory เป็น writable
 	if (!VirtualProtect(addr, size, PAGE_EXECUTE_READWRITE, &oldProtect))
 		return false;
 
@@ -222,14 +226,18 @@ bool FillBytes(uintptr_t startRva, void* bytes, int size) {
 	VirtualProtect(addr, size, oldProtect, &oldProtect);
 	return true;
 }
+bool PatchBytesRva(uintptr_t startRva, std::vector<char> bytes) {
+	return PatchBytesRva(startRva, bytes.data(), bytes.size());
+}
 
-bool FillNopStartEnd(uintptr_t startRva, uintptr_t endRva) {
+
+bool PatchNopStartEndRva(uintptr_t startRva, uintptr_t endRva) {
 	if (startRva >= endRva)
 		return false;
 
 	auto size = endRva - startRva;
 	std::vector<char> bytes(size, static_cast<char>(0x90));
-	if (FillBytes(startRva, bytes.data(), size)) {
+	if (PatchBytesRva(startRva, bytes.data(), size)) {
 		log("filled nop start %x --> %x", startRva, endRva);
 	}
 	else {

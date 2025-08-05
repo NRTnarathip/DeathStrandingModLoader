@@ -207,9 +207,12 @@ HRESULT HK_CreateCommittedResource(
 	log("  Initial States: %d", InitialResourceState);
 
 	HRESULT result = 0;
-	if (m_createCommittedResourceCallCounter == 1) {
-		HeapFlags = D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES;
-		log("use new heap flags: %d", HeapFlags);
+	//if (m_createCommittedResourceCallCounter == 1)
+	if (HeapFlags & D3D12_HEAP_FLAG_SHARED || HeapFlags & D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER)
+	{
+		HeapFlags &= ~D3D12_HEAP_FLAG_SHARED;
+		HeapFlags &= ~D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER;
+		log("patch new heap flags: %d", HeapFlags);
 	}
 
 	log("calling original func..");
@@ -327,7 +330,9 @@ void STDMETHODCALLTYPE HK_ExecuteCommandLists(
 		ID3D12CommandList* cmd = ppCommandLists[i];
 		D3D12_COMMAND_LIST_TYPE type = cmd->GetType();
 
-		if (NumCommandLists == 2 && i == 0) {
+		bool testClearGrayColor = false;
+		if (testClearGrayColor &&
+			NumCommandLists == 2 && i == 0) {
 			log("skip [%d] cmd list: %p, list type: %d", i, cmd, type);
 			log("try reset & manual draw back buffer");
 			auto allocatorPtr = (ID3D12CommandAllocator*)(m_allocatorCmdListMap[(uintptr_t)cmd]);
@@ -353,19 +358,16 @@ void STDMETHODCALLTYPE HK_ExecuteCommandLists(
 			graphicsCmd->ResourceBarrier(1, &barrier);
 
 			// 2. Set the render target
-			for (int i = 0; i <= 1; i++) {
-				//int rtvIndex = min(0, m_renderTargetViewList.size() - 1);
-				int rtvIndex = i;
-				log("rtv index: %d", rtvIndex);
-				D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_renderTargetViewList[rtvIndex];
-				graphicsCmd->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
-				log("set OM rtv to: %p", rtvHandle.ptr);
+			int rtvIndex = backBufferIndex;
+			log("rtv index: %d", rtvIndex);
+			D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_renderTargetViewList[rtvIndex];
+			graphicsCmd->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+			log("set OM rtv to: %p", rtvHandle.ptr);
 
-				// 3. Clear to gray color (RGBA format)
-				float grayColor[4] = { 0.5f, 0.5f, 0.5f, 1.0f }; // Gray color
-				graphicsCmd->ClearRenderTargetView(rtvHandle, grayColor, 0, nullptr);
-				log("clear color gray");
-			}
+			// 3. Clear to gray color (RGBA format)
+			float grayColor[4] = { 0.5f, 0.5f, 0.5f, 1.0f }; // Gray color
+			graphicsCmd->ClearRenderTargetView(rtvHandle, grayColor, 0, nullptr);
+			log("clear color gray");
 
 			// 4. Transition back to present state before executing
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -544,8 +546,8 @@ HRESULT HK_CreateSwapChainForHwnd(
 	void** vtable = *(void***)(swapChain);
 	auto presentFuncAddr = vtable[8];
 
-	HookFuncAddr(presentFuncAddr, &HK_DXGIPresent, &backup_DXGI_Present);
-	log("hook HK_DXGIPresent");
+	//HookFuncAddr(presentFuncAddr, &HK_DXGIPresent, &backup_DXGI_Present);
+	//log("hook HK_DXGIPresent");
 
 	return res;
 }
@@ -616,11 +618,12 @@ HRESULT HK_MySetupDx12(
 
 	{
 		void** vtable = *(void***)device;
-		HookFuncAddr(vtable[8], &HK_CreateCommandQueue, &origin_CreateCommandQueue);
-		HookFuncAddr(vtable[12], &HK_CreateCommandList, &backup_CreateCommandList);
+		//HookFuncAddr(vtable[8], &HK_CreateCommandQueue, &origin_CreateCommandQueue);
+		//HookFuncAddr(vtable[12], &HK_CreateCommandList, &backup_CreateCommandList);
 		HookFuncAddr(vtable[27], &HK_CreateCommittedResource, &backup_CreateCommittedResource);
-		HookFuncAddr(vtable[31], &HK_CreateSharedHandle, &backup_CreateSharedHandle);
-		HookFuncAddr(vtable[20], &HK_CreateRenderTargetView, &backup_CreateRenderTargetView);
+
+		//HookFuncAddr(vtable[31], &HK_CreateSharedHandle, &backup_CreateSharedHandle);
+		//HookFuncAddr(vtable[20], &HK_CreateRenderTargetView, &backup_CreateRenderTargetView);
 	}
 
 	return result;
@@ -634,6 +637,7 @@ extern void SetupWinlatorPatcher() {
 
 	log("starting winlator patcher...");
 	HookFuncRva(0x38fed90, &HookedVirtualAllocX, &fpVirtualAllocX);
+
 
 #if true
 	// debug zone
