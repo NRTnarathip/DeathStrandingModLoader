@@ -7,11 +7,19 @@ winlator v10.1 bruno:
 - vkd3d v2.8
 
 winlator cmod v13:
-- err: proton9 x86_64 loop after sony logo
-- err: proton9 arm 
+fix by remove heapFlags 0x1 on dx12 CreateCommitedResource()
+- fixed: proton9 x86_64
+- fixed: proton9 arm64ec
 
 gamehub v4.1.5:
 - vkd3d v2.14.1.
 
 
 
+Test by: NRTnarathip
+device: Poco F3, SD 870, Adreno 650, Ram6gb
+note: all emulator no error between loading game asset
+  but game crash cause by ram full
+
+device: Iqoo Z10 Turbo Pro, SD:8sGen4, Adreno:825, Ram12gb
+note: all emu crash on dx12 ExecuteCommandLists() vulkan hr -4 device lost!

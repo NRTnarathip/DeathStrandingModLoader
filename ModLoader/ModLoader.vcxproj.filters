@@ -82,10 +82,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="temp_codes.txt">
-      <Filter>Source Files</Filter>
-    </Text>
     <Text Include="device_support.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="temp_codes.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>
