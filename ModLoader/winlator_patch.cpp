@@ -637,12 +637,11 @@ extern void SetupWinlatorPatcher() {
 
 	log("starting winlator patcher...");
 	HookFuncRva(0x38fed90, &HookedVirtualAllocX, &fpVirtualAllocX);
-
+	HookFuncRva(0x19a6980, &HK_MySetupDx12, &backup_MySetupDx12);
 
 #if true
 	// debug zone
 	//HookFuncRva(0x19ab970, &HK_MyCreateDefaultRenderer, &fpMyCreateDefaultRenderer);
-	HookFuncRva(0x19a6980, &HK_MySetupDx12, &backup_MySetupDx12);
 	//HookFuncRva(0x1963570, &HK_MyCreateCommitRes3, &fpHK_MyCreateCommitRes3);
 
 	//SetupHookRenderer();

@@ -51,25 +51,40 @@ void log(const char* format, ...)
 		m_logFile << sstream.str();
 
 }
-void SetupLogger() {
-	// initialize logger
-	m_isEnableLogConsole = std::getenv("DSMOD_LOG_CONSOLE") ? true : false;
-	m_isEnableLogFile = std::getenv("DSMOD_LOGFILE") ? true : false;
-	if (m_isEnableLogFile) {
-		m_logFile.open("mod_log.txt", std::ios::out | std::ios::trunc);
-	}
 
+std::string stringEmptyValue;
+std::string GetEnvVar(const char* name) {
+	auto var = std::getenv(name);
+	return var ? std::string(var) : stringEmptyValue;
+}
+
+void SetupLogger() {
+
+	// init env ar
+
+	// default enable
+	m_isEnableLogConsole = GetEnvVar("DSMOD_LOG_CONSOLE") == "0" ? false : true;
+	m_isEnableLogFile = GetEnvVar("DSMOD_LOG_FILE") == "1";
+
+	// ready
+	if (m_isEnableLogConsole == false)
+		return;
+
+	// allow logger
 	AllocConsole();
 	freopen("CONOUT$", "w", stdout);
 	freopen("CONOUT$", "w", stderr);
 	freopen("CONIN$", "r", stdin);
+
+	if (m_isEnableLogFile) {
+		m_logFile.open("mod_log.txt", std::ios::out | std::ios::trunc);
+	}
 
 	// ready logger
 	log("done setup logger");
 }
 
 bool DisableHook(LPVOID targetFunc) {
-	//auto targetFunc = GetFuncAddr(funcRva);
 	if (MH_DisableHook(targetFunc) != MH_OK)
 	{
 		MessageBoxA(NULL, "Failed to disable hook", "Error", MB_OK | MB_ICONERROR);
@@ -83,13 +98,12 @@ bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
 		MessageBoxA(NULL, "Failed to create hook", "Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
-
 	if (MH_EnableHook(targetFunc) != MH_OK)
 	{
 		MessageBoxA(NULL, "Failed to enable hook", "Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
-	//log("hooked function: %p", targetFunc);
+	log("hooked function: %p", targetFunc);
 }
 
 bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, void* originalBackup) {

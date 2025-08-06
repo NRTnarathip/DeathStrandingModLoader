@@ -25,6 +25,7 @@
 #include "hooks.h"
 #include "utils.h"
 #include "types.h"
+#include "version.h"
 
 #include "winlator_patch.h"
 
@@ -294,7 +295,9 @@ void* HookMy_AllocateMemForDummyRoot(ULONGLONG a1, ULONGLONG a2)
 bool Start() {
 	SetupLogger();
 	log("starting mod loader...");
+	log("version: %s", GetVersionString());
 
+	log("initializing MinHook...");
 	if (MH_Initialize() != MH_OK) {
 		log("minhook initialization failed");
 		return false;

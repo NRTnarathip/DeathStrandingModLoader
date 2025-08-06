@@ -261,9 +261,11 @@ exit /b 0</Command>
     <ClInclude Include="archive_reader.h" />
     <ClInclude Include="hooks.h" />
     <ClInclude Include="MinHook.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="MurmurHash3.h" />
     <ClInclude Include="utils.h" />
+    <ClInclude Include="version.h" />
     <ClInclude Include="winlator_patch.h" />
   </ItemGroup>
   <ItemGroup>
@@ -284,6 +286,10 @@ exit /b 0</Command>
   <ItemGroup>
     <Text Include="device_support.txt" />
     <Text Include="temp_codes.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ModLoader.rc" />
+    <ResourceCompile Include="version.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
