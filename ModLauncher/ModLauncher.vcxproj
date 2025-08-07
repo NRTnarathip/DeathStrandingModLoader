@@ -171,7 +171,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>call "$(ProjectDir)post-build.cmd"</Command>
+      <Command>if exist "$(ProjectDir)post-build.cmd" (call "$(ProjectDir)post-build.cmd")</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Guy|x64'">
@@ -205,9 +205,6 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="cliff.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="post-build.cmd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
