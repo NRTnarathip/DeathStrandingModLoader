@@ -3,8 +3,8 @@
 // Don't edit, use tool: bump-my-version
 #define DLL_VERSION_MAJOR 0
 #define DLL_VERSION_MINOR 0
-#define DLL_VERSION_PATCH 3
-#define DLL_VERSION_STRING "0.0.3"
+#define DLL_VERSION_PATCH 4
+#define DLL_VERSION_STRING "0.0.4"
 
 
 
