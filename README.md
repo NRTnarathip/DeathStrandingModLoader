@@ -1,4 +1,4 @@
-# Death Stranding Mod Launcher
+# Death Stranding Mod Loader & Launcher
 ## Features
 - Experiment Patch for compatibility with Android emulators such as Winlator and GameHub      
 - - Crash on sd 8s gen4, 8 Elite, Adreno 800++, other...

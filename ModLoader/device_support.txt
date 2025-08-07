@@ -23,3 +23,10 @@ note: all emulator no error between loading game asset
 
 device: Iqoo Z10 Turbo Pro, SD:8sGen4, Adreno:825, Ram12gb
 note: all emu crash on dx12 ExecuteCommandLists() vulkan hr -4 device lost!
+
+
+Test by: @nandinho00
+git issue: https://github.com/NRTnarathip/DeathStrandingModLoader/issues/1
+device:
+- POCO F5, SD7+gen2, RAM12gb
+
