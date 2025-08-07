@@ -60,6 +60,13 @@
 ## 🌍 Community Awesome 🌍
 - [![YouTube](https://img.shields.io/badge/Zerokimchii-%23FF0000.svg?logo=YouTube&logoColor=white)](https://www.youtube.com/@Zerokimchii)  
 - [![YouTube](https://img.shields.io/badge/RGBTechGamer-%23FF0000.svg?logo=YouTube&logoColor=white)](https://www.youtube.com/@RGBTechGamer)  
-- [![YouTube](https://img.shields.io/badge/Max's_Tech_Review-%23FF0000.svg?logo=YouTube&logoColor=white)](https://www.youtube.com/@MaxsTechReview)  
+- [![YouTube](https://img.shields.io/badge/Max's_Tech_Review-%23FF0000.svg?logo=YouTube&logoColor=white)](https://www.youtube.com/@MaxsTechReview)
+- [![YouTube](https://img.shields.io/badge/EmDeeTechPlay-%23FF0000.svg?logo=YouTube&logoColor=white)](https://www.youtube.com/@emdee5928)
 - [![Discord](https://img.shields.io/badge/🌍EmuGear_International🌍-%235865F2.svg?&logo=discord&logoColor=white)](https://discord.com/invite/q842JB4gCm)  
 
+
+## 🧪 Emulator Showcase Links 🧪
+- [Death Stranding Initial Loading - Winlator 10.1 vs Gamehub](https://youtu.be/ogApboEpbn0?si=IR5eaqrpsVPfF5VE)
+- [Death Stranding on Winlator 10.1 (actually running on a Snapdragon 8 Gen 3) - world's first?](https://www.youtube.com/watch?v=FdjtKEd2ZdY)
+- [Death Stranding is Finally PLAYABLE on Android! | Winlator 10.1 Hotfix + Patch [Snapdragon 8 Gen 3]](https://www.youtube.com/watch?v=jDnhcE0SxlI)
+- [Death stranding no snapdragon 695 no winlator [TESTE 2]](https://www.youtube.com/watch?v=Jruq65M3nHY)
