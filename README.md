@@ -1,7 +1,9 @@
-# 🧩 Death Stranding Mod Loader ✨
+<h1 align="center">🧩 Death Stranding Mod Loader ✨</h1>
+
 <p align="center">
   <img src="https://i.postimg.cc/9FbyS2M8/ds-top-2.jpg" width="100%">
 </p>
+
 <p align="center">
   <a><img src="https://img.shields.io/badge/C++-%2300599C.svg?logo=c%2B%2B&logoColor=white" alt="C++"></a>
   <a><img src="https://custom-icon-badges.demolab.com/badge/Windows-0078D6?logo=windows11&logoColor=white" alt="Windows"></a>
