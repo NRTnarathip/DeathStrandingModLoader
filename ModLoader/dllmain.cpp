@@ -25,8 +25,7 @@
 #include "hooks.h"
 #include "utils.h"
 #include "types.h"
-#include "version.h"
-
+#include "dll_version.h"
 #include "winlator_patch.h"
 
 bool enableLogMurmurHash3 = false;
@@ -292,10 +291,11 @@ void* HookMy_AllocateMemForDummyRoot(ULONGLONG a1, ULONGLONG a2)
 }
 
 
+
 bool Start() {
 	SetupLogger();
 	log("starting mod loader...");
-	log("version: %s", GetVersionString());
+	log("version: %s", GetDllVersionStr());
 
 	log("initializing MinHook...");
 	if (MH_Initialize() != MH_OK) {

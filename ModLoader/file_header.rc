@@ -1,9 +1,9 @@
 #include <windows.h>
-#include "version.h"
+#include "dll_version.h"
 
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION     VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, 0
-PRODUCTVERSION  VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, 0
+FILEVERSION     DLL_VERSION_MAJOR, DLL_VERSION_MINOR, DLL_VERSION_PATCH, 0
+PRODUCTVERSION  DLL_VERSION_MAJOR, DLL_VERSION_MINOR, DLL_VERSION_PATCH, 0
 FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
 FILEFLAGS       0
 FILEOS          VOS__WINDOWS32
@@ -17,11 +17,12 @@ BLOCK "040904B0"
 BEGIN
 VALUE "CompanyName", "NRTnarathip"
 VALUE "FileDescription", "DeathStranding Mod Loader"
-VALUE "FileVersion", VERSION_STRING
-VALUE "InternalName", "mod_loader.dll"
-VALUE "OriginalFilename", "mod_loader.dll"
+VALUE "FileVersion", DLL_VERSION_STRING
+VALUE "InternalName", "mod_laoder.dll"
+VALUE "OriginalFilename", "mod_laoder.dll"
 VALUE "ProductName", "DeathStranding Mod Loader"
-VALUE "ProductVersion", VERSION_STRING
+VALUE "LegalCopyright", "Copyright (2025) NRTnarathip. All rights reserved."
+VALUE "ProductVersion", DLL_VERSION_STRING
 END
 END
 BLOCK "VarFileInfo"

@@ -1,0 +1,30 @@
+[tool.bumpversion]
+current_version = "0.0.2"
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
+serialize = ["{major}.{minor}.{patch}"]
+tag = true
+tag_name = "v{new_version}"
+tag_message = "Bump Version: {current_version} -> {new_version}"
+commit = true
+message = "Bump Version: {current_version} -> {new_version}"
+regex = true
+
+[[tool.bumpversion.files]]
+filename = "dll_version.h"
+search =  "#define DLL_VERSION_STRING \"{current_version}\""
+replace = "#define DLL_VERSION_STRING \"{new_version}\""
+
+[[tool.bumpversion.files]]
+filename = "dll_version.h"
+search =  "#define DLL_VERSION_MAJOR (\\d+)"
+replace = "#define DLL_VERSION_MAJOR {new_major}"
+
+[[tool.bumpversion.files]]
+filename = "dll_version.h"
+search =  "#define DLL_VERSION_MINOR (\\d+)"
+replace = "#define DLL_VERSION_MINOR {new_minor}"
+
+[[tool.bumpversion.files]]
+filename = "dll_version.h"
+search =  "#define DLL_VERSION_PATCH (\\d+)"
+replace = "#define DLL_VERSION_PATCH {new_patch}"

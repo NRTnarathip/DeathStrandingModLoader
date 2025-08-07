@@ -265,7 +265,7 @@ exit /b 0</Command>
     <ClInclude Include="types.h" />
     <ClInclude Include="MurmurHash3.h" />
     <ClInclude Include="utils.h" />
-    <ClInclude Include="version.h" />
+    <ClInclude Include="dll_version.h" />
     <ClInclude Include="winlator_patch.h" />
   </ItemGroup>
   <ItemGroup>
@@ -288,8 +288,7 @@ exit /b 0</Command>
     <Text Include="temp_codes.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ModLoader.rc" />
-    <ResourceCompile Include="version.rc" />
+    <ResourceCompile Include="file_header.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

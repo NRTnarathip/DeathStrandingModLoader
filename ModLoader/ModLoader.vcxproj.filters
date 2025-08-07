@@ -39,7 +39,7 @@
     <ClInclude Include="MinHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="version.h">
+    <ClInclude Include="dll_version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
@@ -90,10 +90,7 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ModLoader.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
-    <ResourceCompile Include="version.rc">
+    <ResourceCompile Include="file_header.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
