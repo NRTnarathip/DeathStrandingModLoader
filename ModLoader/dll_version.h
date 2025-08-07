@@ -4,7 +4,7 @@
 #define DLL_VERSION_MAJOR 0
 #define DLL_VERSION_MINOR 0
 #define DLL_VERSION_PATCH 3
-#define DLL_VERSION_STRING "0.0.2"
+#define DLL_VERSION_STRING "0.0.3"
 
 
 
