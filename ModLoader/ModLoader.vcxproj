@@ -354,7 +354,9 @@ exit /b 0</Command>
     <ClInclude Include="archive_reader.h" />
     <ClInclude Include="hooks.h" />
     <ClInclude Include="MinHook.h" />
+    <ClInclude Include="RendererHook.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="texture_patcher.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="MurmurHash3.h" />
     <ClInclude Include="utils.h" />
@@ -366,6 +368,8 @@ exit /b 0</Command>
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="mydx12.h" />
     <ClCompile Include="note.cpp" />
+    <ClCompile Include="RendererHook.cpp" />
+    <ClCompile Include="texture_patcher.cpp" />
     <ClCompile Include="types.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="MurmurHash3.cpp" />

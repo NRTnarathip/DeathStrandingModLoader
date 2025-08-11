@@ -292,6 +292,9 @@ void* HookMy_AllocateMemForDummyRoot(ULONGLONG a1, ULONGLONG a2)
 
 
 
+#include "texture_patcher.h"
+#include "RendererHook.h"
+
 bool Start() {
 	SetupLogger();
 	log("starting mod loader...");
@@ -305,6 +308,11 @@ bool Start() {
 
 	// setup hooks for winlator | gamehub
 	SetupWinlatorPatcher();
+
+
+	// setup mod api
+	RendererHook::Instance();
+	TexturePatcher::Instance();
 
 	// general utils
 	log("disable save corruption check...");

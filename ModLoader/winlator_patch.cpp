@@ -511,47 +511,6 @@ HRESULT HK_DXGIPresent(IDXGISwapChain* self, UINT syncInterval, UINT flags) {
 	return res;
 }
 
-typedef HRESULT(*CreateSwapChainForHwnd_t)(
-	IDXGIFactory2* self,
-	IUnknown* pDevice,
-	HWND                                  hWnd,
-	const DXGI_SWAP_CHAIN_DESC1* pDesc,
-	const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* pFullscreenDesc,
-	IDXGIOutput* pRestrictToOutput,
-	IDXGISwapChain1** ppSwapChain
-	);
-CreateSwapChainForHwnd_t backup_CreateSwapChainForHwnd;
-
-HRESULT HK_CreateSwapChainForHwnd(
-	IDXGIFactory2* self,
-	IUnknown* pDevice,
-	HWND                                  hWnd,
-	const DXGI_SWAP_CHAIN_DESC1* pDesc,
-	const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* pFullscreenDesc,
-	IDXGIOutput* pRestrictToOutput,
-	IDXGISwapChain1** ppSwapChain
-) {
-	log("Hook Begin HK_CreateSwapChainForHwnd");
-	auto res = backup_CreateSwapChainForHwnd(
-		self,
-		pDevice, hWnd, pDesc,
-		pFullscreenDesc, pRestrictToOutput, ppSwapChain);
-	my_swapChain = *(IDXGISwapChain3**)ppSwapChain;
-	log("Hook End HK_CreateSwapChainForHwnd");
-	log("  result: 0x%x", res);
-
-	log("setup hook Present, other...");
-
-	IDXGISwapChain* swapChain = reinterpret_cast<IDXGISwapChain*>(*ppSwapChain);
-	void** vtable = *(void***)(swapChain);
-	auto presentFuncAddr = vtable[8];
-
-	//HookFuncAddr(presentFuncAddr, &HK_DXGIPresent, &backup_DXGI_Present);
-	//log("hook HK_DXGIPresent");
-
-	return res;
-}
-
 
 typedef HRESULT(*CreateCommandList_t)(
 	ID3D12Device* self,
@@ -593,42 +552,6 @@ HRESULT STDMETHODCALLTYPE HK_CreateCommandList(
 	return res;
 }
 
-typedef HRESULT(*MySetupDx12_t)(char* p1, uint64_t a2, int p3);
-MySetupDx12_t backup_MySetupDx12;
-HRESULT HK_MySetupDx12(
-	char* p1, uint64_t p2, int p3)
-{
-	log("Hook Begin: HK_MySetupDx12");
-	auto result = backup_MySetupDx12(p1, p2, p3);
-	log("Hook End: HK_MySetupDx12");
-	log("  result: %d", result);
-
-	{
-		IDXGIFactory2* pFactory = *(IDXGIFactory2**)(p1 + 0x10);
-		log(" pFactory: %p", pFactory);
-		void** vtable = *(void***)pFactory;
-		void* target = vtable[15];
-		log(" vtable CreateSwapChainForHwnd: %p", target);
-		HookFuncAddr(target, &HK_CreateSwapChainForHwnd, &backup_CreateSwapChainForHwnd);
-	}
-
-	ID3D12Device* device = GetDxDevice();
-	log("device ptr: %p", device);
-	log("device level: %d", GetHighestID3D12DeviceVersion(device));
-
-	{
-		void** vtable = *(void***)device;
-		//HookFuncAddr(vtable[8], &HK_CreateCommandQueue, &origin_CreateCommandQueue);
-		//HookFuncAddr(vtable[12], &HK_CreateCommandList, &backup_CreateCommandList);
-		HookFuncAddr(vtable[27], &HK_CreateCommittedResource, &backup_CreateCommittedResource);
-
-		//HookFuncAddr(vtable[31], &HK_CreateSharedHandle, &backup_CreateSharedHandle);
-		//HookFuncAddr(vtable[20], &HK_CreateRenderTargetView, &backup_CreateRenderTargetView);
-	}
-
-	return result;
-}
-
 extern void SetupWinlatorPatcher() {
 	if (IsWineEnvironment() == false) {
 		log("Not running in Wine environment, skipping winlator patcher");
@@ -637,7 +560,6 @@ extern void SetupWinlatorPatcher() {
 
 	log("starting winlator patcher...");
 	HookFuncRva(0x38fed90, &HookedVirtualAllocX, &fpVirtualAllocX);
-	HookFuncRva(0x19a6980, &HK_MySetupDx12, &backup_MySetupDx12);
 
 #if true
 	// debug zone
