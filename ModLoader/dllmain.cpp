@@ -292,7 +292,7 @@ void* HookMy_AllocateMemForDummyRoot(ULONGLONG a1, ULONGLONG a2)
 
 
 
-#include "texture_patcher.h"
+#include "TexturePatcher.h"
 #include "RendererHook.h"
 
 bool Start() {

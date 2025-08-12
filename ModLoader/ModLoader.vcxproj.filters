@@ -45,11 +45,17 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="texture_patcher.h">
+    <ClInclude Include="TexturePatcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RendererHook.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="INIReader.h">
+      <Filter>Source Files\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ini.h">
+      <Filter>Source Files\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -80,11 +86,17 @@
     <ClCompile Include="note.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="texture_patcher.cpp">
+    <ClCompile Include="TexturePatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RendererHook.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="INIReader.cpp">
+      <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="ini.c">
+      <Filter>Source Files\utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

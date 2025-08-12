@@ -18,47 +18,13 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include "RendererHook.h"
 
 //global, static variable
 // allocatorAddr, cmdListAddr
 std::unordered_map<uintptr_t, uintptr_t> m_allocatorCmdListMap;
 IDXGISwapChain3* my_swapChain;
 std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> m_renderTargetViewList;
-
-int GetHighestID3D12DeviceVersion(ID3D12Device* pDevice)
-{
-	for (int i = 14; i >= 1; --i)
-	{
-		IID iid;
-		switch (i)
-		{
-		case 14: iid = __uuidof(ID3D12Device14); break;
-		case 13: iid = __uuidof(ID3D12Device13); break;
-		case 12: iid = __uuidof(ID3D12Device12); break;
-		case 11: iid = __uuidof(ID3D12Device11); break;
-		case 10: iid = __uuidof(ID3D12Device10); break;
-		case 9:  iid = __uuidof(ID3D12Device9);  break;
-		case 8:  iid = __uuidof(ID3D12Device8);  break;
-		case 7:  iid = __uuidof(ID3D12Device7);  break;
-		case 6:  iid = __uuidof(ID3D12Device6);  break;
-		case 5:  iid = __uuidof(ID3D12Device5);  break;
-		case 4:  iid = __uuidof(ID3D12Device4);  break;
-		case 3:  iid = __uuidof(ID3D12Device3);  break;
-		case 2:  iid = __uuidof(ID3D12Device2);  break;
-		case 1:  iid = __uuidof(ID3D12Device1);  break;
-		default: continue;
-		}
-
-		IUnknown* pUnknown = nullptr;
-		if (SUCCEEDED(pDevice->QueryInterface(iid, (void**)&pUnknown)))
-		{
-			pUnknown->Release();
-			return i;
-		}
-	}
-
-	return 0; // Only ID3D12Device base supported
-}
 
 ID3D12Device** my_ppeDvice = (ID3D12Device**)GetAddressFromRva(0x5558FA0);
 ID3D12Device* GetDxDevice() {
@@ -305,134 +271,6 @@ void LogFuncPtr(void* funcPtr) {
 	log("[LogFuncPtr End]");
 }
 
-size_t callCounter_ExecuteCommandLists;
-typedef void (*ExecuteCommandLists_t)(
-	ID3D12CommandQueue* self,
-	_In_  UINT NumCommandLists,
-	_In_reads_(NumCommandLists)  ID3D12CommandList* const* ppCommandLists);
-ExecuteCommandLists_t backup_ExecuteCommandLists;
-void STDMETHODCALLTYPE HK_ExecuteCommandLists(
-	ID3D12CommandQueue* self,
-	_In_  UINT NumCommandLists,
-	_In_reads_(NumCommandLists)  ID3D12CommandList* const* ppCommandLists)
-{
-	callCounter_ExecuteCommandLists++;
-
-	log("Hook Begin: HK_ExecuteCommandLists");
-	log("call counter: %d", callCounter_ExecuteCommandLists);
-	log("pre: device fail code: %x", GetDeviceRemoveCode());
-	log("  numCommandLists: %d", NumCommandLists);
-	log("  ppCmdLists: %p", ppCommandLists);
-
-	std::vector<ID3D12CommandList*> filteredCmdLists;
-	for (int i = 0; i < NumCommandLists; ++i)
-	{
-		ID3D12CommandList* cmd = ppCommandLists[i];
-		D3D12_COMMAND_LIST_TYPE type = cmd->GetType();
-
-		bool testClearGrayColor = false;
-		if (testClearGrayColor &&
-			NumCommandLists == 2 && i == 0) {
-			log("skip [%d] cmd list: %p, list type: %d", i, cmd, type);
-			log("try reset & manual draw back buffer");
-			auto allocatorPtr = (ID3D12CommandAllocator*)(m_allocatorCmdListMap[(uintptr_t)cmd]);
-			auto graphicsCmd = (ID3D12GraphicsCommandList*)cmd;
-			log("allocator ptr: %p", allocatorPtr);
-			auto resetHR = graphicsCmd->Reset(allocatorPtr, nullptr);
-			log("reseted hr: %x", resetHR);
-			log("device code: %x", GetDeviceRemoveCode());
-			// 1. Transition render target to render target state (if needed)
-			UINT backBufferIndex = my_swapChain->GetCurrentBackBufferIndex();
-			log("current back buffer index: %d", backBufferIndex);
-
-			ID3D12Resource* backBufferResource = nullptr;
-			HRESULT hr = my_swapChain->GetBuffer(backBufferIndex, IID_PPV_ARGS(&backBufferResource));
-			D3D12_RESOURCE_BARRIER barrier = {};
-			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-			barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-			barrier.Transition.pResource = backBufferResource;
-			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-			barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-
-			graphicsCmd->ResourceBarrier(1, &barrier);
-
-			// 2. Set the render target
-			int rtvIndex = backBufferIndex;
-			log("rtv index: %d", rtvIndex);
-			D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_renderTargetViewList[rtvIndex];
-			graphicsCmd->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
-			log("set OM rtv to: %p", rtvHandle.ptr);
-
-			// 3. Clear to gray color (RGBA format)
-			float grayColor[4] = { 0.5f, 0.5f, 0.5f, 1.0f }; // Gray color
-			graphicsCmd->ClearRenderTargetView(rtvHandle, grayColor, 0, nullptr);
-			log("clear color gray");
-
-			// 4. Transition back to present state before executing
-			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-			graphicsCmd->ResourceBarrier(1, &barrier);
-
-			// 5. Close and execute the command list
-			graphicsCmd->Close();
-			log("closed cmd list");
-		}
-
-		filteredCmdLists.push_back(cmd);
-		log("added [%d] cmd list: %p, list type: %d", i, cmd, type);
-	}
-
-	// patch command lists
-	{
-		ppCommandLists = filteredCmdLists.data();
-		NumCommandLists = filteredCmdLists.size();
-	}
-
-	log("calling original func");
-	backup_ExecuteCommandLists(self, NumCommandLists, ppCommandLists);
-
-	log("post: device fail code: %x", GetDeviceRemoveCode());
-	log("Hook End: HK_ExecuteCommandLists");
-}
-
-
-typedef  HRESULT(*CreateCommandQueue_t)(
-	ID3D12Device* self,
-	_In_  const D3D12_COMMAND_QUEUE_DESC* pDesc,
-	REFIID riid,
-	_COM_Outptr_  void** ppCommandQueue);
-CreateCommandQueue_t origin_CreateCommandQueue;
-
-HRESULT __stdcall HK_CreateCommandQueue(
-	ID3D12Device* self,
-	_In_  const D3D12_COMMAND_QUEUE_DESC* pDesc,
-	REFIID riid,
-	_COM_Outptr_  void** ppCommandQueue) {
-
-	log("Hook Begin: HK_CreateCommandQueue");
-	log("	desc ptr 0x%p", pDesc);
-	if (pDesc) {
-		log("	desc flags: %d", pDesc->Flags);
-		log("	desc type: %d", pDesc->Type);
-		log("	desc priority: %d", pDesc->Priority);
-	}
-	HRESULT result = 0;
-	log("calling original function...");
-	result = origin_CreateCommandQueue(self, pDesc, riid, ppCommandQueue);
-	ID3D12CommandQueue* pCommandQueue = *(ID3D12CommandQueue**)ppCommandQueue;
-
-	if (backup_ExecuteCommandLists == NULL) {
-		void** vtable = *(void***)pCommandQueue;
-		HookFuncAddr(vtable[10], &HK_ExecuteCommandLists, &backup_ExecuteCommandLists);
-		log("setup hook ID3D12CommandQueue");
-	}
-
-	log("Hook End: HK_CreateCommandQueue");
-	log("	result: %d", result);
-	return result;
-}
-
 typedef __int64 (*MyCreateDefaultRenderer_t)(uint64_t* param_1, int param_2,
 	int param_3, char param_4);
 MyCreateDefaultRenderer_t fpMyCreateDefaultRenderer = nullptr;
@@ -508,47 +346,6 @@ HRESULT HK_DXGIPresent(IDXGISwapChain* self, UINT syncInterval, UINT flags) {
 	log("  result: %x", res);
 	log("post: device remove code: %x", GetDeviceRemoveCode());
 	log("End HK_DXGI_Present");
-	return res;
-}
-
-
-typedef HRESULT(*CreateCommandList_t)(
-	ID3D12Device* self,
-	_In_  UINT nodeMask,
-	_In_  D3D12_COMMAND_LIST_TYPE type,
-	_In_  ID3D12CommandAllocator* pCommandAllocator,
-	_In_opt_  ID3D12PipelineState* pInitialState,
-	REFIID riid,
-	_COM_Outptr_  void** ppCommandList
-	);
-CreateCommandList_t backup_CreateCommandList;
-HRESULT STDMETHODCALLTYPE HK_CreateCommandList(
-	ID3D12Device* self,
-	_In_  UINT nodeMask,
-	_In_  D3D12_COMMAND_LIST_TYPE type,
-	_In_  ID3D12CommandAllocator* pCommandAllocator,
-	_In_opt_  ID3D12PipelineState* pInitialState,
-	REFIID riid,
-	_COM_Outptr_  void** ppCommandList)
-{
-	log("Hook Begin: CreateCommandList");
-	log("  nodeMask: %d", nodeMask);
-	log("  type: %d", type);
-	log("  pCmdAllocator: %p", pCommandAllocator);
-	log("  pInitState: %p", pInitialState);
-	log("pre: device remove code: %x", GetDeviceRemoveCode());
-	log("calling backup_CreateCommandList");
-	auto res = backup_CreateCommandList(
-		self, nodeMask, type, pCommandAllocator,
-		pInitialState, riid, ppCommandList);
-	log("  result: %d", res);
-	log("  pCommandList: %p", *ppCommandList);
-	log("  ppCommandList: %p", ppCommandList);
-	ID3D12CommandList* pCmdList = *(ID3D12CommandList**)ppCommandList;
-	m_allocatorCmdListMap[(uintptr_t)pCmdList] = (uintptr_t)pCommandAllocator;
-
-	log("post: device remove code: %x", GetDeviceRemoveCode());
-	log("Hook End: CreateCommandList");
 	return res;
 }
 

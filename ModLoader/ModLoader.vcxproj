@@ -353,10 +353,12 @@ exit /b 0</Command>
   <ItemGroup>
     <ClInclude Include="archive_reader.h" />
     <ClInclude Include="hooks.h" />
+    <ClInclude Include="ini.h" />
+    <ClInclude Include="INIReader.h" />
     <ClInclude Include="MinHook.h" />
     <ClInclude Include="RendererHook.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="texture_patcher.h" />
+    <ClInclude Include="TexturePatcher.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="MurmurHash3.h" />
     <ClInclude Include="utils.h" />
@@ -366,10 +368,12 @@ exit /b 0</Command>
   <ItemGroup>
     <ClCompile Include="archive_reader.cpp" />
     <ClCompile Include="hooks.cpp" />
+    <ClCompile Include="ini.c" />
+    <ClCompile Include="INIReader.cpp" />
     <ClCompile Include="mydx12.h" />
     <ClCompile Include="note.cpp" />
     <ClCompile Include="RendererHook.cpp" />
-    <ClCompile Include="texture_patcher.cpp" />
+    <ClCompile Include="TexturePatcher.cpp" />
     <ClCompile Include="types.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="MurmurHash3.cpp" />
@@ -389,6 +393,7 @@ exit /b 0</Command>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Microsoft.Direct3D.D3D12.1.616.1\build\native\Microsoft.Direct3D.D3D12.targets" Condition="Exists('..\packages\Microsoft.Direct3D.D3D12.1.616.1\build\native\Microsoft.Direct3D.D3D12.targets')" />
+    <Import Project="..\packages\directxtex_uwp.2025.7.10.1\build\native\directxtex_uwp.targets" Condition="Exists('..\packages\directxtex_uwp.2025.7.10.1\build\native\directxtex_uwp.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -396,5 +401,6 @@ exit /b 0</Command>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Direct3D.D3D12.1.616.1\build\native\Microsoft.Direct3D.D3D12.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.D3D12.1.616.1\build\native\Microsoft.Direct3D.D3D12.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Direct3D.D3D12.1.616.1\build\native\Microsoft.Direct3D.D3D12.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.D3D12.1.616.1\build\native\Microsoft.Direct3D.D3D12.targets'))" />
+    <Error Condition="!Exists('..\packages\directxtex_uwp.2025.7.10.1\build\native\directxtex_uwp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtex_uwp.2025.7.10.1\build\native\directxtex_uwp.targets'))" />
   </Target>
 </Project>

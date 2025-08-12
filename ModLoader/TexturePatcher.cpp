@@ -1,4 +1,4 @@
-#include "texture_patcher.h"
+#include "TexturePatcher.h"
 #include "utils.h"
 
 TexturePatcher::TexturePatcher()

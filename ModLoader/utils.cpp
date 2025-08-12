@@ -98,6 +98,7 @@ bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
 		MessageBoxA(NULL, "Failed to create hook", "Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
+
 	if (MH_EnableHook(targetFunc) != MH_OK)
 	{
 		MessageBoxA(NULL, "Failed to enable hook", "Error", MB_OK | MB_ICONERROR);

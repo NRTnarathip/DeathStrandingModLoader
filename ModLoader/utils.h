@@ -3,6 +3,7 @@
 #include <cstdint>	
 #include <string>
 #include <vector>
+#include <d3dx12.h>
 
 struct ResourceReaderHandle;
 
