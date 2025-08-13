@@ -356,9 +356,45 @@ void HK_CopyTextureRegion(
 		pDst->PlacedFootprint.Footprint.Width,
 		pDst->PlacedFootprint.Footprint.Height);
 	log("dst x: %d, y: %d, z: %d", DstX, DstY, DstZ);
-	if (pSrcBox) {
-		log("box topLeft:     x: %d, y: %d", pSrcBox->top, pSrcBox->left);
-		log("box bottomRight: x: %d, y: %d", pSrcBox->bottom, pSrcBox->right);
+
+
+	// WIP: replace texture
+	auto srcFootPrint = pSrc->PlacedFootprint.Footprint;
+	bool isOnTexturePatcher = false;
+	if (srcFootPrint.Width == 1920 && srcFootPrint.Height == 1080
+		&& dstDesc.Format == DXGI_FORMAT_BC3_UNORM_SRGB) {
+		log("found texture 1920x1080, try replace with custom texture...");
+		auto src = pSrc;
+		auto srcResource = src->pResource;
+		DirectX::ScratchImage newImageReplace;
+		DirectX::TexMetadata metadata;
+		//HRESULT hr = DirectX::LoadFromDDSFile(textureFileName.c_str(),
+		//	DirectX::DDS_FLAGS_NONE, &metadata, srcImage);
+		DirectX::ScratchImage pngImage;
+		auto hr = DirectX::LoadFromWICFile(L"mods/sony.png", DirectX::WIC_FLAGS_NONE, nullptr, pngImage);
+		hr = DirectX::Compress(pngImage.GetImages(), pngImage.GetImageCount(),
+			pngImage.GetMetadata(), DXGI_FORMAT_BC3_UNORM_SRGB,
+			DirectX::TEX_COMPRESS_DEFAULT, 0.0f, newImageReplace);
+
+		if (SUCCEEDED(hr)) {
+			void* srcBuffer;
+			srcResource->Map(0, nullptr, &srcBuffer);
+
+			DirectX::ScratchImage decodeImg;
+
+			//HRESULT hr = DirectX::Decompress(
+			//	srcImage.GetImages(),
+			//	srcImage.GetImageCount(),
+			//	metadata,
+			//	pDst->pResource->GetDesc().Format,
+			//	decodeImg
+			//);
+
+			uint8_t* targetPixels = (uint8_t*)srcBuffer + src->PlacedFootprint.Offset;
+			auto img = newImageReplace.GetImage(0, 0, 0);
+			memcpy(targetPixels, img->pixels, newImageReplace.GetPixelsSize());
+			srcResource->Unmap(0, nullptr);
+		}
 	}
 
 	// Call original function
@@ -392,21 +428,16 @@ void HK_CopyTextureRegion(
 	if (srcDesc.Width == 536870912
 		&& pSrc->PlacedFootprint.Footprint.Width >= 512
 		&& pSrc->PlacedFootprint.Footprint.Height >= 512) {
-		auto footprint = pSrc->PlacedFootprint.Footprint;
-		static size_t saveTextureBufferStreamCounter = 0;
-		saveTextureBufferStreamCounter++;
-		std::stringstream fileName;
-		fileName << "mod_loader_internal/";
-		fileName << "" << footprint.Width << "x" << footprint.Height;
-		fileName << "_" << ToHex(saveTextureBufferStreamCounter);
-		SaveTexture(pSrc->pResource,
-			pSrc->PlacedFootprint,
-			dstDesc, fileName.str());
-
-		if (footprint.Width == 1920) {
-			log("found img width 1920");
-			PrintStackTrace();
-		}
+		//auto footprint = pSrc->PlacedFootprint.Footprint;
+		//static size_t saveTextureBufferStreamCounter = 0;
+		//saveTextureBufferStreamCounter++;
+		//std::stringstream fileName;
+		//fileName << "mod_loader_internal/";
+		//fileName << "" << footprint.Width << "x" << footprint.Height;
+		//fileName << "_" << ToHex(saveTextureBufferStreamCounter);
+		//SaveTexture(pSrc->pResource,
+		//	pSrc->PlacedFootprint,
+		//	dstDesc, fileName.str());
 	}
 }
 
