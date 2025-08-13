@@ -23,6 +23,7 @@
 std::ofstream m_logFile;
 bool m_isEnableLogFile = false;
 bool m_isEnableLogConsole = false;
+bool m_isEnableLogThreadID = false;
 
 void log(const char* format, ...)
 {
@@ -41,8 +42,11 @@ void log(const char* format, ...)
 	DWORD tid = GetCurrentThreadId();
 
 	std::stringstream sstream;
-	sstream << "[" << std::put_time(std::localtime(&in_time), "%T")
-		<< "] [TID:" << tid << "] " << buffer << std::endl;
+	sstream << "[" << std::put_time(std::localtime(&in_time), "%T") << "]";
+	if (m_isEnableLogThreadID)
+		sstream << " [TID:" << tid << "]";
+
+	sstream << " " << buffer << std::endl;
 
 	if (m_isEnableLogConsole)
 		std::cout << sstream.str();
@@ -187,7 +191,7 @@ void PrintStackTrace()
 		auto modName = GetModuleNameFromAddress((void*)addr);
 		auto modBase = GetModuleHandleA(modName);
 		auto rva = addr - (DWORD64)modBase;
-		log("Func[%d] : %s + 0x%x", i, modName, rva);
+		log("[%d] %s + %x", i, modName, rva);
 	}
 }
 
@@ -280,4 +284,12 @@ const char* GetModuleNameFromAddress(void* addr) {
 bool FileExists(const std::string& filename) {
 	std::ifstream file(filename);
 	return file.good();
+}
+
+std::stringstream toHexStream;
+std::string ToHex(uintptr_t val, int width) {
+	toHexStream.str("");
+	toHexStream.clear();
+	toHexStream << std::hex << std::setw(width) << std::setfill('0') << val;
+	return toHexStream.str();
 }

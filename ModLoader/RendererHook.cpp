@@ -2,9 +2,19 @@
 #include "utils.h";
 #include <Windows.h>
 #include "DirectXTex.h"
+#include <unordered_map>
+#include <set>
+#include <unordered_set>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 ID3D12CommandQueue* m_pCommandQueue_render = nullptr;
 CopyTextureRegion_t backup_CopyTextureRegion;
+ID3D12Resource_Map_t backup_Resource_Map;
+
+std::unordered_set<ID3D12Resource*> g_resourceListToSave;
+std::unordered_set<ID3D12Resource*> g_resourceHeapCPULookup;
 
 int GetHighestID3D12DeviceVersion(ID3D12Device* pDevice)
 {
@@ -89,7 +99,7 @@ ID3D12Resource* CreateReadbackBuffer(const D3D12_RESOURCE_DESC& textureDesc, UIN
 // Save D3D12 texture to file
 HRESULT SaveD3D12TextureToFile(ID3D12Resource* resource, const std::string& filename)
 {
-	log("try save texture to file: %s", filename.c_str());
+	//log("try save texture to file: %s", filename.c_str());
 	auto g_device = RendererHook::Instance().GetDevice();
 
 	// setup first time
@@ -167,10 +177,11 @@ HRESULT SaveD3D12TextureToFile(ID3D12Resource* resource, const std::string& file
 	void* mappedData = nullptr;
 	CD3DX12_RANGE readRange(0, bufferSize);
 	HRESULT hr = readbackBuffer->Map(0, &readRange, &mappedData);
+	//log("readback buffer map status: %d", hr);
 
 	if (SUCCEEDED(hr) && mappedData) {
 		// Create DirectXTex image
-		log("createing directXTex Image");
+		//log("createing directXTex Image");
 		DirectX::Image image;
 		image.width = static_cast<size_t>(desc.Width);
 		image.height = static_cast<size_t>(desc.Height);
@@ -182,22 +193,46 @@ HRESULT SaveD3D12TextureToFile(ID3D12Resource* resource, const std::string& file
 		// Save as DDS file
 		std::wstring wfilename(filename.begin(), filename.end());
 		hr = DirectX::SaveToDDSFile(image, DirectX::DDS_FLAGS_NONE, (wfilename + L".dds").c_str());
-		log("saving status: %d", hr);
 
-		// Alternative: Save as PNG if DDS fails
-		if (FAILED(hr)) {
-			log("try saving as PNG instead");
-			std::wstring pngFilename = wfilename + L".png";
-			hr = DirectX::SaveToWICFile(image, DirectX::WIC_FLAGS_NONE,
-				DirectX::GetWICCodec(DirectX::WIC_CODEC_PNG),
-				pngFilename.c_str());
-			log("saving png status: %d", hr);
-		}
+		//hr = DirectX::SaveToWICFile(image,
+		//	DirectX::WIC_FLAGS_NONE, DirectX::GetWICCodec(DirectX::WIC_CODEC_PNG),
+		//	(wfilename + L".png").c_str());
+
+		log("saving file: %s status: %d", filename.c_str(), hr);
 
 		readbackBuffer->Unmap(0, nullptr);
 	}
 
 	readbackBuffer->Release();
+	return hr;
+}
+
+HRESULT SaveTexture(ID3D12Resource* resource,
+	const D3D12_PLACED_SUBRESOURCE_FOOTPRINT& placeFootprint,
+	D3D12_RESOURCE_DESC& desc,
+	const std::string& filename)
+{
+	DirectX::Image image;
+	auto footprint = placeFootprint.Footprint;
+	image.width = footprint.Width;
+	image.height = footprint.Height;
+	image.format = footprint.Format;
+	image.rowPitch = footprint.RowPitch;
+	image.slicePitch = placeFootprint.Footprint.RowPitch * desc.Height;
+
+	void* pixels;
+	resource->Map(0, nullptr, &pixels);
+	image.pixels = (uint8_t*)pixels + placeFootprint.Offset;
+
+
+	// Save as DDS file
+	std::wstring wfilename(filename.begin(), filename.end());
+	auto hr = DirectX::SaveToDDSFile(image, DirectX::DDS_FLAGS_NONE, (wfilename + L".dds").c_str());
+
+	resource->Unmap(0, 0);
+
+	log("saving raw bytes file: %s status: %d", filename.c_str(), hr);
+
 	return hr;
 }
 
@@ -237,15 +272,20 @@ void __stdcall RendererHook::HK_ExecuteCommandLists(
 	//log("  numCommandLists: %d", NumCommandLists);
 	//log("  ppCmdLists: %p", ppCommandLists);
 
-	for (int i = 0; i < NumCommandLists; ++i)
-	{
-		ID3D12CommandList* cmd = ppCommandLists[i];
-		D3D12_COMMAND_LIST_TYPE type = cmd->GetType();
-		//log("added [%d] cmd list: %p, list type: %d", i, cmd, type);
-	}
-
 	//log("calling original func");
 	backup_ExecuteCommandLists(self, NumCommandLists, ppCommandLists);
+
+	// error here
+	//static int saveCounter = 0;
+	//for (ID3D12Resource* res : g_resourceListToSave) {
+	//	saveCounter++;
+	//	std::string fileName = "mod_loader_internal/dst_0x" + ToHex(((uintptr_t)res));
+	//	fileName += "_(" + ToHex(saveCounter) + ")";
+	//	log("saving resource: %p, counter: %d", res, saveCounter);
+	//	SaveD3D12TextureToFile(res, fileName);
+	//}
+	//g_resourceListToSave.clear();
+
 
 	//log("Hook End: HK_ExecuteCommandLists");
 }
@@ -260,7 +300,29 @@ HRESULT STDMETHODCALLTYPE HKStatic_CreateCommandQueue(
 	return RendererHook::Instance().HK_CreateCommandQueue(self, pDesc, riid, ppCommandQueue);
 }
 
-#include "utils.h"
+HRESULT STDMETHODCALLTYPE HK_Resource_Map(
+	ID3D12Resource* self, UINT Subresource,
+	_In_opt_  const D3D12_RANGE* pReadRange,
+	_Outptr_opt_result_bytebuffer_(_Inexpressible_("Dependent on resource"))  void** ppData)
+{
+	log("Hook Begin HK_Resource_Map");
+	log("resource: %p", self);
+	//log("sub resource: %d", Subresource);
+	bool isWriteData = pReadRange == nullptr || pReadRange->End == 0;
+	log("is write data: %s", isWriteData ? "true" : "false");
+	HRESULT res = backup_Resource_Map(self, Subresource, pReadRange, ppData);
+	log("pData: %p", *ppData);
+	log("Hook End HK_Resource_Map");
+
+	if (isWriteData) {
+		auto desc = self->GetDesc();
+		log("texture size: %d x %d", desc.Width, desc.Height);
+	}
+
+	return  res;
+}
+
+
 void HK_CopyTextureRegion(
 	ID3D12GraphicsCommandList* self,
 	const D3D12_TEXTURE_COPY_LOCATION* pDst,
@@ -271,25 +333,79 @@ void HK_CopyTextureRegion(
 	const D3D12_BOX* pSrcBox
 ) {
 	log("Hook Begin: HK_CopyTextureRegion");
-	//log("  pDst: %p", pDst);
-	log("  DstX: %d, DstY: %d, DstZ: %d", DstX, DstY, DstZ);
-	//log("  pSrc: %p", pSrc);
-	//log("  pSrcBox: %p", pSrcBox);
+	auto srcDesc = pSrc->pResource->GetDesc();
+	D3D12_HEAP_PROPERTIES temp_heapProps = {};
+	log("src resource: %p", pSrc->pResource);
+	pSrc->pResource->GetHeapProperties(&temp_heapProps, nullptr);
+	log("src heap type: %d", temp_heapProps.Type);
+	log("src size : %d x %d", srcDesc.Width, srcDesc.Height);
+	log("src resource index: %d", pSrc->SubresourceIndex);
+	log("src footprint offset: %d", pSrc->PlacedFootprint.Offset);
+	log("src footprint size: %u x %u",
+		pSrc->PlacedFootprint.Footprint.Width,
+		pSrc->PlacedFootprint.Footprint.Height);
+
+	pDst->pResource->GetHeapProperties(&temp_heapProps, nullptr);
+	auto dstDesc = pDst->pResource->GetDesc();
+	log("dst resource: %p", pDst->pResource);
+	log("dst size : %d x %d", dstDesc.Width, dstDesc.Height);
+	log("dst heap type: %d", temp_heapProps.Type);
+	log("dst resource index: %d", pDst->SubresourceIndex);
+	log("dst footprint offset: %d", pDst->PlacedFootprint.Offset);
+	log("dst footprint size: %u x %u",
+		pDst->PlacedFootprint.Footprint.Width,
+		pDst->PlacedFootprint.Footprint.Height);
+	log("dst x: %d, y: %d, z: %d", DstX, DstY, DstZ);
+	if (pSrcBox) {
+		log("box topLeft:     x: %d, y: %d", pSrcBox->top, pSrcBox->left);
+		log("box bottomRight: x: %d, y: %d", pSrcBox->bottom, pSrcBox->right);
+	}
+
 	// Call original function
 	backup_CopyTextureRegion(self, pDst, DstX, DstY, DstZ, pSrc, pSrcBox);
-	log("Hook End: HK_CopyTextureRegion");
 
-	if (pSrc && pSrc->pResource)
+	ID3D12Resource* saveTarget = pSrc->pResource;
+	D3D12_RESOURCE_DESC desc = saveTarget->GetDesc();
+	if (desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D
+		&& desc.Width == desc.Height && desc.Height >= 512)
 	{
-		ID3D12Resource* srcRes = pSrc->pResource;
+		//log("print stack trace...");
+		//PrintStackTrace();
+		//g_resourceListToSave.insert(pDst->pResource);
+		//static int saveCounter = 0;
+		//saveCounter++;
+		//std::string fileName = "mod_loader_internal/dst_0x" + ToHex(((uintptr_t)saveTarget));
+		//fileName += "_(" + ToHex(saveCounter) + ")";
+		//log("saving resource: %p", saveTarget);
+		//SaveD3D12TextureToFile(pDst->pResource, fileName);
 
-		D3D12_RESOURCE_DESC desc = srcRes->GetDesc();
-		log("resource dimension: %d", desc.Dimension);
+		//if (backup_Resource_Map == nullptr) {
+		//	void** vtable = *(void***)resourcePtr;
+		//	log("setup hook ID3D12Resource");
+		//	//log("setup hook HK_ID3D12Resource_SetName");
+		//	//HookFuncAddr(vtable[6], &HK_ID3D12Resource_SetName, &backup_ID3D12Resource_SetName);
+		//	HookFuncAddr(vtable[8], &HK_Resource_Map, &backup_Resource_Map);
+		//	//HookFuncAddr(vtable[9], &HK_Resource_Unmap, &backup_Resource_Unmap);
+		//}
+	}
 
-		if (desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D)
-		{
-			std::string fileName = "mod_loader_internal/texture_dump_0x" + std::to_string((uintptr_t)srcRes);
-			SaveD3D12TextureToFile(pSrc->pResource, fileName);
+	if (srcDesc.Width == 536870912
+		&& pSrc->PlacedFootprint.Footprint.Width >= 512
+		&& pSrc->PlacedFootprint.Footprint.Height >= 512) {
+		auto footprint = pSrc->PlacedFootprint.Footprint;
+		static size_t saveTextureBufferStreamCounter = 0;
+		saveTextureBufferStreamCounter++;
+		std::stringstream fileName;
+		fileName << "mod_loader_internal/";
+		fileName << "" << footprint.Width << "x" << footprint.Height;
+		fileName << "_" << ToHex(saveTextureBufferStreamCounter);
+		SaveTexture(pSrc->pResource,
+			pSrc->PlacedFootprint,
+			dstDesc, fileName.str());
+
+		if (footprint.Width == 1920) {
+			log("found img width 1920");
+			PrintStackTrace();
 		}
 	}
 }
@@ -362,7 +478,161 @@ HRESULT STDMETHODCALLTYPE HK_CreateCommandList(
 	//log("Hook End: CreateCommandList");
 	return res;
 }
+ID3D12Resource_SetName_t backup_ID3D12Resource_SetName;
+HRESULT HK_ID3D12Resource_SetName(ID3D12Resource* self, _In_z_ LPCWSTR Name) {
+	log("Hook Begin: HK_ID3D12Resource_SetName");
+	log("  Name: %ls", Name);
+	auto res = backup_ID3D12Resource_SetName(self, Name);
+	//log("Hook End: HK_ID3D12Resource_SetName");
+	return res;
+}
+ID3D12Resource_Unmap_t backup_Resource_Unmap;
+void HK_Resource_Unmap(ID3D12Resource* self, UINT Subresource, _In_opt_
+	const D3D12_RANGE* pWrittenRange)
+{
+	//log("Begin HK_Resource_Unmap");
+	//log("resource: %p", self);
+	//auto desc = self->GetDesc();
+	//log("size: %d x %d", desc.Width, desc.Height);
+	//log("sub resource: %d", Subresource);
+	backup_Resource_Unmap(self, Subresource, pWrittenRange);
+	//log("End HK_Resource_Unmap");
+}
 
+// Additional patch for CreatePlacedResource
+typedef HRESULT(*CreatePlacedResource_t)(
+	ID3D12Device* device,
+	ID3D12Heap* pHeap,
+	UINT64 HeapOffset,
+	const D3D12_RESOURCE_DESC* pDesc,
+	D3D12_RESOURCE_STATES InitialState,
+	const D3D12_CLEAR_VALUE* pOptimizedClearValue,
+	REFIID riid,
+	void** ppvResource);
+CreatePlacedResource_t backup_CreatePlacedResource;
+
+HRESULT HK_CreatePlacedResource(
+	ID3D12Device* device,
+	ID3D12Heap* pHeap,
+	UINT64 HeapOffset,
+	const D3D12_RESOURCE_DESC* pDesc,
+	D3D12_RESOURCE_STATES InitialState,
+	const D3D12_CLEAR_VALUE* pOptimizedClearValue,
+	REFIID riid,
+	void** ppvResource
+) {
+
+	auto res = backup_CreatePlacedResource(
+		device, pHeap, HeapOffset, pDesc,
+		InitialState, pOptimizedClearValue, riid, ppvResource
+	);
+
+	if (pDesc->Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D) {
+		auto resource = (ID3D12Resource*)*ppvResource;
+		log("Hook Begin: CreatePlacedResource");
+		log("resource: %p", resource);
+		log("state: %d", InitialState);
+		log("size: %d x %d", pDesc->Width, pDesc->Height);
+		D3D12_HEAP_PROPERTIES heapProps;
+		resource->GetHeapProperties(&heapProps, nullptr);
+		log("heap type: %d", heapProps.Type);
+	}
+
+	return res;
+}
+
+
+CreateCommittedResource_t backup_CreateCommittedResource;
+HRESULT HK_CreateCommittedResource(
+	ID3D12Device* self,
+	_In_  const D3D12_HEAP_PROPERTIES* pHeapProperties,
+	D3D12_HEAP_FLAGS HeapFlags,
+	_In_  D3D12_RESOURCE_DESC* desc,
+	D3D12_RESOURCE_STATES InitialResourceState,
+	_In_opt_  const D3D12_CLEAR_VALUE* pOptimizedClearValue,
+	REFIID riidResource,
+	_COM_Outptr_opt_  void** ppvResource)
+{
+	log("Hook Begin CreateCommittedResource");
+	log("  format: %d", desc->Format);
+	log("  size: %d x %d", desc->Width, desc->Height);
+	log("  heapType: %d", pHeapProperties->Type);
+	log("  dimension: %d", desc->Dimension);
+	log("  sample.count: %d", desc->SampleDesc.Count);
+	log("  sample.quality: %d", desc->SampleDesc.Quality);
+	log("  mipmapLevels: %d", desc->MipLevels);
+	log("  flags: %d", desc->Flags);
+	log("  layout: %d", desc->Layout);
+	log("  alignment: %d", desc->Alignment);
+	log("  HeapFlags: %d", HeapFlags);
+	log("  Initial States: %d", InitialResourceState);
+
+	if (IsWineEnvironment()) {
+		if (HeapFlags & D3D12_HEAP_FLAG_SHARED || HeapFlags & D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER)
+		{
+			HeapFlags &= ~D3D12_HEAP_FLAG_SHARED;
+			HeapFlags &= ~D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER;
+			log("patch new heap flags: %d", HeapFlags);
+		}
+	}
+
+	auto retValue = backup_CreateCommittedResource(self, pHeapProperties, HeapFlags, desc, InitialResourceState, pOptimizedClearValue, riidResource, ppvResource);
+
+	if (desc->Width == 536870912 && desc->Height == 1) {
+		log("  found buffer resource streaming");
+		log("  dump stack...");
+		PrintStackTrace();
+	}
+	//if (desc->Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D) {
+	//	ID3D12Resource* resource = (ID3D12Resource*)*ppvResource;
+	//	log("Hook Begin CreateCommittedResource");
+	//	log("resource: %p", resource);
+	//	log("state: %d", InitialResourceState);
+	//	log("format: %d", desc->Format);
+	//	log("size: %d x %d", desc->Width, desc->Height);
+	//	log("print stack...");
+	//}
+
+	//log("Hook End CreateCommittedResource");
+	return retValue;
+}
+
+CreateHeap_t backup_CreateHeap;
+HRESULT HK_CreateHeap(
+	ID3D12Device* self,
+	_In_  const D3D12_HEAP_DESC* pDesc,
+	REFIID riid,
+	_COM_Outptr_opt_  void** ppvHeap)
+{
+	log("Hook Begin: HK_CreateHeap");
+
+	auto retValue = backup_CreateHeap(self, pDesc, riid, ppvHeap);
+	return retValue;
+}
+
+CreateReservedResource_t backup_CreateReservedResource;
+HRESULT HK_CreateReservedResource(
+	ID3D12Device* self,
+	_In_  const D3D12_RESOURCE_DESC* pDesc,
+	D3D12_RESOURCE_STATES InitialState,
+	_In_opt_  const D3D12_CLEAR_VALUE* pOptimizedClearValue,
+	REFIID riid,
+	_COM_Outptr_opt_  void** ppvResource)
+{
+
+	log("Hook Begin: HK_CreateReservedResource");
+	auto retResult = backup_CreateReservedResource(self, pDesc, InitialState,
+		pOptimizedClearValue, riid, ppvResource);
+	ID3D12Resource* resource = (ID3D12Resource*)*ppvResource;
+	log("  resource: %p", resource);
+	auto desc = *pDesc;
+	log("  format: %d", desc.Format);
+	log("  size: %d x %d", desc.Width, desc.Height);
+	log("  dimension: %d", desc.Dimension);
+	log("  mips: %d", desc.MipLevels);
+
+	return retResult;
+}
 
 MySetupDx12_t backup_MySetupDx12;
 HRESULT HKStatic_MySetupDx12(char* p1, uint64_t p2, int p3) {
@@ -398,7 +668,9 @@ HRESULT RendererHook::HK_SetupDx12(char* p1, uint64_t p2, int p3)
 		// error
 		HookFuncAddr(deviceVTable[8], &HKStatic_CreateCommandQueue, &backup_CreateCommandQueue);
 		HookFuncAddr(deviceVTable[12], &HK_CreateCommandList, &backup_CreateCommandList);
-		//HookFuncAddr(vtable[27], &HK_CreateCommittedResource, &backup_CreateCommittedResource);
+		HookFuncAddr(deviceVTable[27], &HK_CreateCommittedResource, &backup_CreateCommittedResource);
+		HookFuncAddr(deviceVTable[29], &HK_CreatePlacedResource, &backup_CreatePlacedResource);
+		HookFuncAddr(deviceVTable[30], &HK_CreateReservedResource, &backup_CreateReservedResource);
 		//HookFuncAddr(vtable[31], &HK_CreateSharedHandle, &backup_CreateSharedHandle);
 		//HookFuncAddr(vtable[20], &HK_CreateRenderTargetView, &backup_CreateRenderTargetView);
 	}

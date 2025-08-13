@@ -136,59 +136,6 @@ char HookMySus2(__int64 param1, __int64 param2, HWND param3, char param4) {
 }
 
 int m_createCommittedResourceCallCounter = 0;
-typedef HRESULT(*CreateCommittedResource_t)(
-	ID3D12Device* self,
-	_In_  const D3D12_HEAP_PROPERTIES* pHeapProperties,
-	D3D12_HEAP_FLAGS HeapFlags,
-	_In_  const D3D12_RESOURCE_DESC* pDesc,
-	D3D12_RESOURCE_STATES InitialResourceState,
-	_In_opt_  const D3D12_CLEAR_VALUE* pOptimizedClearValue,
-	REFIID riidResource,
-	_COM_Outptr_opt_  void** ppvResource);
-CreateCommittedResource_t backup_CreateCommittedResource = nullptr;
-HRESULT HK_CreateCommittedResource(
-	ID3D12Device* self,
-	_In_  const D3D12_HEAP_PROPERTIES* pHeapProperties,
-	D3D12_HEAP_FLAGS HeapFlags,
-	_In_  D3D12_RESOURCE_DESC* desc,
-	D3D12_RESOURCE_STATES InitialResourceState,
-	_In_opt_  const D3D12_CLEAR_VALUE* pOptimizedClearValue,
-	REFIID riidResource,
-	_COM_Outptr_opt_  void** ppvResource)
-{
-	m_createCommittedResourceCallCounter++;
-
-	log("Hook Begin CreateCommittedResource | call time: %d", m_createCommittedResourceCallCounter);
-	log("D3D12_RESOURCE_DESC:");
-	//log(" - format: 0x%x", desc->Format);
-	log(" - w: %d, h: %d", desc->Width, desc->Height);
-	//log(" - dimension: %d", desc->Dimension);
-	//log(" - sample.count: %d", desc->SampleDesc.Count);
-	//log(" - sample.quality: %d", desc->SampleDesc.Quality);
-	//log(" - mipmapLevels: %d", desc->MipLevels);
-	//log(" - flags: %d", desc->Flags);
-	//log(" - layout: %d", desc->Layout);
-	//log(" - alignment: %d", desc->Alignment);
-	log("  HeapFlags: %d", HeapFlags);
-	log("  Initial States: %d", InitialResourceState);
-
-	HRESULT result = 0;
-	//if (m_createCommittedResourceCallCounter == 1)
-	if (HeapFlags & D3D12_HEAP_FLAG_SHARED || HeapFlags & D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER)
-	{
-		HeapFlags &= ~D3D12_HEAP_FLAG_SHARED;
-		HeapFlags &= ~D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER;
-		log("patch new heap flags: %d", HeapFlags);
-	}
-
-	log("calling original func..");
-	result = backup_CreateCommittedResource(self, pHeapProperties, HeapFlags, desc, InitialResourceState, pOptimizedClearValue, riidResource, ppvResource);
-	log("	result: %x", result);
-	log("device remove code: %x", GetDeviceRemoveCode());
-
-	log("Hook End CreateCommittedResource");
-	return result;
-}
 
 typedef HRESULT(*CreateSharedHandle_t)(
 	ID3D12Device* self,
@@ -214,52 +161,6 @@ HRESULT HK_CreateSharedHandle(
 	return res;
 }
 
-// Additional patch for CreatePlacedResource
-int m_PatchCreatePlacedResourceCallCounter = 0;
-typedef HRESULT(*PatchCreatePlacedResource_t)(
-	ID3D12Device* device,
-	ID3D12Heap* pHeap,
-	UINT64 HeapOffset,
-	const D3D12_RESOURCE_DESC* pDesc,
-	D3D12_RESOURCE_STATES InitialState,
-	const D3D12_CLEAR_VALUE* pOptimizedClearValue,
-	REFIID riid,
-	void** ppvResource);
-PatchCreatePlacedResource_t fpCreatePlacedResource = nullptr;
-
-HRESULT HK_CreatePlacedResource(
-	ID3D12Device* device,
-	ID3D12Heap* pHeap,
-	UINT64 HeapOffset,
-	const D3D12_RESOURCE_DESC* pDesc,
-	D3D12_RESOURCE_STATES InitialState,
-	const D3D12_CLEAR_VALUE* pOptimizedClearValue,
-	REFIID riid,
-	void** ppvResource
-) {
-	m_PatchCreatePlacedResourceCallCounter++;
-	D3D12_RESOURCE_DESC modifiedDesc = *pDesc;
-
-	// Apply similar patches as CreateCommittedResource
-	UINT descFlags = static_cast<UINT>(modifiedDesc.Flags);
-
-	log("Hook Begin: CreatePlacedResource");
-	log("desc flags: 0x%x", pDesc->Flags);
-
-	if (descFlags & D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS) {
-		descFlags &= ~D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS;
-		modifiedDesc.Flags = static_cast<D3D12_RESOURCE_FLAGS>(descFlags);
-		log("patch CreatePlacedResource: removed ALLOW_SIMULTANEOUS_ACCESS");
-	}
-
-	auto res = fpCreatePlacedResource(
-		device, pHeap, HeapOffset, &modifiedDesc,
-		InitialState, pOptimizedClearValue, riid, ppvResource
-	);
-	log("Hook End: CreatePlacedResource");
-	log("	result: 0x%x", res);
-	return res;
-}
 
 void LogFuncPtr(void* funcPtr) {
 	auto modName = GetModuleNameFromAddress(funcPtr);

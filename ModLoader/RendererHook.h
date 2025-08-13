@@ -3,6 +3,20 @@
 #include <d3dx12.h>
 #include <dxgi1_6.h>
 
+typedef HRESULT(*CreateReservedResource_t)(
+	ID3D12Device* self,
+	_In_  const D3D12_RESOURCE_DESC* pDesc,
+	D3D12_RESOURCE_STATES InitialState,
+	_In_opt_  const D3D12_CLEAR_VALUE* pOptimizedClearValue,
+	REFIID riid,
+	_COM_Outptr_opt_  void** ppvResource);
+
+typedef HRESULT(*CreateHeap_t)(
+	ID3D12Device* self,
+	_In_  const D3D12_HEAP_DESC* pDesc,
+	REFIID riid,
+	_COM_Outptr_opt_  void** ppvHeap);
+
 typedef void (*ExecuteCommandLists_t)(
 	ID3D12CommandQueue* self,
 	_In_  UINT NumCommandLists,
@@ -46,6 +60,26 @@ typedef void (*CopyTextureRegion_t)(
 	const D3D12_BOX* pSrcBox
 	);
 
+typedef HRESULT(*CreateCommittedResource_t)(
+	ID3D12Device* self,
+	_In_  const D3D12_HEAP_PROPERTIES* pHeapProperties,
+	D3D12_HEAP_FLAGS HeapFlags,
+	_In_  const D3D12_RESOURCE_DESC* pDesc,
+	D3D12_RESOURCE_STATES InitialResourceState,
+	_In_opt_  const D3D12_CLEAR_VALUE* pOptimizedClearValue,
+	REFIID riidResource,
+	_COM_Outptr_opt_  void** ppvResource);
+
+typedef HRESULT(*ID3D12Resource_SetName_t)(ID3D12Resource* self, _In_z_  LPCWSTR Name);
+
+typedef HRESULT(*ID3D12Resource_Map_t)(
+	ID3D12Resource* self, UINT Subresource,
+	_In_opt_  const D3D12_RANGE* pReadRange,
+	_Outptr_opt_result_bytebuffer_(_Inexpressible_("Dependent on resource"))  void** ppData);
+
+typedef void(*ID3D12Resource_Unmap_t)(
+	ID3D12Resource* self, UINT Subresource,
+	_In_opt_  const D3D12_RANGE* pWrittenRange);
 
 class RendererHook
 {

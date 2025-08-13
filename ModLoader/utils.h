@@ -72,6 +72,8 @@ const char* GetModuleNameFromAddress(void* addr);
 
 bool FileExists(const std::string& filename);
 
+std::string ToHex(uintptr_t val, int width = 8);
+
 extern void* GetAddressFromRva(int fileOffset);
 extern void* GetFuncAddr(uintptr_t rva);
 
