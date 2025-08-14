@@ -317,6 +317,7 @@ bool Start() {
 	// general utils
 	log("disable save corruption check...");
 	PatchBytesRva(0x1a02945, { (char)0xEB });
+	SetupHooksDebug();
 
 	// debug
 #if false

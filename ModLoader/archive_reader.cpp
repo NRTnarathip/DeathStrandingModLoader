@@ -6,7 +6,7 @@
 
 int m_readOffset = 0;
 void ReadBuffer(ResourceReaderHandle* reader, void* buffer, size_t size) {
-	fpResourceReadBuffer(reader, (byte*)buffer, m_readOffset, size);
+	backup_ResourceReadBuffer(reader, (byte*)buffer, m_readOffset, size);
 	m_readOffset += size;
 }
 

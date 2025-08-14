@@ -4,6 +4,7 @@
 #include <cstring>
 #include <Windows.h>
 #include <emmintrin.h> 
+#include <vector>
 
 #define ASSERT_OFFSET(struct_type, member, expected_offset) \
     static_assert(offsetof(struct_type, member) == expected_offset, \
@@ -46,18 +47,35 @@ struct ResourceList {
 
 struct ResourceManager
 {
-	char padding1[0x30];
+	uint32_t someValue; // 0x00 -> 0x04
+	char padding1[0x2C]; // padding to align to 0x30 
 	void* first; // 0x30
 	ResourceList* resourceListPtr; // 0x38
 	int resourcePatchTotal; // 0x40
 };
 
-struct ResourceArchiveHeader {
+struct MyVector {
+	uint32_t count;   // current number of items
+	uint32_t capacity; // allocated capacity
+	void** items; // pointer to array of items
+};
+
+
+struct ArchiveFileEntry;
+struct ArchiveChunkEntry;
+// size 0x40
+struct MyPakFileInfo {
+public:
 	int index; //0x0 - 0x3
 	uint32_t encryptKey; // 0x4 - 0x7
 	char* name; //0x08 - 0x0F
 	void* gap10; //0x10 - 0x17
 	bool isEncrypted; //0x18 - 0x19
+	char padding[7]; //0x1A - 0x1F, padding to align to 8 bytes
+	MyVector fileEntryVector; // 0x20 -> 0x2F
+	MyVector chunkEntryVector; // 0x30 -> 0x37
+	//std::vector<ArchiveFileEntry*> fileEntryVector; // 0x20 -> 0x2F
+	//std::vector<ArchiveChunkEntry*> chunkEntryVector; // 0x30 -> 0x37
 };
 
 //  size 24 bytes : 0x18

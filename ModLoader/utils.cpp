@@ -23,7 +23,7 @@
 std::ofstream m_logFile;
 bool m_isEnableLogFile = false;
 bool m_isEnableLogConsole = false;
-bool m_isEnableLogThreadID = false;
+bool m_isEnableLogThreadID = true;
 
 void log(const char* format, ...)
 {
@@ -148,7 +148,7 @@ bool HookFuncModule(const char* moduleName, const char* funcName, LPVOID detour,
 }
 
 MurmurHash3_t  fpMurmurHash3 = (MurmurHash3_t)GetFuncAddr(0x18fe890);
-ResourceReadBuffer_t  fpResourceReadBuffer = (ResourceReadBuffer_t)GetFuncAddr(0x1929a50);
+ResourceReadBuffer_t  backup_ResourceReadBuffer = (ResourceReadBuffer_t)GetFuncAddr(0x1929a50);
 
 bool IsWineEnvironment() {
 	HKEY hKey;

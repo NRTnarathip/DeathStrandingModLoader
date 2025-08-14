@@ -1,8 +1,12 @@
 #include "hooks.h"
 #include "archive_reader.h"
 #include "utils.h"
+#include <sstream>
+#include <iomanip>
+#include <iostream>
+#include <cstdint>
 
-unsigned __int64 Hook_ResourceReadBuffer(
+unsigned __int64 HK_My_ResourceReadBuffer(
 	ResourceReaderHandle* reader, unsigned char* buffer,
 	unsigned __int64 readOffset, unsigned __int64 readLength)
 {
@@ -10,27 +14,26 @@ unsigned __int64 Hook_ResourceReadBuffer(
 	log("[Hook Begin] ResourceReadBuffer");
 	log("reader ptr: %p, buffer ptr: %p, readOffset: %llx, readLength: 0x%llx",
 		reader, buffer, readOffset, readLength);
-	auto bufferAddr = (UINT64)buffer;
-	log("buffer ptr addr bytes: %s", GetHexString(&bufferAddr, 8));
+	//auto bufferAddr = (UINT64)buffer;
+	//log("buffer ptr addr bytes: %s", GetHexString(&bufferAddr, 8));
 	MyString* fullPathString = (MyString*)reader->fullPath;
+	log("fullPath: %s", fullPathString->str);
 	// Call the original function
 	//log("read offset: %llu", readOffset);
 	//log("read len   : %d", readLength);
-	auto result = fpResourceReadBuffer(reader, buffer, readOffset, readLength);
-	log("[Postfix]");
+	auto result = backup_ResourceReadBuffer(reader, buffer, readOffset, readLength);
+	//log("[Postfix]");
 
 	// first called on read header
-	if (readOffset == 0 && readLength == 0x28) {
-		auto archiveReader = new ArchiveReader();
-		archiveReader->readArchive(reader);
-		archiveReader->LogInfo();
-	}
+	//if (readOffset == 0 && readLength == 0x28) {
+	//	auto archiveReader = new ArchiveReader();
+	//	archiveReader->readArchive(reader);
+	//	archiveReader->LogInfo();
+	//}
 
-	log("[Hook End] ResourceReadBuffer");
-	log("==========================");
+	//log("[Hook End] ResourceReadBuffer");
 	return result;
 }
-
 
 typedef MyString* (*BuildStringBuffer_t)(MyString* param_1, char* string2);
 BuildStringBuffer_t fpBuildStringBuffer = nullptr;
@@ -122,10 +125,10 @@ MyString* AssignRefCountedString(MyString* leftString, MyString* rightString) {
 	return result;
 }
 
-typedef  int (*My_AddResourcePatch_t)(int* resourceCounterPtr, ResourceArchiveHeader* archiveHeader);
+typedef  int (*My_AddResourcePatch_t)(int* resourceCounterPtr, MyPakFileInfo* archiveHeader);
 My_AddResourcePatch_t fpMy_AddResourcePatch = nullptr;
 
-int My_AddResourcePatch(int* resourceCounterPtr, ResourceArchiveHeader* header) {
+int My_AddResourcePatch(int* resourceCounterPtr, MyPakFileInfo* header) {
 	log("[Hook Begin] My_AddResourcePatch called");
 
 	log("resourceCounterPtr: %p, archiveHeader: %p", resourceCounterPtr, header);
@@ -146,7 +149,7 @@ int My_AddResourcePatch(int* resourceCounterPtr, ResourceArchiveHeader* header) 
 AddResourceIndex_t fpMy_AddResourceIndex = nullptr;
 
 int My_AddResourceIndex(ResourceList* resourceCounterPtr,
-	int resourceIndex, ResourceArchiveHeader* resPtr)
+	int resourceIndex, MyPakFileInfo* resPtr)
 {
 	log("[Hook Begin] My_AddResourceIndex");
 	log("resourceCounterPtr: %p, resourceIndex: %d, header: %p", resourceCounterPtr, resourceIndex, resPtr);
@@ -203,3 +206,164 @@ __int64* Hook_GetBuildDateID() {
 	return result;
 }
 
+
+
+typedef MyString* (*My_AboutCoreStreamFile_t)(LONGLONG* param_1, MyString* param_2);
+My_AboutCoreStreamFile_t backup_My_AboutCoreStreamFile;
+MyString* HK_My_AboutCoreStreamFile(LONGLONG* param_1, MyString* param_2)
+{
+	static size_t HK_My_AboutCoreStreamFileCounter = 0;
+	HK_My_AboutCoreStreamFileCounter++;
+	log("Begin: HK_My_AboutCoreStreamFile | [%d]", HK_My_AboutCoreStreamFileCounter);
+
+	//log("  param_1: %p", param_1);
+	//log("  param_2 str: %s", param_2->str);
+	//log("calling origin");
+
+	auto retValue = backup_My_AboutCoreStreamFile(param_1, param_2);
+	log("  result: %s", retValue->str);
+	return retValue;
+}
+
+typedef MyString* (*My_MakeResourceCoreFullPath_t)(MyString* param_1, char* param_2);
+My_MakeResourceCoreFullPath_t backup_My_MakeResourceCoreFullPath;
+MyString* HK_My_MakeResourceCoreFullPath(MyString* param_1, char* param_2)
+{
+	static size_t CallCounter = 0;
+	CallCounter++;
+	log("Begin HK_My_MakeResourceCoreFullPath | [%d]", CallCounter);
+	auto ret = backup_My_MakeResourceCoreFullPath(param_1, param_2);
+	//fullPath: cache:levels/worlds/_l100_area01/tiles/tile_x-01_y-11/layers/terrain/terraintiledata_lowlod.core
+	//resourceName: levels/worlds/_l100_area01/tiles/tile_x-01_y-11/layers/terrain/terraintiledata_lowlod
+	log("  ret: %s", ret->str);
+	log("End HK_My_MakeResourceCoreFullPath");
+	return ret;
+}
+
+typedef void (*My_StringBuildInitWithLength_t)(MyString* stringPtr, int strLength);
+My_StringBuildInitWithLength_t backup_My_StringBuildInitWithLength;
+void HK_My_StringBuildInitWithLength(MyString* stringPtr, int strLength)
+{
+	//log("Hook HK_My_StringBuildInitWithLength");
+	backup_My_StringBuildInitWithLength(stringPtr, strLength);
+	log("stringPtr: %s, strLength: %d", stringPtr->str, strLength);
+}
+
+
+typedef int (*My_VectorPushBack_t)(MyVector* vector, void* item);
+My_VectorPushBack_t backup_My_VectorPushBack;
+int HK_My_VectorPushBack(MyVector* vector, void* item) {
+	//log("HK_My_VectorPushBack vector: %p, item: %p", vector, item);
+	if (vector->count >= 200) {
+		log("HK_My_VectorPushBack vector: %p, item: %p", vector, item);
+	}
+	auto result = backup_My_VectorPushBack(vector, item);
+	return result;
+}
+
+typedef ULONGLONG(*My_LikeHashString_t)(MyString* p1_string);
+My_LikeHashString_t backup_My_GetFileHash;
+ULONGLONG HK_My_GetFileHash(MyString* fileName) {
+	log("HK_My_GetFileHash called with string: %s", fileName->str);
+	auto result = backup_My_GetFileHash(fileName);
+	log("result: %llx", result);
+	return result;
+}
+
+void DumpString(void* addr, size_t size) {
+	unsigned char* p = (unsigned char*)addr;
+
+	for (size_t offset = 0; offset < size; offset += 16) {
+		std::stringstream ss;
+		for (size_t i = 0; i < 16 && offset + i < size; i++) {
+			unsigned char c = p[offset + i];
+			//ss << ((c >= 0x20 && c <= 0x7E) ? c : '.');
+			ss << c;
+		}
+		log("%s", ss.str().c_str());
+	}
+}
+
+typedef ULONGLONG(*FUN_141926990_t)(ResourceManager* resManager, MyString* resourceFullPath);
+FUN_141926990_t backup_FUN_141926990;
+ULONGLONG HK_FUN_141926990(ResourceManager* resManager, MyString* resourceFullPath) {
+	log("HK_FUN_141926990 called with resourceFullPath: %s", resourceFullPath->str);
+	auto result = backup_FUN_141926990(resManager, resourceFullPath);
+	log("result HK_FUN_141926990 : %llx", result);
+
+	return result;
+}
+
+typedef void* (*My_LikeFindResourceByCoreFileName_t)(ResourceManager* resManager,
+	MyString* resourceFullPath, void* param_3, void* param_4);
+My_LikeFindResourceByCoreFileName_t backup_My_LikeFindResourceByCoreFileName;
+void* HK_My_LikeFindResourceByCoreFileName(ResourceManager* resManager,
+	MyString* resourceFullPath, void* param_3, void* param_4)
+{
+	log("My_LikeFindResourceByCoreFileName called with resourceFullPath: %s", resourceFullPath->str);
+	log("param_3: %p, param_4: %p", param_3, param_4);
+	auto result = backup_My_LikeFindResourceByCoreFileName(resManager, resourceFullPath, param_3, param_4);
+	log("result My_LikeFindResourceByCoreFileName: %p", result);
+
+	return result;
+}
+
+#define _QWORD unsigned long long
+#define _DWORD unsigned int
+#define _BYTE unsigned char
+struct __declspec(align(1)) MyChunkEntryWrapper // sizeof=0x80039
+{                                       // XREF: struct_param1_resManager/r
+	signed __int32 volatile_signed___int320;
+	_BYTE gap4[12];
+	_QWORD timestamp;
+	ArchiveChunkEntry* entryStart;
+	ArchiveChunkEntry* entryEnd;
+	uint32_t totalCompressSize;
+	char buffer[0x80000]; // 512kb buffer
+	ArchiveChunkEntry* someChunkEntry;
+	uint32_t decompressedSize;
+};
+
+typedef void* (*My_DecompressResource_t)
+(ResourceManager* resManager, MyString* resourceFileName, void* param_3,
+	LONGLONG param_4, MyChunkEntryWrapper* param_5, LONGLONG p6_blockOffset, ULONGLONG p7_blockLength,
+	uint32_t param_8);
+My_DecompressResource_t backup_My_DecompressResource;
+void* My_DecompressResource
+(ResourceManager* resManager, MyString* resourceFileName, MyPakFileInfo* p3_pakFileInfo,
+	LONGLONG param_4, MyChunkEntryWrapper* p5_chunkWrapper, LONGLONG p6_blockOffset, ULONGLONG p7_blockLength,
+	uint32_t param_8)
+{
+	log("My_DecompressResource resFile: %s", resourceFileName->str);
+	auto pakFile = p3_pakFileInfo;
+	log("pakFile name: %s", pakFile->name);
+	//log("resManager 0x0: %u", resManager->someValue);
+	log("  isEncrypted: %u", pakFile->isEncrypted ? 1 : 0);
+	log("  fileEntry: %u", pakFile->fileEntryVector.count);
+	log("  chunkEntry: %u", pakFile->chunkEntryVector.count);
+
+	//PrintStackTrace();
+	log("calling..");
+	auto retValue = backup_My_DecompressResource(
+		resManager, resourceFileName, p3_pakFileInfo, param_4, p5_chunkWrapper, p6_blockOffset, p7_blockLength, param_8);
+	auto chunkWrapper = p5_chunkWrapper;
+	log("total compress:   %u", chunkWrapper->totalCompressSize);
+	log("total decompress: %u", chunkWrapper->decompressedSize);
+	//DumpString(chunkWrapper->buffer, 100);
+	log("End My_DecompressResource");
+
+	return retValue;
+}
+
+
+void SetupHooksDebug() {
+	//HookFuncRva(0x18f67d0, &HK_My_AboutCoreStreamFile, &backup_My_AboutCoreStreamFile);
+	//HookFuncRva(0x18f6890, &HK_My_MakeResourceCoreFullPath, &backup_My_MakeResourceCoreFullPath);
+	//HookFuncRva(0x1926990, &HK_FUN_141926990, &backup_FUN_141926990);
+	//HookFuncRva(0x190b8b0, &HK_My_StringBuildInitWithLength, &backup_My_StringBuildInitWithLength);
+	//HookFuncRva(0x1929a50, &HK_My_ResourceReadBuffer, &backup_ResourceReadBuffer);
+	//HookFuncRva(0x1904030, &HK_My_VectorPushBack, &backup_My_VectorPushBack);
+	//HookFuncRva(0x1930430, &HK_My_GetFileHash, &backup_My_GetFileHash);
+	//HookFuncRva(0x1924f30, &HK_My_LikeFindResourceByCoreFileName, &backup_My_LikeFindResourceByCoreFileName);
+	HookFuncRva(0x1929bd0, &My_DecompressResource, &backup_My_DecompressResource);
+}

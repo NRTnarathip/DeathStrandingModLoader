@@ -12,6 +12,7 @@
 ID3D12CommandQueue* m_pCommandQueue_render = nullptr;
 CopyTextureRegion_t backup_CopyTextureRegion;
 ID3D12Resource_Map_t backup_Resource_Map;
+ID3D12Resource_Unmap_t backup_Resource_Unmap;
 
 std::unordered_set<ID3D12Resource*> g_resourceListToSave;
 std::unordered_set<ID3D12Resource*> g_resourceHeapCPULookup;
@@ -56,6 +57,20 @@ ID3D12CommandAllocator* g_commandAllocator;
 ID3D12Fence* g_fence;
 UINT64 g_fenceValue = 0;
 HANDLE g_fenceEvent = nullptr;
+
+uint8_t* GetRenderContext() {
+	return *(uint8_t**)GetFuncAddr(0x4f6d430);
+}
+
+uint8_t* GetRingBufferUpload() {
+	auto renderCtx = GetRenderContext();
+	return renderCtx + 0xb48;
+}
+
+uint8_t* GetRingBufferUploadBufferPtr() {
+	return *(uint8_t**)(GetRingBufferUpload() + 0x20);
+}
+
 
 void WaitForGPU(ID3D12CommandQueue* commandQueue, ID3D12Fence* fence,
 	UINT64& fenceValue, HANDLE fenceEvent)
@@ -300,27 +315,49 @@ HRESULT STDMETHODCALLTYPE HKStatic_CreateCommandQueue(
 	return RendererHook::Instance().HK_CreateCommandQueue(self, pDesc, riid, ppCommandQueue);
 }
 
+
 HRESULT STDMETHODCALLTYPE HK_Resource_Map(
 	ID3D12Resource* self, UINT Subresource,
 	_In_opt_  const D3D12_RANGE* pReadRange,
 	_Outptr_opt_result_bytebuffer_(_Inexpressible_("Dependent on resource"))  void** ppData)
 {
 	log("Hook Begin HK_Resource_Map");
-	log("resource: %p", self);
+	log("  resource: %p", self);
 	//log("sub resource: %d", Subresource);
 	bool isWriteData = pReadRange == nullptr || pReadRange->End == 0;
-	log("is write data: %s", isWriteData ? "true" : "false");
+	log("  is write data: %s", isWriteData ? "true" : "false");
 	HRESULT res = backup_Resource_Map(self, Subresource, pReadRange, ppData);
-	log("pData: %p", *ppData);
-	log("Hook End HK_Resource_Map");
+	log("  pData: %p", *ppData);
 
-	if (isWriteData) {
-		auto desc = self->GetDesc();
-		log("texture size: %d x %d", desc.Width, desc.Height);
+	auto desc = self->GetDesc();
+	log("  size: %d x %d", desc.Width, desc.Height);
+
+	if (desc.Width == 536870912) {
+		log("  found main stream buffer 512mb");
+		auto ringBuffer = ((uint8_t*)ppData) - 0x20;
+		char bufferType = *(char*)(ringBuffer + 0x0);
+		size_t bufferSize = *(size_t*)(ringBuffer + 0x8);
+		log("  ring buffer: %p", ringBuffer);
+		log("  bufferType: %d", bufferType);
+		log("  bufferSize: %zu", bufferSize);
+
+
 	}
 
 	return  res;
 }
+
+void HK_Resource_Unmap(ID3D12Resource* self, UINT Subresource, _In_opt_
+	const D3D12_RANGE* pWrittenRange)
+{
+	log("Begin HK_Resource_Unmap_1D");
+	log("  resource: %p", self);
+	auto desc = self->GetDesc();
+	log("  size: %d x %d", desc.Width, desc.Height);
+	log("  sub resource: %d", Subresource);
+	backup_Resource_Unmap(self, Subresource, pWrittenRange);
+}
+
 
 
 void HK_CopyTextureRegion(
@@ -359,13 +396,15 @@ void HK_CopyTextureRegion(
 
 
 	// WIP: replace texture
+	auto srcResource = pSrc->pResource;
 	auto srcFootPrint = pSrc->PlacedFootprint.Footprint;
 	bool isOnTexturePatcher = false;
-	if (srcFootPrint.Width == 1920 && srcFootPrint.Height == 1080
+	static bool isEnableTexturePatcher = false;
+	if (isEnableTexturePatcher
+		&& srcFootPrint.Width == 1920 && srcFootPrint.Height == 1080
 		&& dstDesc.Format == DXGI_FORMAT_BC3_UNORM_SRGB) {
 		log("found texture 1920x1080, try replace with custom texture...");
 		auto src = pSrc;
-		auto srcResource = src->pResource;
 		DirectX::ScratchImage newImageReplace;
 		DirectX::TexMetadata metadata;
 		//HRESULT hr = DirectX::LoadFromDDSFile(textureFileName.c_str(),
@@ -382,63 +421,16 @@ void HK_CopyTextureRegion(
 
 			DirectX::ScratchImage decodeImg;
 
-			//HRESULT hr = DirectX::Decompress(
-			//	srcImage.GetImages(),
-			//	srcImage.GetImageCount(),
-			//	metadata,
-			//	pDst->pResource->GetDesc().Format,
-			//	decodeImg
-			//);
-
 			uint8_t* targetPixels = (uint8_t*)srcBuffer + src->PlacedFootprint.Offset;
 			auto img = newImageReplace.GetImage(0, 0, 0);
 			memcpy(targetPixels, img->pixels, newImageReplace.GetPixelsSize());
 			srcResource->Unmap(0, nullptr);
+			log("replaced texture!");
 		}
 	}
 
 	// Call original function
 	backup_CopyTextureRegion(self, pDst, DstX, DstY, DstZ, pSrc, pSrcBox);
-
-	ID3D12Resource* saveTarget = pSrc->pResource;
-	D3D12_RESOURCE_DESC desc = saveTarget->GetDesc();
-	if (desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D
-		&& desc.Width == desc.Height && desc.Height >= 512)
-	{
-		//log("print stack trace...");
-		//PrintStackTrace();
-		//g_resourceListToSave.insert(pDst->pResource);
-		//static int saveCounter = 0;
-		//saveCounter++;
-		//std::string fileName = "mod_loader_internal/dst_0x" + ToHex(((uintptr_t)saveTarget));
-		//fileName += "_(" + ToHex(saveCounter) + ")";
-		//log("saving resource: %p", saveTarget);
-		//SaveD3D12TextureToFile(pDst->pResource, fileName);
-
-		//if (backup_Resource_Map == nullptr) {
-		//	void** vtable = *(void***)resourcePtr;
-		//	log("setup hook ID3D12Resource");
-		//	//log("setup hook HK_ID3D12Resource_SetName");
-		//	//HookFuncAddr(vtable[6], &HK_ID3D12Resource_SetName, &backup_ID3D12Resource_SetName);
-		//	HookFuncAddr(vtable[8], &HK_Resource_Map, &backup_Resource_Map);
-		//	//HookFuncAddr(vtable[9], &HK_Resource_Unmap, &backup_Resource_Unmap);
-		//}
-	}
-
-	if (srcDesc.Width == 536870912
-		&& pSrc->PlacedFootprint.Footprint.Width >= 512
-		&& pSrc->PlacedFootprint.Footprint.Height >= 512) {
-		//auto footprint = pSrc->PlacedFootprint.Footprint;
-		//static size_t saveTextureBufferStreamCounter = 0;
-		//saveTextureBufferStreamCounter++;
-		//std::stringstream fileName;
-		//fileName << "mod_loader_internal/";
-		//fileName << "" << footprint.Width << "x" << footprint.Height;
-		//fileName << "_" << ToHex(saveTextureBufferStreamCounter);
-		//SaveTexture(pSrc->pResource,
-		//	pSrc->PlacedFootprint,
-		//	dstDesc, fileName.str());
-	}
 }
 
 
@@ -517,18 +509,6 @@ HRESULT HK_ID3D12Resource_SetName(ID3D12Resource* self, _In_z_ LPCWSTR Name) {
 	//log("Hook End: HK_ID3D12Resource_SetName");
 	return res;
 }
-ID3D12Resource_Unmap_t backup_Resource_Unmap;
-void HK_Resource_Unmap(ID3D12Resource* self, UINT Subresource, _In_opt_
-	const D3D12_RANGE* pWrittenRange)
-{
-	//log("Begin HK_Resource_Unmap");
-	//log("resource: %p", self);
-	//auto desc = self->GetDesc();
-	//log("size: %d x %d", desc.Width, desc.Height);
-	//log("sub resource: %d", Subresource);
-	backup_Resource_Unmap(self, Subresource, pWrittenRange);
-	//log("End HK_Resource_Unmap");
-}
 
 // Additional patch for CreatePlacedResource
 typedef HRESULT(*CreatePlacedResource_t)(
@@ -585,6 +565,7 @@ HRESULT HK_CreateCommittedResource(
 	_COM_Outptr_opt_  void** ppvResource)
 {
 	log("Hook Begin CreateCommittedResource");
+	log("  resource: %p", *ppvResource);
 	log("  format: %d", desc->Format);
 	log("  size: %d x %d", desc->Width, desc->Height);
 	log("  heapType: %d", pHeapProperties->Type);
@@ -609,22 +590,14 @@ HRESULT HK_CreateCommittedResource(
 
 	auto retValue = backup_CreateCommittedResource(self, pHeapProperties, HeapFlags, desc, InitialResourceState, pOptimizedClearValue, riidResource, ppvResource);
 
-	if (desc->Width == 536870912 && desc->Height == 1) {
-		log("  found buffer resource streaming");
-		log("  dump stack...");
-		PrintStackTrace();
+	auto resource = (void*)*ppvResource;
+	auto vtable = *(void***)resource;
+	if (backup_Resource_Map == nullptr) {
+		log("setup hook ID3D12Resource");
+		HookFuncAddr(vtable[8], &HK_Resource_Map, &backup_Resource_Map);
+		HookFuncAddr(vtable[9], &HK_Resource_Unmap, &backup_Resource_Unmap);
 	}
-	//if (desc->Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D) {
-	//	ID3D12Resource* resource = (ID3D12Resource*)*ppvResource;
-	//	log("Hook Begin CreateCommittedResource");
-	//	log("resource: %p", resource);
-	//	log("state: %d", InitialResourceState);
-	//	log("format: %d", desc->Format);
-	//	log("size: %d x %d", desc->Width, desc->Height);
-	//	log("print stack...");
-	//}
 
-	//log("Hook End CreateCommittedResource");
 	return retValue;
 }
 

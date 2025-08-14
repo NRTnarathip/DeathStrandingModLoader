@@ -83,7 +83,7 @@ extern MurmurHash3_t fpMurmurHash3;
 typedef ULONGLONG(*ResourceReadBuffer_t)(
 	ResourceReaderHandle* reader, byte* buffer,
 	ULONGLONG readOffset, ULONGLONG readLength);
-extern ResourceReadBuffer_t fpResourceReadBuffer;
+extern ResourceReadBuffer_t backup_ResourceReadBuffer;
 
 typedef bool (*OpenResourceDevice_t)(ResourceReaderHandle* handleInfo,
 	LONGLONG* resourcePath, UINT param_flags,
