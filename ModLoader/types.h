@@ -74,8 +74,6 @@ public:
 	char padding[7]; //0x1A - 0x1F, padding to align to 8 bytes
 	MyVector fileEntryVector; // 0x20 -> 0x2F
 	MyVector chunkEntryVector; // 0x30 -> 0x37
-	//std::vector<ArchiveFileEntry*> fileEntryVector; // 0x20 -> 0x2F
-	//std::vector<ArchiveChunkEntry*> chunkEntryVector; // 0x30 -> 0x37
 };
 
 //  size 24 bytes : 0x18

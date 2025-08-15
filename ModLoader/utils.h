@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <d3dx12.h>
+#include "MurmurHash3.h"
 
 struct ResourceReaderHandle;
 
@@ -74,6 +75,12 @@ bool FileExists(const std::string& filename);
 
 std::string ToHex(uintptr_t val, int width = 8);
 
+std::string ToHex(void* ptr, int length);
+
+GUID BytesToGUID(const unsigned char bytes[16]);
+
+std::string GUIDToString(const unsigned char uuid[16]);
+
 extern void* GetAddressFromRva(int fileOffset);
 extern void* GetFuncAddr(uintptr_t rva);
 
@@ -90,4 +97,54 @@ typedef bool (*OpenResourceDevice_t)(ResourceReaderHandle* handleInfo,
 	UINT32 param_4, UINT32 param_5, int param_6);
 extern OpenResourceDevice_t fpOpenResourceDevice;
 
+#include <chrono>
 
+class Stopwatch {
+public:
+	// เริ่มจับเวลา
+	void start() {
+		m_start = std::chrono::high_resolution_clock::now();
+		m_running = true;
+	}
+
+	// หยุดจับเวลา
+	void stop() {
+		m_end = std::chrono::high_resolution_clock::now();
+		m_running = false;
+	}
+
+	// เวลาที่ใช้ (ms, double)
+	double elapsedMilliseconds() const {
+		if (m_running) {
+			auto now = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double, std::milli> elapsed = now - m_start;
+			return elapsed.count();
+		}
+		else {
+			std::chrono::duration<double, std::milli> elapsed = m_end - m_start;
+			return elapsed.count();
+		}
+	}
+
+	// reset ค่า
+	void reset() {
+		m_running = false;
+	}
+
+private:
+	std::chrono::time_point<std::chrono::high_resolution_clock> m_start;
+	std::chrono::time_point<std::chrono::high_resolution_clock> m_end;
+	bool m_running = false;
+};
+
+
+// code from
+// https://github.com/Jayveer/Decima-Explorer/blob/f22ef4cc0696872c412a10ee7c6e36fba5ad1bdc/decima/common/util.h#L10
+const uint8_t seed = 42;
+inline uint64_t GetFileCoreHash(const std::string& filename) {
+	uint64_t hash;
+	uint8_t byte[16];
+	MurmurHash3_x64_128(filename.c_str(), filename.size() + 1, seed, &byte);
+	memcpy(&hash, byte, 8);
+	return hash;
+}

@@ -264,13 +264,14 @@ int HK_My_VectorPushBack(MyVector* vector, void* item) {
 typedef ULONGLONG(*My_LikeHashString_t)(MyString* p1_string);
 My_LikeHashString_t backup_My_GetFileHash;
 ULONGLONG HK_My_GetFileHash(MyString* fileName) {
-	log("HK_My_GetFileHash called with string: %s", fileName->str);
 	auto result = backup_My_GetFileHash(fileName);
-	log("result: %llx", result);
+	log("HK_My_GetFileHash called with string: %s, hash: %llx",
+		fileName->str, result);
 	return result;
 }
 
 void DumpString(void* addr, size_t size) {
+	log("Dumping memory at address: %p, size: %zu", addr, size);
 	unsigned char* p = (unsigned char*)addr;
 
 	for (size_t offset = 0; offset < size; offset += 16) {
@@ -282,6 +283,7 @@ void DumpString(void* addr, size_t size) {
 		}
 		log("%s", ss.str().c_str());
 	}
+	log("End Dumping memory at address: %p, size: %zu", addr, size);
 }
 
 typedef ULONGLONG(*FUN_141926990_t)(ResourceManager* resManager, MyString* resourceFullPath);
@@ -324,32 +326,51 @@ struct __declspec(align(1)) MyChunkEntryWrapper // sizeof=0x80039
 	uint32_t decompressedSize;
 };
 
+const uint64_t g_prefetchFileHash = GetFileCoreHash("prefetch/fullgame.prefetch.core");
+void DumpPrefetchHeaderInfo(BYTE* buffer) {
+	uint64_t fileNameHash;
+	uint32_t prefetchSize;
+	char prefetchFileGUID[16];
+	memcpy(&fileNameHash, buffer, sizeof(fileNameHash));
+	memcpy(&prefetchSize, buffer + 8, sizeof(uint32_t));
+	memcpy(&prefetchFileGUID, buffer + 12, sizeof(prefetchFileGUID));
+	log("Dump Prefetch");
+	if (fileNameHash != g_prefetchFileHash) {
+		log("  Failed dump prefetch!, file hash invalid: %llx != %llx",
+			fileNameHash, g_prefetchFileHash);
+		return;
+	}
+
+	log("  file name hash: %llx", fileNameHash);
+	log("  file size: %llu", prefetchSize);
+	log("  file UUID: %s", GUIDToString((BYTE*)prefetchFileGUID).c_str());
+}
+
 typedef void* (*My_DecompressResource_t)
 (ResourceManager* resManager, MyString* resourceFileName, void* param_3,
-	LONGLONG param_4, MyChunkEntryWrapper* param_5, LONGLONG p6_blockOffset, ULONGLONG p7_blockLength,
+	ArchiveFileEntry* p4_fileEntry, char* param_5, LONGLONG p6_blockOffset, ULONGLONG p7_blockLength,
 	uint32_t param_8);
 My_DecompressResource_t backup_My_DecompressResource;
 void* My_DecompressResource
-(ResourceManager* resManager, MyString* resourceFileName, MyPakFileInfo* p3_pakFileInfo,
-	LONGLONG param_4, MyChunkEntryWrapper* p5_chunkWrapper, LONGLONG p6_blockOffset, ULONGLONG p7_blockLength,
+(ResourceManager* p1_resManager, MyString* p2_coreFileName, MyPakFileInfo* p3_pakFileInfo,
+	ArchiveFileEntry* p4_fileEntry, char* p5_outBuffer, LONGLONG p6_readOffset, ULONGLONG p7_readLength,
 	uint32_t param_8)
 {
-	log("My_DecompressResource resFile: %s", resourceFileName->str);
+	log("My_DecompressResource resFile: %s", p2_coreFileName->str);
 	auto pakFile = p3_pakFileInfo;
 	log("pakFile name: %s", pakFile->name);
-	//log("resManager 0x0: %u", resManager->someValue);
-	log("  isEncrypted: %u", pakFile->isEncrypted ? 1 : 0);
-	log("  fileEntry: %u", pakFile->fileEntryVector.count);
-	log("  chunkEntry: %u", pakFile->chunkEntryVector.count);
-
+	log("fileEntry hash %llx", p4_fileEntry->hash);
+	log("fileEntry entryNum: %llu", p4_fileEntry->entryNum);
+	log("fileEntry size: %llu", p4_fileEntry->size);
+	log("fileEntry offset: %llu", p4_fileEntry->offset);
+	log("p6_blockOffset: %lld", p6_readOffset);
+	log("p7_blockLength: %llu", p7_readLength);
 	//PrintStackTrace();
 	log("calling..");
 	auto retValue = backup_My_DecompressResource(
-		resManager, resourceFileName, p3_pakFileInfo, param_4, p5_chunkWrapper, p6_blockOffset, p7_blockLength, param_8);
-	auto chunkWrapper = p5_chunkWrapper;
-	log("total compress:   %u", chunkWrapper->totalCompressSize);
-	log("total decompress: %u", chunkWrapper->decompressedSize);
-	//DumpString(chunkWrapper->buffer, 100);
+		p1_resManager, p2_coreFileName, p3_pakFileInfo, p4_fileEntry, p5_outBuffer, p6_readOffset, p7_readLength, param_8);
+	log("called, retValue: %u", (uint32_t)retValue);
+	DumpPrefetchHeaderInfo((BYTE*)p5_outBuffer);
 	log("End My_DecompressResource");
 
 	return retValue;
