@@ -65,6 +65,7 @@ std::string GetCurrentExePath();
 
 std::string GetCurrentExeDir();
 
+
 bool PatchBytesRva(uintptr_t start, void* bytes, int size);
 bool PatchBytesRva(uintptr_t startRva, std::vector<char> bytes);
 bool PatchNopStartEndRva(uintptr_t start, uintptr_t end);
@@ -79,7 +80,7 @@ std::string ToHex(void* ptr, int length);
 
 GUID BytesToGUID(const unsigned char bytes[16]);
 
-std::string GUIDToString(const unsigned char uuid[16]);
+std::string GUIDToString(const BYTE uuid[16]);
 
 extern void* GetAddressFromRva(int fileOffset);
 extern void* GetFuncAddr(uintptr_t rva);
@@ -148,3 +149,9 @@ inline uint64_t GetFileCoreHash(const std::string& filename) {
 	memcpy(&hash, byte, 8);
 	return hash;
 }
+
+struct ResourceManager;
+ResourceManager* GetResourceManager();
+
+extern uintptr_t g_imageBase;
+uintptr_t ConvertAddressToRva(void* addr);

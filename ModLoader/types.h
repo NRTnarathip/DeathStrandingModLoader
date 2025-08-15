@@ -45,10 +45,13 @@ struct ResourceList {
 	void* data;
 };
 
+struct MyString;
 struct ResourceManager
 {
-	uint32_t someValue; // 0x00 -> 0x04
-	char padding1[0x2C]; // padding to align to 0x30 
+	uint32_t var_0x0; // 0x00 -> 0x03
+	uint32_t var_0x8; // 0x04 -> 0x07
+	MyString* cacheNameString; // 0x08 -> 0x0F
+	char padding1[0x20]; // 0x10 -> 0x2F
 	void* first; // 0x30
 	ResourceList* resourceListPtr; // 0x38
 	int resourcePatchTotal; // 0x40
@@ -60,6 +63,28 @@ struct MyVector {
 	void** items; // pointer to array of items
 };
 
+enum class MyReadFileStatus : uint32_t
+{
+	Unk0 = 0,
+	Unk1 = 1,
+	Success = 2,
+	Failed = 3,
+	AccessDenied = 4,
+	CantOpenFile = 5,
+	FileNotOpened = 6,
+	FileNotFound = 7,
+	CantReadFromFile = 8,
+	CantWriteToFile = 9,
+	InputPastEndOfFile = 10,
+	UnableToWriteAllBytes = 11,
+	FileAlreadyExists = 12,
+	OutOfFileHandles = 13,
+	ReadCallbackFailed = 14,
+	DeviceIsFull = 15,
+	OperationCanceled = 16,
+	FileCorrupted = 17
+};
+
 
 struct ArchiveFileEntry;
 struct ArchiveChunkEntry;
@@ -68,7 +93,7 @@ struct MyPakFileInfo {
 public:
 	int index; //0x0 - 0x3
 	uint32_t encryptKey; // 0x4 - 0x7
-	char* name; //0x08 - 0x0F
+	char* filePath; //0x08 - 0x0F
 	void* gap10; //0x10 - 0x17
 	bool isEncrypted; //0x18 - 0x19
 	char padding[7]; //0x1A - 0x1F, padding to align to 8 bytes
@@ -89,8 +114,10 @@ struct  MyStringHeader {
 // size 24 bytes : 0x18
 struct MyString {
 	char* str; //0x0 -> 0x7
-	LONGLONG refCount; // 0x8
-	MyStringHeader* prevStringHeader; // 0x10
+};
+struct MyStringWrapper {
+	uint64_t length;
+	//MyString string;
 };
 
 

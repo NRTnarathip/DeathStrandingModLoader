@@ -51,8 +51,10 @@ void log(const char* format, ...)
 	if (m_isEnableLogConsole)
 		std::cout << sstream.str();
 
-	if (m_isEnableLogFile)
+	if (m_isEnableLogFile) {
 		m_logFile << sstream.str();
+		m_logFile.flush();
+	}
 
 }
 
@@ -115,13 +117,24 @@ bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, void* originalBackup) {
 	return HookFuncAddr(targetFunc, detour, reinterpret_cast<LPVOID*>(originalBackup));
 }
 
-uintptr_t imageBase = (uintptr_t)GetModuleHandleA(NULL);
+uintptr_t g_imageBase = (uintptr_t)GetModuleHandleA(NULL);
 void* GetFuncAddr(uintptr_t rva) {
-	return (void*)(imageBase + rva);
+	return (void*)(g_imageBase + rva);
+}
+ResourceManager* g_resourceManager = nullptr;
+ResourceManager* GetResourceManager()
+{
+	if (g_resourceManager == nullptr)
+		g_resourceManager = *(ResourceManager**)GetFuncAddr(0x4f6cf60);
+	return g_resourceManager;
+}
+
+uintptr_t ConvertAddressToRva(void* addr) {
+	return (uintptr_t)addr - g_imageBase;
 }
 
 void* GetAddressFromRva(int rva) {
-	return (void*)(imageBase + rva);
+	return (void*)(g_imageBase + rva);
 }
 bool HookFuncRva(uintptr_t funcRva, LPVOID detour, void* backup) {
 	return HookFuncAddr(GetFuncAddr(funcRva), detour, reinterpret_cast<LPVOID*>(backup));

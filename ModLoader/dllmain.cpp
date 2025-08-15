@@ -52,21 +52,6 @@ bool Hook_OpenResourceDevice(ResourceReaderHandle* reader, LONGLONG* resourcePat
 	if (param_6 < 0) {
 		MyString* fullPath = reader->fullPath;
 		log("full path: %p", fullPath);
-		log("someObjectptr: %p", fullPath->prevStringHeader);
-		if (fullPath->prevStringHeader) {
-			MyStringHeader* prevString = (MyStringHeader*)fullPath->prevStringHeader;
-			log("prev string ptr: %p", prevString);
-			//print("prev string ref1: %d", prevString->refCount1);
-			//print("prev string flags: %d", prevString->someFlags);
-			log("prev string ref1: %llu", prevString->refCount1);
-			log("prev string ref2: %d", prevString->refCount2);
-			log("prev string reserve len: %u", prevString->reserveLength);
-			log("prev string str: %s", prevString->dataPtr);
-		}
-		//FuncPtrType func = *(FuncPtrType*)((char*)fullPath->someObjectPtr + 0x18);
-		//print("func: %p", func);
-		//auto myParam6 = func();
-		//print("my param6: %d", myParam6);
 	}
 
 

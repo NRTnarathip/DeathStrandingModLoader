@@ -1,8 +1,8 @@
 #pragma once
 #include <Windows.h>
 #include <cstdint>
-#include "types.h"
 #include <vector>
+#include "types.h"
 
 // code src from https://github.com/Jayveer/Decima-Explorer
 
@@ -14,7 +14,7 @@ struct ArchiveBinHeader {
 	uint64_t dataSize; //0x10 - 0x17
 	uint64_t fileTableCount;// 0x18 - 0x1F
 	uint32_t chunkTableCount; // 0x20 - 0x23
-	uint32_t maxChunkSize; // 0x24 - 0x27 maybe value 0x4000 | 262,144 
+	uint32_t maxChunkSize; // 0x24 - 0x27 maybe value 0x40000 | 262,144bytes | 256kb
 };
 
 // size: 0x20 bytes

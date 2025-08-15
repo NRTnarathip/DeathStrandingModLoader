@@ -9,6 +9,14 @@
 #include <sstream>
 #include <string>
 
+#define DISABLE_RENDERER_HOOK_LOG // toggle here
+
+#ifdef DISABLE_RENDERER_HOOK_LOG
+void logEmpty(const char* format, ...) {}
+#define log(...) logEmpty(__VA_ARGS__)
+#endif
+
+
 ID3D12CommandQueue* m_pCommandQueue_render = nullptr;
 CopyTextureRegion_t backup_CopyTextureRegion;
 ID3D12Resource_Map_t backup_Resource_Map;
