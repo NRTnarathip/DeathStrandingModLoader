@@ -5,11 +5,21 @@
 #include <Windows.h>
 #include <emmintrin.h> 
 #include <vector>
+#include <iostream>
+#include <atomic>
+#include <cstring>
+
 
 #define ASSERT_OFFSET(struct_type, member, expected_offset) \
     static_assert(offsetof(struct_type, member) == expected_offset, \
                   #member " offset mismatch")
 
+struct MyString {
+	char* str; //0x0 -> 0x7
+};
+
+
+// define struct type
 struct Metadata {
 	const char* GetInterface2(Metadata* meta) {
 		uintptr_t selfPtr = (uintptr_t)meta;
@@ -45,23 +55,22 @@ struct ResourceList {
 	void* data;
 };
 
-struct MyString;
+struct MyVector {
+	uint32_t count;   // current number of items
+	uint32_t capacity; // allocated capacity
+	void** items; // pointer to array of items
+};
+
 struct ResourceManager
 {
 	uint32_t var_0x0; // 0x00 -> 0x03
 	uint32_t var_0x8; // 0x04 -> 0x07
 	MyString* cacheNameString; // 0x08 -> 0x0F
 	char padding1[0x20]; // 0x10 -> 0x2F
-	void* first; // 0x30
-	ResourceList* resourceListPtr; // 0x38
-	int resourcePatchTotal; // 0x40
+	MyVector pakFileVector; // 0x30
+	int pakFilePatchTotal; // 0x40
 };
 
-struct MyVector {
-	uint32_t count;   // current number of items
-	uint32_t capacity; // allocated capacity
-	void** items; // pointer to array of items
-};
 
 enum class MyReadFileStatus : uint32_t
 {
@@ -86,6 +95,7 @@ enum class MyReadFileStatus : uint32_t
 };
 
 
+
 struct ArchiveFileEntry;
 struct ArchiveChunkEntry;
 // size 0x40
@@ -101,20 +111,6 @@ public:
 	MyVector chunkEntryVector; // 0x30 -> 0x37
 };
 
-//  size 24 bytes : 0x18
-struct  MyStringHeader {
-	//int refCount1; // 0x0
-	//int someFlags; // 0x4
-	ULONGLONG refCount1; // 0x0, using longlong for consistency with MyString
-	int refCount2; // 0x8
-	UINT reserveLength;  // 0xC
-	char* dataPtr; // 0x10
-};
-
-// size 24 bytes : 0x18
-struct MyString {
-	char* str; //0x0 -> 0x7
-};
 struct MyStringWrapper {
 	uint64_t length;
 	//MyString string;
@@ -143,3 +139,19 @@ ASSERT_OFFSET(ResourceReaderHandle, fullPath, 0x28);
 ASSERT_OFFSET(ResourceReaderHandle, errorString, 0x50);
 ASSERT_OFFSET(ResourceReaderHandle, someBool1, 0x58);
 
+
+enum EPackFileCategory : int {
+	Invalid = -1,
+	Initial = 0,
+	Area00 = 1,
+	Barch01 = 2,
+	Remainder = 3,
+	Area01 = 4,
+	Area02 = 5,
+	Area04 = 6,
+	Warrior01 = 7,
+	Warrior02 = 8,
+	Warrior03 = 9,
+	Patch = 10,
+	PackFileCategries = 11,
+};

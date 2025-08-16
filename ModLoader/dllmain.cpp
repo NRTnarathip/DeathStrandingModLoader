@@ -76,34 +76,6 @@ ULONGLONG Hook_FUN_141929a50(LONGLONG* param_1, void* param_2, ULONGLONG param_3
 	return result;
 }
 
-typedef void (*LoadArchiveBinFunc)(ResourceManager* resManager, MyString* loadResourceNamePtrPtr, int loadIndex);
-LoadArchiveBinFunc fpLoadArchiveBin = nullptr;
-
-int hashingCounterInLoadArchiveBin = 0;
-
-void Hook_LoadArchiveBin(ResourceManager* resManager, MyString* loadResourceName, int loadIndex)
-{
-	log("[Hook] LoadArchiveBin called");
-	log("loadResName: %s, loadIndex: %d", loadResourceName->str, loadIndex);
-	enableLogMurmurHash3 = true;
-
-	hashingCounterInLoadArchiveBin = 0;
-
-
-	log("[Prefix]");
-
-	UINT magicHeader = 0;
-
-	// Check if the resource name is valid
-	fpLoadArchiveBin(resManager, loadResourceName, loadIndex);
-
-
-	log("[Postfix]");
-
-
-	enableLogMurmurHash3 = false;
-	log("[Hook End] LoadArchiveBin");
-}
 
 typedef BOOL(WINAPI* ReadFile_t)(
 	HANDLE, LPVOID, DWORD, LPDWORD, LPOVERLAPPED);
@@ -178,37 +150,37 @@ std::map<std::string, int> magicCache;
 //
 //	return result;
 //}
-ULONGLONG* Hook_MurmurHash3_x64_128(long long* hash, byte* data, ULONGLONG length)
-{
-	//print("[First] data: %s, length: %llu", (char*)data, length);
-	//if (enableLogMurmurHash3) {
-	hashingCounterInLoadArchiveBin++;
-	if (enableLogMurmurHash3) {
-		log("[Hook Begin] MurmurHash3 called");
-		log("[Info] hashingCounterInLoadArchiveBin: %d", hashingCounterInLoadArchiveBin);
-		log("[Info] data: %s", GetHexString(data, length));
-		log("[Info] length: %llu", length);
-	}
-
-	auto resultPtr = fpMurmurHash3(hash, data, length);
-	// look like hash32bit index ?,1,2,3 = ????????62ab1cf41c8176f33e9ea8d2
-	if (enableLogMurmurHash3) {
-		log("[Called fpMurmurHash3]");
-		log("[Info]: hash   %s", GetHexString((byte*)hash, 16));
-		log("[Info]: result %s", GetHexString((byte*)resultPtr, length));
-		auto hash1 = hash[0]; // 64-bit first
-		auto hash2 = hash[1]; // 64-bit second
-		log("[Info] Hash1 = %s", GetHexString(&hash1, 8));
-		log("[Info] Hash2 = %s", GetHexString(&hash2, 8));
-
-		// get first 4 bytes of result
-		//uint32_t keyStream = (uint32_t)(result[0] >> 16);
-		//print("[Info] key stream: 0x%x", keyStream);
-		log("[Hook End] MurmurHash3");
-	}
-
-	return resultPtr;
-}
+//ULONGLONG* Hook_MurmurHash3_x64_128(long long* hash, byte* data, ULONGLONG length)
+//{
+//	//print("[First] data: %s, length: %llu", (char*)data, length);
+//	//if (enableLogMurmurHash3) {
+//	hashingCounterInLoadArchiveBin++;
+//	if (enableLogMurmurHash3) {
+//		log("[Hook Begin] MurmurHash3 called");
+//		log("[Info] hashingCounterInLoadArchiveBin: %d", hashingCounterInLoadArchiveBin);
+//		log("[Info] data: %s", GetHexString(data, length));
+//		log("[Info] length: %llu", length);
+//	}
+//
+//	auto resultPtr = fpMurmurHash3(hash, data, length);
+//	// look like hash32bit index ?,1,2,3 = ????????62ab1cf41c8176f33e9ea8d2
+//	if (enableLogMurmurHash3) {
+//		log("[Called fpMurmurHash3]");
+//		log("[Info]: hash   %s", GetHexString((byte*)hash, 16));
+//		log("[Info]: result %s", GetHexString((byte*)resultPtr, length));
+//		auto hash1 = hash[0]; // 64-bit first
+//		auto hash2 = hash[1]; // 64-bit second
+//		log("[Info] Hash1 = %s", GetHexString(&hash1, 8));
+//		log("[Info] Hash2 = %s", GetHexString(&hash2, 8));
+//
+//		// get first 4 bytes of result
+//		//uint32_t keyStream = (uint32_t)(result[0] >> 16);
+//		//print("[Info] key stream: 0x%x", keyStream);
+//		log("[Hook End] MurmurHash3");
+//	}
+//
+//	return resultPtr;
+//}
 
 typedef void (*ProcessGameResources_t)(ResourceManager* resManager, const char** resNamePtr);
 ProcessGameResources_t fpProcessGameResources = nullptr;
@@ -221,7 +193,7 @@ void ProcessGameResources(ResourceManager* resManager, const char** resNamePtr) 
 	fpProcessGameResources(resManager, resNamePtr);
 	log("[Postfix] ProcessGameResources");
 
-	if (resManager->resourceListPtr == nullptr) {
+	if (resManager->pakFileVector.items == nullptr) {
 		log("resManager->resourceList is NULL");
 	}
 	else {

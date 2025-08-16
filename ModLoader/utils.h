@@ -74,13 +74,19 @@ const char* GetModuleNameFromAddress(void* addr);
 
 bool FileExists(const std::string& filename);
 
-std::string ToHex(uintptr_t val, int width = 8);
+const char* ToHex(uintptr_t val, int width = 8);
 
-std::string ToHex(void* ptr, int length);
+const char* ToHex(void* ptr, int length);
 
 GUID BytesToGUID(const unsigned char bytes[16]);
 
-std::string GUIDToString(const BYTE uuid[16]);
+const char* GUIDToString(uint8_t* uuid);
+
+const char* GUIDToString(void* uuid);
+
+std::string GetPakFileHashFromName(const std::string& name);
+
+void AddStringToArray(void* arrayPtr, const char* newStr);
 
 extern void* GetAddressFromRva(int fileOffset);
 extern void* GetFuncAddr(uintptr_t rva);

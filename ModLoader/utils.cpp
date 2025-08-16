@@ -300,15 +300,15 @@ bool FileExists(const std::string& filename) {
 }
 
 std::stringstream toHexStream;
-std::string ToHex(uintptr_t val, int width) {
+const char* ToHex(uintptr_t val, int width) {
 	toHexStream.str("");
 	toHexStream.clear();
 	toHexStream << std::hex << std::setw(width) << std::setfill('0') << val;
-	return toHexStream.str();
+	return toHexStream.str().c_str();
 }
 
 std::ostringstream oss;
-std::string ToHex(void* ptr, int length) {
+const char* ToHex(void* ptr, int length) {
 	UINT8* bytes = (UINT8*)ptr;
 	oss.str("");
 	oss.clear();
@@ -319,7 +319,7 @@ std::string ToHex(void* ptr, int length) {
 			<< static_cast<int>(bytes[i]);
 	}
 
-	return oss.str();
+	return oss.str().c_str();
 }
 
 GUID BytesToGUID(const unsigned char bytes[16]) {
@@ -331,7 +331,7 @@ GUID BytesToGUID(const unsigned char bytes[16]) {
 	return guid;
 }
 
-std::string GUIDToString(const BYTE uuid[16]) {
+const char* GUIDToString(uint8_t* uuid) {
 	std::ostringstream oss;
 	oss << std::hex << std::setfill('0') << "{";
 
@@ -353,5 +353,61 @@ std::string GUIDToString(const BYTE uuid[16]) {
 	for (int i = 10; i < 16; ++i) oss << std::setw(2) << (int)uuid[i];
 
 	oss << "}";
-	return oss.str();
+	return oss.str().c_str();
+}
+
+const char* GUIDToString(void* uuid) {
+	return GUIDToString((uint8_t*)uuid);
+}
+
+void toHexDigits(uint64_t value, uint8_t* dst, size_t offset) {
+	for (int i = 0; i < 8; ++i) {
+		dst[offset + i] = static_cast<uint8_t>((value >> (i * 8)) & 0xFF); // little endian
+	}
+}
+std::string GetPakFileHashFromName(const std::string& name) {
+	const std::vector<uint8_t> src(name.begin(), name.end());
+	uint8_t dst[16];
+	uint64_t hash[2];
+	MurmurHash3_x64_128(src.data(), src.size(), 42, hash);
+
+	toHexDigits(hash[0], dst, 0);
+	toHexDigits(hash[1], dst, 8);
+
+	std::stringstream ss;
+	for (unsigned char c : dst)
+		ss << std::hex << std::setw(2) << std::setfill('0') << (int)c;
+
+	return ss.str();
+}
+void AddStringToArray(void* itemAddress, const char* newStr) {
+	uint32_t* countPtr = (uint32_t*)((char*)itemAddress - 8);
+	uint32_t* capacityPtr = (uint32_t*)((char*)itemAddress - 4);
+	uint32_t oldCount = *countPtr;
+	uint32_t oldCapacity = *capacityPtr;
+	char** itemsHeap = *(char***)itemAddress;
+	log("try add string, current vector info: %s, count: %u, capacity: %u", newStr, oldCount, oldCapacity);
+
+	uint32_t newCount = oldCapacity + 1;
+	char** newArray = (char**)malloc(newCount * 8);
+	for (int i = 0; i < oldCount; ++i) {
+		newArray[i] = itemsHeap[i];
+	}
+
+	log("try malloc");
+	size_t len = std::strlen(newStr);
+	char* copyStr = (char*)malloc(len + 1);
+	std::memcpy(copyStr, newStr, len + 1);
+	newArray[oldCount] = copyStr;
+
+	log("added string: %s", newArray[oldCount]);
+
+	//free(itemsHeap);
+	//log("free old itemsPtr: %p", itemAddress);
+
+	*(uintptr_t*)itemAddress = (uintptr_t)newArray;
+	*countPtr = oldCount + 1;
+	*capacityPtr = oldCount + 1;
+
+	log("new vector info: count: %u, capacity: %u", *countPtr, *capacityPtr);
 }
