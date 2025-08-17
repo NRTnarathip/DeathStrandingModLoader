@@ -273,7 +273,10 @@ bool Start() {
 
 	// general utils
 	log("disable save corruption check...");
-	PatchBytesRva(0x1a02945, { (char)0xEB });
+	{
+		std::vector<uint8_t> bytes{ 0xEB };
+		PatchBytesRva(0x1a02945, bytes);
+	}
 	SetupHooksDebug();
 
 	// debug

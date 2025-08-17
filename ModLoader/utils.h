@@ -67,7 +67,8 @@ std::string GetCurrentExeDir();
 
 
 bool PatchBytesRva(uintptr_t start, void* bytes, int size);
-bool PatchBytesRva(uintptr_t startRva, std::vector<char> bytes);
+bool PatchBytesRva(uintptr_t startRva, std::vector<uint8_t> bytes);
+bool PatchBytesRva(uintptr_t targetRva, uint32_t val);
 bool PatchNopStartEndRva(uintptr_t start, uintptr_t end);
 
 const char* GetModuleNameFromAddress(void* addr);

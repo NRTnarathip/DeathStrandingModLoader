@@ -117,8 +117,12 @@ bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, void* originalBackup) {
 	return HookFuncAddr(targetFunc, detour, reinterpret_cast<LPVOID*>(originalBackup));
 }
 
-uintptr_t g_imageBase = (uintptr_t)GetModuleHandleA(NULL);
+uintptr_t g_imageBase;
 void* GetFuncAddr(uintptr_t rva) {
+	if (g_imageBase == 0) {
+		g_imageBase = (uintptr_t)GetModuleHandleA(NULL);
+	}
+
 	return (void*)(g_imageBase + rva);
 }
 ResourceManager* g_resourceManager = nullptr;
@@ -243,10 +247,11 @@ std::string GetCurrentExeDir() {
 	size_t pos = path.find_last_of("\\/");
 	return (pos != std::string::npos) ? path.substr(0, pos) : path;
 }
-bool PatchBytesRva(uintptr_t startRva, void* bytes, int size) {
+bool PatchBytesRva(uintptr_t targetRva, void* bytes, int size) {
 	DWORD oldProtect;
-	auto addr = GetAddressFromRva(startRva);
+	auto addr = GetAddressFromRva(targetRva);
 
+	log("before patch: %llx, %s, size: %d", targetRva, ToHex((void*)addr, size), size);
 	if (!VirtualProtect(addr, size, PAGE_EXECUTE_READWRITE, &oldProtect))
 		return false;
 
@@ -256,21 +261,26 @@ bool PatchBytesRva(uintptr_t startRva, void* bytes, int size) {
 	WriteProcessMemory(hProc, addr, bytes, size, &writeBytes);
 	FlushInstructionCache(hProc, addr, size);
 	VirtualProtect(addr, size, oldProtect, &oldProtect);
+	log("after patch: %llx, %s, size: %d", targetRva, ToHex((void*)addr, size), size);
 	return true;
 }
-bool PatchBytesRva(uintptr_t startRva, std::vector<char> bytes) {
-	return PatchBytesRva(startRva, bytes.data(), bytes.size());
+
+bool PatchBytesRva(uintptr_t rva, std::vector<uint8_t> bytes) {
+	return PatchBytesRva(rva, bytes.data(), bytes.size());
 }
 
+bool PatchBytesRva(uintptr_t targetRva, uint32_t val) {
+	return PatchBytesRva(targetRva, &val, sizeof(uint32_t));
+}
 
-bool PatchNopStartEndRva(uintptr_t startRva, uintptr_t endRva) {
-	if (startRva >= endRva)
+bool PatchNopStartEndRva(uintptr_t rva, uintptr_t endRva) {
+	if (rva >= endRva)
 		return false;
 
-	auto size = endRva - startRva;
+	auto size = endRva - rva;
 	std::vector<char> bytes(size, static_cast<char>(0x90));
-	if (PatchBytesRva(startRva, bytes.data(), size)) {
-		log("filled nop start %x --> %x", startRva, endRva);
+	if (PatchBytesRva(rva, bytes.data(), size)) {
+		log("filled nop start %x --> %x", rva, endRva);
 	}
 	else {
 		log("Error can't fill nop");
@@ -318,8 +328,9 @@ const char* ToHex(void* ptr, int length) {
 			<< std::setfill('0')
 			<< static_cast<int>(bytes[i]);
 	}
-
-	return oss.str().c_str();
+	static std::string result;
+	result = oss.str();
+	return result.c_str();
 }
 
 GUID BytesToGUID(const unsigned char bytes[16]) {

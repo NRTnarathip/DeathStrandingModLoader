@@ -10,6 +10,22 @@
 #include <iostream>
 #include <filesystem>
 #include <string>
+#include <unordered_set>
+
+int GetTotalPakFileName() {
+	return *(int*)GetAddressFromRva(0x4f6d020);
+}
+const char** GetPakFileNameArray() {
+	return *(const char***)GetAddressFromRva(0x4f6d028);
+}
+void LogPakFileNames() {
+	auto fileNameArray = GetPakFileNameArray();
+	auto count = GetTotalPakFileName();
+
+	for (int i = 0; i < count; i++) {
+		log("pak file[%d] %s", i, fileNameArray[i]);
+	}
+}
 
 unsigned __int64 HK_My_ResourceReadBuffer(
 	ResourceReaderHandle* reader, unsigned char* buffer,
@@ -59,15 +75,31 @@ MyString* BuildStringBuffer(MyString* myString, char* param_2) {
 	return result;
 }
 
-typedef void (*My_LoadAllArchive_t)(ResourceManager* resManager, char* loadResourcePathPtr);
-My_LoadAllArchive_t fpMy_LoadAllArchive = nullptr;
-void My_LoadAllArchive(ResourceManager* resManager, MyString* loadResourcePathPtr) {
+typedef uintptr_t(*My_LoadPakFile_t)(ResourceManager* resManager, MyString* loadResourceNamePtrPtr, int loadIndex);
+My_LoadPakFile_t backup_LoadPakFile;
+uintptr_t Hook_LoadPakFile(ResourceManager* resManager, MyString* loadResourceName, int loadIndex)
+{
+	log("Begin Hook_LoadPakFile");
+	log("  pakFile: %s, loadIndex: %d", loadResourceName->str, loadIndex);
+	auto result = backup_LoadPakFile(resManager, loadResourceName, loadIndex);
+	auto pakFile = (MyPakFileInfo*)resManager->pakFileVector.items[resManager->pakFileVector.count - 1];
+	log("new pakFile: %p, filePath: %s", pakFile, pakFile->filePath);
+	log("End Hook_LoadPakFile: result: %llu", result);
+	return result;
+}
+
+typedef void (*My_LoadAllPakFile_t)(ResourceManager* resManager, MyString* gameDir);
+My_LoadAllPakFile_t backup_MyLoadAllPakFile;
+void My_LoadAllPakFile(ResourceManager* resManager, MyString* gameDir) {
 	log("[Hook Begin] My_LoadAllArchive called");
-	log("resManager: %ps", resManager);
-	log("loadResourcePathPtr: %s", loadResourcePathPtr->str);
-	log("[Prefix]");
-	My_LoadAllArchive(resManager, loadResourcePathPtr);
-	log("[Postfix]");
+	log("make sure total file names: %d", GetTotalPakFileName());
+
+	auto pakFileNames = GetPakFileNameArray();
+	//pakFileNames[144] = "source:data/9f51c2f3b44ad40dfd8da72ee4295482.bin";
+	{
+	}
+	LogPakFileNames();
+	backup_MyLoadAllPakFile(resManager, gameDir);
 	log("[Hook End] My_LoadAllArchive");
 }
 
@@ -208,7 +240,7 @@ MyString* HK_My_AboutCoreStreamFile(LONGLONG* param_1, MyString* param_2)
 	log("Begin: HK_My_AboutCoreStreamFile | [%d]", HK_My_AboutCoreStreamFileCounter);
 
 	//log("  param_1: %p", param_1);
-	//log("  param_2 str: %s", param_2->str);
+	log("  param_2 str: %s", param_2->str);
 	//log("calling origin");
 
 	auto retValue = backup_My_AboutCoreStreamFile(param_1, param_2);
@@ -412,18 +444,16 @@ typedef bool(*My_LoadCoreBinaryFile_t)(MyString* p1_coreFilePath,
 	MyString* param_2, void* param_3, void* param_4);
 My_LoadCoreBinaryFile_t backup_My_LoadCoreFile;
 bool My_LoadCoreFile
-(MyString* p1_coreFilePath, MyString* param_2, void* param_3,
+(MyString* p1_coreFilePath, MyString* p2_outLoadedCoreFileName, void* param_3,
 	void* param_4)
 {
 	log("Begin My_LoadCoreFile, coreFilePath: %s", p1_coreFilePath->str);
-	log("  p2: %s", param_2->str);
-	//log("  p3: %llu", (uint64_t)param_3);
-	//log("  p4: %llu", (uint64_t)param_4);
-	auto loadOK = backup_My_LoadCoreFile(p1_coreFilePath, param_2, param_3, param_4);
+	log("  p2: %s", p2_outLoadedCoreFileName->str);
+	log("  p3: %p", param_3);
+	log("  p4: %p", param_4);
+	auto loadOK = backup_My_LoadCoreFile(p1_coreFilePath, p2_outLoadedCoreFileName, param_3, param_4);
 	log("Postfix: My_LoadCoreFile: result: %d", loadOK);
-	log("  p2: %s", param_2->str);
-	//log("  p3: %s", ((MyString*)param_3)->str);
-	//log("  p4: %llu", (uint64_t)param_4);
+	log("  p2: %s", p2_outLoadedCoreFileName->str);
 	log("End My_LoadCoreFile");
 	return loadOK;
 }
@@ -470,15 +500,14 @@ void My_AboutDecompressCoreFile(LONGLONG param_1, MyTaskDecompressCore* p2_task)
 	log("postfix My_AboutDecompressCoreFile");
 
 	// dumping vtable
-	auto resManager = GetResourceManager();
-	log("resManager var_0x10: %s", ((MyString*)resManager + 2)->str);
+	//auto resManager = GetResourceManager();
+	//log("resManager var_0x10: %s", ((MyString*)resManager + 2)->str);
 	//void** vtable = *(void***)resManager;
 	//log("res manager: %p", resManager);
 	//for (int i = 0; i < 0x20; i++) {
 	//	void* func = vtable[i];
 	//	log("vtable[%d] address rva: %p", i, ConvertAddressToRva(func));
 	//}
-
 
 	log("End My_AboutDecompressCoreFile");
 }
@@ -499,7 +528,7 @@ MyReadFileStatus My_RMDecompressCore7(ResourceManager* resManager,
 	My_RMDecompress7_Job* p2_job, void* p3_outBuffer,
 	size_t p4_blockOffset, size_t p5_blockLength, uint32_t param_6)
 {
-	log("Begin My_RM_VT7_DecompressCoreFile3, resManager: %p, p2_job: %p, p3_outBuffer: %p",
+	log("Begin My_RMDecompressCore7, resManager: %p, p2_job: %p, p3_outBuffer: %p",
 		resManager, p2_job, p3_outBuffer);
 	log("  p4_blockOffset: %zu, p5_blockLength: %zu, param_6: %u",
 		p4_blockOffset, p5_blockLength, param_6);
@@ -507,35 +536,62 @@ MyReadFileStatus My_RMDecompressCore7(ResourceManager* resManager,
 	log("  job fileName: %s", p2_job->fileName);
 
 	log("  job resManager: %p", p2_job->resManager);
-	auto pakFileInfo = p2_job->pakFile;
-	log("  pakFile name: %s", pakFileInfo->filePath);
 	MyReadFileStatus status = backup_My_RM_VT7_DecompressCoreFile3(resManager, p2_job, p3_outBuffer,
 		p4_blockOffset, p5_blockLength, param_6);
 	log("  result: %d", status);
-	//PrintStackTrace();
 
-	log("End My_RM_VT7_DecompressCoreFile3");
+	log("End My_RMDecompressCore7");
 
 	return status;
 }
 
-typedef MyString* (*My_GetCoreFilePathForReader_t)(MyString* p1_coreFileName, MyString* p2_coreFilePath);
+typedef MyString* (*My_GetCoreFilePathForReader_t)(MyString* p1_coreFileName, MyString* p2_outCoreFilePath);
 My_GetCoreFilePathForReader_t backup_My_GetCoreFilePathForReader;
-MyString* My_GetCoreFilePathForReader(MyString* p1_coreFileName, MyString* p2_coreFilePath) {
-	log("Begin My_GetCoreFilePathForReader, p1_coreFileName: %s, p2_coreFilePath: %s",
-		p1_coreFileName->str, p2_coreFilePath->str);
-	auto retValue = backup_My_GetCoreFilePathForReader(p1_coreFileName, p2_coreFilePath);
-	//log("Postcall: My_GetCoreFilePathForReader");
-	//log("  p2_coreFilePath str: %s", p2_coreFilePath->str);
-	log("  result: %s", retValue->str);
-	log("End My_GetCoreFilePathForReader");
-	return retValue;
+
+// Mod register
+namespace fs = std::filesystem;
+class ModEntry {
+public:
+	std::string modFolderName;
+	std::string modFolderPath;
+	std::unordered_set<std::string> fileFullPaths;
+	std::unordered_set<std::string> gameCoreFileNames;
+	std::unordered_map<std::string, std::string> coreFilePathLookupByName;
+};
+// key: core file path
+std::unordered_map<std::string, ModEntry*> g_modEntryLookupWithCoreFilePath;
+std::vector<ModEntry*> g_mods;
+
+bool TryGetCoreFileReplace(const char* coreFileNameNoExt, ModEntry** p2_inoutMod, const char** p3_inoutNewCoreFilePath) {
+	std::string coreFilePathExt = coreFileNameNoExt;
+	coreFilePathExt.append(".core");
+	if (g_modEntryLookupWithCoreFilePath.find(coreFilePathExt) == g_modEntryLookupWithCoreFilePath.end())
+		return false;
+
+	auto mod = g_modEntryLookupWithCoreFilePath[coreFilePathExt];
+	*p2_inoutMod = mod;
+
+	std::string redirectCoreFilePath = "source:" + mod->modFolderPath + '/' + coreFilePathExt;
+	std::replace(redirectCoreFilePath.begin(), redirectCoreFilePath.end(), '\\', '/');
+	*p3_inoutNewCoreFilePath = redirectCoreFilePath.c_str();
+
+	return true;
 }
-void PatchAddNewPakFileNameValid() {
-	const char* newPakFileName = "source:data/9f51c2f3b44ad40dfd8da72ee4295482.bin";
-	log("try add new pak file: %s", newPakFileName);
-	void* pakFileNameValidArrayPtr = (void*)GetAddressFromRva(0x4f6d028);
-	AddStringToArray(pakFileNameValidArrayPtr, newPakFileName);
+
+MyString* My_GetCoreFilePathForReader(MyString* p1_coreFileName, MyString* p2_outCoreFilePath) {
+	auto coreFileNameNoExt = p1_coreFileName->str;
+	//log("Begin My_GetCoreFilePathForReader, p1_coreFileName: %s", coreFileNameNoExt);
+	auto retValue = backup_My_GetCoreFilePathForReader(p1_coreFileName, p2_outCoreFilePath);
+	ModEntry* mod = nullptr;
+	const char* newCoreFilePath;
+	if (TryGetCoreFileReplace(coreFileNameNoExt, &mod, &newCoreFilePath)) {
+		SetNewMyString(p2_outCoreFilePath, newCoreFilePath);
+		log("redirect new core file: %s, mod: %s", p2_outCoreFilePath->str, mod->modFolderName.c_str());
+	}
+
+	//log("Post call: My_GetCoreFilePathForReader: result: %s", retValue->str);
+	//log("End My_GetCoreFilePathForReader");
+	return retValue;
 }
 typedef void (*My_GetFileCountInPath_t)(MyString* param_1, int* param_2, int* param_3);
 My_GetFileCountInPath_t backup_My_GetFileCountInPath;
@@ -558,6 +614,16 @@ bool My_StringIsSame2(MyString* param_1, MyString* param_2) {
 	bool result = backup_My_StringCheck(param_1, param_2);
 	log("Post call: result: %d", result);
 	log("End My_StringIsSame2");
+	return result;
+}
+typedef bool (*My_StringIsSame3_t)(MyString* param_1, MyString* param_2, int len);
+My_StringIsSame3_t backup_My_StringIsSame3;
+bool My_StringIsSame3(MyString* param_1, MyString* param_2, int len) {
+	log("Begin My_StringIsSame3, param_1: %s, param_2: %s, len: %d",
+		param_1->str, param_2->str, len);
+	bool result = backup_My_StringIsSame3(param_1, param_2, len);
+	log("Post call: result: %d", result);
+	log("End My_StringIsSame3");
 	return result;
 }
 
@@ -592,58 +658,26 @@ uintptr_t My_FindTargetObject(void* param_1, void* p2_guid, void* param_3) {
 	return result;
 }
 
-typedef uintptr_t(*My_LoadPakFile_t)(ResourceManager* resManager, MyString* loadResourceNamePtrPtr, int loadIndex);
-My_LoadPakFile_t backup_LoadPakFile;
-uintptr_t Hook_LoadPakFile(ResourceManager* resManager, MyString* loadResourceName, int loadIndex)
-{
-	log("Begin Hook_LoadPakFile");
-	log("  pakFile: %s, loadIndex: %d", loadResourceName->str, loadIndex);
-	auto result = backup_LoadPakFile(resManager, loadResourceName, loadIndex);
-	log("End Hook_LoadPakFile: result: %llu", result);
-	return result;
-}
+
+const char* oldString;
 
 typedef bool (*My_StringIsSame_t)(MyString* str1, MyString* str2);
 My_StringIsSame_t backup_My_StringIsSame;
-MyString* lastString;
 bool My_StringIsSame(MyString* str1, MyString* str2)
 {
 	log("Begin My_StringIsSame, str1: %s", str1->str);
 	log(" str2: %s", str2->str);
-	lastString = str1;
 	auto result = backup_My_StringIsSame(str1, str2);
-	if (strcmp(str1->str, "source:data/9f51c2f3b44ad40dfd8da72ee4295482.bin") == 0) {
-		result = false;
-	}
 
 	log("End My_StringIsSame, result: %d", result);
 	return result;
 }
 
+std::string g_newPakFileName = "9f51c2f3b44ad40dfd8da72ee4295482.bin";
 typedef void (*My_LoadMoviePakFile_t)();
 My_LoadMoviePakFile_t backup_LoadMoviePakFile;
 void My_LoadMoviePakFile() {
 	log("Begin My_LoadMoviePakFile");
-
-	log("try load last Patch English with by self..");
-	auto resManager = GetResourceManager();
-	PatchAddNewPakFileNameValid();
-
-	std::string newPakFileNameString("source:data/9f51c2f3b44ad40dfd8da72ee4295482.bin");
-	//log("newPakFileName: %s", newPakFileNameString.c_str());
-	//const char* newPakFileNamePtr = newPakFileNameString.c_str();
-	MyString* newPakFileNameMyString = lastString;
-	std::strcpy(newPakFileNameMyString->str, newPakFileNameString.c_str());
-
-	log("try call load pak file");
-	if (Hook_LoadPakFile(resManager, newPakFileNameMyString, -1) == 1) {
-		resManager->pakFilePatchTotal++;
-		log("successfully load last Patch English with by self!");
-	}
-	else {
-		log("failed to load last Patch English with by self");
-	}
-
 	log("calling backup_LoadMoviePakFile");
 	backup_LoadMoviePakFile();
 	log("End My_LoadMoviePakFile");
@@ -663,6 +697,28 @@ MyReadFileStatus My_ValidateResourceData(MyString* pakFileName,
 	return status;
 }
 
+
+typedef void (*My_SetupPakFileNameArray_t)();
+My_SetupPakFileNameArray_t backup_My_SetupPakFileNameArray;
+void My_SetupPakFileNames1() {
+	log("Begin My_SetupPakFileNameArray");
+
+	backup_My_SetupPakFileNameArray();
+	log("post call, total pakFileName: %d", GetTotalPakFileName());
+	log("End My_SetupPakFileNameArray");
+}
+
+My_SetupPakFileNameArray_t backup_My_SetupPakFileName2;
+void My_SetupPakFileNames2() {
+	log("Begin My_SetupPakFileName2");
+
+	backup_My_SetupPakFileName2();
+	log("post call, total pakFileName: %d", GetTotalPakFileName());
+	//LogPakFileNames();
+	log("End My_SetupPakFileName2");
+}
+
+
 void SetupHooksDebug() {
 	//HookFuncRva(0x18f67d0, &HK_My_AboutCoreStreamFile, &backup_My_AboutCoreStreamFile);
 	//HookFuncRva(0x18f6890, &HK_My_MakeResourceCoreFullPath, &backup_My_MakeResourceCoreFullPath);
@@ -670,19 +726,59 @@ void SetupHooksDebug() {
 	//HookFuncRva(0x190b8b0, &HK_My_StringBuildInitWithLength, &backup_My_StringBuildInitWithLength);
 	//HookFuncRva(0x1929a50, &HK_My_ResourceReadBuffer, &backup_ResourceReadBuffer);
 	//HookFuncRva(0x1904030, &HK_My_VectorPushBack, &backup_My_VectorPushBack);
-	HookFuncRva(0x1930430, &HK_My_GetFileHash, &backup_My_GetFileHash); // need for get hash to name
+	//HookFuncRva(0x1930430, &HK_My_GetFileHash, &backup_My_GetFileHash); // need for get hash to name
 	//HookFuncRva(0x1924f30, &HK_My_LikeFindResourceByCoreFileName, &backup_My_LikeFindResourceByCoreFileName);
 	//HookFuncRva(0x1929bd0, &My_DecompressCoreFile, &backup_My_DecompressCoreFile);
-	HookFuncRva(0x1a98230, &My_LoadCoreFile, &backup_My_LoadCoreFile);
+	//HookFuncRva(0x1a98230, &My_LoadCoreFile, &backup_My_LoadCoreFile);
 	//HookFuncRva(0x1927330, &My_AboutDecompressCoreFile, &backup_My_AboutDecompressCoreFile);
 	//HookFuncRva(0x1929770, &My_RMDecompressCore7, &backup_My_RM_VT7_DecompressCoreFile3);
-	//HookFuncRva(0x18f6720, &My_GetCoreFilePathForReader, &backup_My_GetCoreFilePathForReader);
 	//HookFuncRva(0x1924330, &My_GetFileCountInPath, &backup_My_GetFileCountInPath);
 	//HookFuncRva(0x190b110, &My_StringIsSame2, &backup_My_StringCheck);
 	//HookFuncRva(0x1a96c60, &My_AboutResolveLinkAsset, &backup_My_AboutResolveLinkAsset);
 	//HookFuncRva(0x1a8f540, &My_FindTargetObject, &backup_My_FindTargetObject);
-	HookFuncRva(0x19ccb80, &My_LoadMoviePakFile, &backup_LoadMoviePakFile);
-	HookFuncRva(0x1928ac0, &Hook_LoadPakFile, &backup_LoadPakFile);
-	HookFuncRva(0x1928450, &My_ValidateResourceData, &backup_My_ValidateResourceData);
-	HookFuncRva(0x190b0a0, &My_StringIsSame, &backup_My_StringIsSame);
+	//HookFuncRva(0x19ccb80, &My_LoadMoviePakFile, &backup_LoadMoviePakFile);
+	//HookFuncRva(0x1928ac0, &Hook_LoadPakFile, &backup_LoadPakFile);
+	//HookFuncRva(0x190b0a0, &My_StringIsSame, &backup_My_StringIsSame);
+	//HookFuncRva(0x1928450, &My_ValidateResourceData, &backup_My_ValidateResourceData);
+	//HookFuncRva(0x1924850, &My_LoadAllPakFile, &backup_MyLoadAllPakFile);
+	//HookFuncRva(0x17ec340, &My_SetupPakFileNames1, &backup_My_SetupPakFileNameArray);
+	//HookFuncRva(0x1930560, &My_SetupPakFileNames2, &backup_My_SetupPakFileName2);
+	//HookFuncRva(0x190d340, &My_StringIsSame3, &backup_My_StringIsSame3);
+	HookFuncRva(0x18f6720, &My_GetCoreFilePathForReader, &backup_My_GetCoreFilePathForReader);
+
+
+	// Mod Register
+	log("Setup Mod register...");
+	std::string rootModsFolderPath = "mods";
+	for (const auto& modDirectoryEntry : fs::directory_iterator(rootModsFolderPath)) {
+		if (modDirectoryEntry.is_directory()) {
+			auto modDirPath = modDirectoryEntry.path();
+			auto modEntry = new ModEntry();
+			modEntry->modFolderName = modDirPath.filename().string();
+			modEntry->modFolderPath = modDirPath.string();
+			log("modFolderPath: %s", modEntry->modFolderPath.c_str());
+			log("modFolderName: %s", modEntry->modFolderName.c_str());
+			for (const auto& fileEntry : fs::recursive_directory_iterator(modDirPath)) {
+				if (fileEntry.is_regular_file() && fileEntry.path().extension() == ".core") {
+					std::string filePath = fileEntry.path().string();
+					modEntry->fileFullPaths.insert(filePath);
+					log("found file: %s", filePath.c_str());
+
+					std::string filePathRelative = filePath.substr(modEntry->modFolderPath.size() + 1);
+					std::string gameCoreFilePath = filePathRelative;
+					std::replace(gameCoreFilePath.begin(), gameCoreFilePath.end(), '\\', '/');
+					modEntry->gameCoreFileNames.insert(gameCoreFilePath);
+					modEntry->coreFilePathLookupByName[fileEntry.path().filename().string()] = gameCoreFilePath;
+					log("core filePath: %s", gameCoreFilePath.c_str());
+					g_modEntryLookupWithCoreFilePath[gameCoreFilePath] = modEntry;
+					log("mapped coreFile: %s to mod: %s", gameCoreFilePath.c_str(), modEntry->modFolderName.c_str());
+					log("  coreFile len: %d", gameCoreFilePath.size());
+				}
+			}
+
+			g_mods.push_back(modEntry);
+			log("Added new mod: %s", modEntry->modFolderName.c_str());
+		}
+	}
+	log("Successfully setup Mod register");
 }

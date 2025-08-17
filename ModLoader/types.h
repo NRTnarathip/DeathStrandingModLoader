@@ -16,8 +16,14 @@
 
 struct MyString {
 	char* str; //0x0 -> 0x7
+
+	bool Includes(const char* includeString) {
+		std::string string(str);
+		return string.find(includeString) != std::string::npos;
+	}
 };
 
+void SetNewMyString(MyString* self, const char* newString);
 
 // define struct type
 struct Metadata {
@@ -103,7 +109,7 @@ struct MyPakFileInfo {
 public:
 	int index; //0x0 - 0x3
 	uint32_t encryptKey; // 0x4 - 0x7
-	char* filePath; //0x08 - 0x0F
+	const char* filePath; //0x08 - 0x0F
 	void* gap10; //0x10 - 0x17
 	bool isEncrypted; //0x18 - 0x19
 	char padding[7]; //0x1A - 0x1F, padding to align to 8 bytes
