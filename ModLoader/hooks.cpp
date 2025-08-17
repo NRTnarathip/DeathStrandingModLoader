@@ -451,6 +451,7 @@ bool My_LoadCoreFile
 	log("  p2: %s", p2_outLoadedCoreFileName->str);
 	log("  p3: %p", param_3);
 	log("  p4: %p", param_4);
+	log("calling backup_My_LoadCoreFile");
 	auto loadOK = backup_My_LoadCoreFile(p1_coreFilePath, p2_outLoadedCoreFileName, param_3, param_4);
 	log("Postfix: My_LoadCoreFile: result: %d", loadOK);
 	log("  p2: %s", p2_outLoadedCoreFileName->str);
@@ -489,25 +490,16 @@ void LogMyTaskDecompressCore(MyTaskDecompressCore* job) {
 	log("  buffer: %p", job->buffer);
 }
 
-typedef void (*My_AboutDecompressCoreFile_t)(LONGLONG param_1, void* param_2);
+typedef void (*My_AboutDecompressCoreFile_t)(uintptr_t param_1, void* param_2);
 My_AboutDecompressCoreFile_t backup_My_AboutDecompressCoreFile;
-void My_AboutDecompressCoreFile(LONGLONG param_1, MyTaskDecompressCore* p2_task) {
-	log("Begin My_AboutDecompressCoreFile, param_1: %lld", param_1);
+void My_AboutDecompressCoreFile(uintptr_t param_1, MyTaskDecompressCore* p2_task) {
+	log("Begin My_AboutDecompressCoreFile, param_1: %llx", param_1);
 	auto task = p2_task;
 
 	backup_My_AboutDecompressCoreFile(param_1, p2_task);
 
 	log("postfix My_AboutDecompressCoreFile");
-
-	// dumping vtable
-	//auto resManager = GetResourceManager();
-	//log("resManager var_0x10: %s", ((MyString*)resManager + 2)->str);
-	//void** vtable = *(void***)resManager;
-	//log("res manager: %p", resManager);
-	//for (int i = 0; i < 0x20; i++) {
-	//	void* func = vtable[i];
-	//	log("vtable[%d] address rva: %p", i, ConvertAddressToRva(func));
-	//}
+	log("  task status %d", task->status);
 
 	log("End My_AboutDecompressCoreFile");
 }
@@ -729,13 +721,13 @@ void SetupHooksDebug() {
 	//HookFuncRva(0x1930430, &HK_My_GetFileHash, &backup_My_GetFileHash); // need for get hash to name
 	//HookFuncRva(0x1924f30, &HK_My_LikeFindResourceByCoreFileName, &backup_My_LikeFindResourceByCoreFileName);
 	//HookFuncRva(0x1929bd0, &My_DecompressCoreFile, &backup_My_DecompressCoreFile);
-	//HookFuncRva(0x1a98230, &My_LoadCoreFile, &backup_My_LoadCoreFile);
-	//HookFuncRva(0x1927330, &My_AboutDecompressCoreFile, &backup_My_AboutDecompressCoreFile);
-	//HookFuncRva(0x1929770, &My_RMDecompressCore7, &backup_My_RM_VT7_DecompressCoreFile3);
+	HookFuncRva(0x1a98230, &My_LoadCoreFile, &backup_My_LoadCoreFile);
+	HookFuncRva(0x1927330, &My_AboutDecompressCoreFile, &backup_My_AboutDecompressCoreFile);
+	HookFuncRva(0x1929770, &My_RMDecompressCore7, &backup_My_RM_VT7_DecompressCoreFile3);
 	//HookFuncRva(0x1924330, &My_GetFileCountInPath, &backup_My_GetFileCountInPath);
 	//HookFuncRva(0x190b110, &My_StringIsSame2, &backup_My_StringCheck);
-	//HookFuncRva(0x1a96c60, &My_AboutResolveLinkAsset, &backup_My_AboutResolveLinkAsset);
-	//HookFuncRva(0x1a8f540, &My_FindTargetObject, &backup_My_FindTargetObject);
+	HookFuncRva(0x1a96c60, &My_AboutResolveLinkAsset, &backup_My_AboutResolveLinkAsset);
+	HookFuncRva(0x1a8f540, &My_FindTargetObject, &backup_My_FindTargetObject);
 	//HookFuncRva(0x19ccb80, &My_LoadMoviePakFile, &backup_LoadMoviePakFile);
 	//HookFuncRva(0x1928ac0, &Hook_LoadPakFile, &backup_LoadPakFile);
 	//HookFuncRva(0x190b0a0, &My_StringIsSame, &backup_My_StringIsSame);
@@ -753,6 +745,13 @@ void SetupHooksDebug() {
 	for (const auto& modDirectoryEntry : fs::directory_iterator(rootModsFolderPath)) {
 		if (modDirectoryEntry.is_directory()) {
 			auto modDirPath = modDirectoryEntry.path();
+			auto modDirPathString = modDirPath.string();
+			auto modFolderName = modDirPath.filename().string();
+			if (modFolderName[0] == '.') {
+				log("skip mod folder: %s", modFolderName.c_str());
+				continue;
+			}
+
 			auto modEntry = new ModEntry();
 			modEntry->modFolderName = modDirPath.filename().string();
 			modEntry->modFolderPath = modDirPath.string();
@@ -762,17 +761,13 @@ void SetupHooksDebug() {
 				if (fileEntry.is_regular_file() && fileEntry.path().extension() == ".core") {
 					std::string filePath = fileEntry.path().string();
 					modEntry->fileFullPaths.insert(filePath);
-					log("found file: %s", filePath.c_str());
-
 					std::string filePathRelative = filePath.substr(modEntry->modFolderPath.size() + 1);
 					std::string gameCoreFilePath = filePathRelative;
 					std::replace(gameCoreFilePath.begin(), gameCoreFilePath.end(), '\\', '/');
 					modEntry->gameCoreFileNames.insert(gameCoreFilePath);
 					modEntry->coreFilePathLookupByName[fileEntry.path().filename().string()] = gameCoreFilePath;
-					log("core filePath: %s", gameCoreFilePath.c_str());
 					g_modEntryLookupWithCoreFilePath[gameCoreFilePath] = modEntry;
 					log("mapped coreFile: %s to mod: %s", gameCoreFilePath.c_str(), modEntry->modFolderName.c_str());
-					log("  coreFile len: %d", gameCoreFilePath.size());
 				}
 			}
 
