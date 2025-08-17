@@ -408,33 +408,33 @@ MyReadFileStatus My_DecompressCoreFile
 		p1_resManager, p2_coreVirtualPath, p3_pakFileInfo, p4_fileEntry, p5_outBuffer, p6_readOffset, p7_readLength, param_8);
 	log("called, retValue: %u", status);
 
-	// debug dump file
-	std::string fileName = ConvertFileHashToName(p4_fileEntry->hash);
-	if (fileName.find("textures") != std::string::npos)
-	{
-		std::string savePath = fileName.c_str() + 6;
-		ReplaceSlashWithDoubleUnderscore(savePath);
-		savePath = "dump/" + savePath;
-		if (std::filesystem::exists(savePath) == false) {
-			std::fstream fs(savePath.c_str(), std::ios::binary | std::ios::trunc);
-			fs.close();
-		}
+	//// debug dump file
+	//std::string fileName = ConvertFileHashToName(p4_fileEntry->hash);
+	//if (fileName.find("prefetch") != std::string::npos)
+	//{
+	//	std::string savePath = fileName.c_str() + 6;
+	//	ReplaceSlashWithDoubleUnderscore(savePath);
+	//	savePath = "dump/" + savePath;
+	//	if (std::filesystem::exists(savePath) == false) {
+	//		std::fstream fs(savePath.c_str(), std::ios::binary | std::ios::trunc);
+	//		fs.close();
+	//	}
 
-		std::fstream fs(savePath.c_str(), std::ios::in | std::ios::out | std::ios::binary);
-		log("try save file at: %s", savePath.c_str());
-		if (fs.is_open()) {
-			fs.seekp(p6_readOffset);
-			fs.write(p5_outBuffer, p7_readLength);
-			fs.close();
-			log("updated bytes offset: %llu, length: %llu, buffer: %p", p6_readOffset, p7_readLength, p5_outBuffer);
-			if (p7_readLength == p4_fileEntry->size) {
-				log("successfully dump file %s!", fileName.c_str());
-			}
-		}
-		else {
-			log("failed can't open file: %s", savePath.c_str());
-		}
-	}
+	//	std::fstream fs(savePath.c_str(), std::ios::in | std::ios::out | std::ios::binary);
+	//	log("try save file at: %s", savePath.c_str());
+	//	if (fs.is_open()) {
+	//		fs.seekp(p6_readOffset);
+	//		fs.write(p5_outBuffer, p7_readLength);
+	//		fs.close();
+	//		log("updated bytes offset: %llu, length: %llu, buffer: %p", p6_readOffset, p7_readLength, p5_outBuffer);
+	//		if (p7_readLength == p4_fileEntry->size) {
+	//			log("successfully dump file %s!", fileName.c_str());
+	//		}
+	//	}
+	//	else {
+	//		log("failed can't open file: %s", savePath.c_str());
+	//	}
+	//}
 
 	log("End My_DecompressCoreFile");
 	return status;
@@ -554,16 +554,17 @@ public:
 std::unordered_map<std::string, ModEntry*> g_modEntryLookupWithCoreFilePath;
 std::vector<ModEntry*> g_mods;
 
-bool TryGetCoreFileReplace(const char* coreFileNameNoExt, ModEntry** p2_inoutMod, const char** p3_inoutNewCoreFilePath) {
-	std::string coreFilePathExt = coreFileNameNoExt;
-	coreFilePathExt.append(".core");
-	if (g_modEntryLookupWithCoreFilePath.find(coreFilePathExt) == g_modEntryLookupWithCoreFilePath.end())
+bool TryGetCoreFileReplace(const char* coreFileNameNoExt, ModEntry** p2_inoutMod,
+	const char** p3_inoutNewCoreFilePath, bool isCoreStreamFileExt) {
+	std::string newFilePathExt = coreFileNameNoExt;
+	newFilePathExt.append(isCoreStreamFileExt ? ".core.stream" : ".core");
+	if (g_modEntryLookupWithCoreFilePath.find(newFilePathExt) == g_modEntryLookupWithCoreFilePath.end())
 		return false;
 
-	auto mod = g_modEntryLookupWithCoreFilePath[coreFilePathExt];
+	auto mod = g_modEntryLookupWithCoreFilePath[newFilePathExt];
 	*p2_inoutMod = mod;
 
-	std::string redirectCoreFilePath = "source:" + mod->modFolderPath + '/' + coreFilePathExt;
+	std::string redirectCoreFilePath = "source:" + mod->modFolderPath + '/' + newFilePathExt;
 	std::replace(redirectCoreFilePath.begin(), redirectCoreFilePath.end(), '\\', '/');
 	*p3_inoutNewCoreFilePath = redirectCoreFilePath.c_str();
 
@@ -572,19 +573,37 @@ bool TryGetCoreFileReplace(const char* coreFileNameNoExt, ModEntry** p2_inoutMod
 
 MyString* My_GetCoreFilePathForReader(MyString* p1_coreFileName, MyString* p2_outCoreFilePath) {
 	auto coreFileNameNoExt = p1_coreFileName->str;
-	//log("Begin My_GetCoreFilePathForReader, p1_coreFileName: %s", coreFileNameNoExt);
+	//log("Begin My_GetCoreFilePathForReader, p1_coreFileNameNoExt: %s", coreFileNameNoExt);
 	auto retValue = backup_My_GetCoreFilePathForReader(p1_coreFileName, p2_outCoreFilePath);
 	ModEntry* mod = nullptr;
 	const char* newCoreFilePath;
-	if (TryGetCoreFileReplace(coreFileNameNoExt, &mod, &newCoreFilePath)) {
+	if (TryGetCoreFileReplace(coreFileNameNoExt, &mod, &newCoreFilePath, false)) {
 		SetNewMyString(p2_outCoreFilePath, newCoreFilePath);
-		log("redirect new core file: %s, mod: %s", p2_outCoreFilePath->str, mod->modFolderName.c_str());
+		log("redirect new .core file: %s, mod: %s", p2_outCoreFilePath->str, mod->modFolderName.c_str());
 	}
 
 	//log("Post call: My_GetCoreFilePathForReader: result: %s", retValue->str);
 	//log("End My_GetCoreFilePathForReader");
 	return retValue;
 }
+
+
+My_GetCoreFilePathForReader_t backup_My_GetCoreStreamFilePathForReader;
+MyString* My_GetCoreStreamFilePathForReader(MyString* p1_coreStreamFileName, MyString* p2_outCoreStreamFilePath) {
+	//log("Begin My_GetCoreStreamFilePathForReader, p1_coreStreamFileName: %s", p1_coreStreamFileName->str);
+	auto retValue = backup_My_GetCoreStreamFilePathForReader(p1_coreStreamFileName, p2_outCoreStreamFilePath);
+	ModEntry* mod = nullptr;
+	const char* newCoreFilePath;
+	if (TryGetCoreFileReplace(p1_coreStreamFileName->str, &mod, &newCoreFilePath, true)) {
+		SetNewMyString(p2_outCoreStreamFilePath, newCoreFilePath);
+		log("redirect new .core.stream file: %s, mod: %s", p2_outCoreStreamFilePath->str, mod->modFolderName.c_str());
+	}
+	//log("End My_GetCoreStreamFilePathForReader");
+	return retValue;
+}
+
+
+
 typedef void (*My_GetFileCountInPath_t)(MyString* param_1, int* param_2, int* param_3);
 My_GetFileCountInPath_t backup_My_GetFileCountInPath;
 void My_GetFileCountInPath(MyString* param_1, int* param_2, int* param_3)
@@ -721,13 +740,13 @@ void SetupHooksDebug() {
 	//HookFuncRva(0x1930430, &HK_My_GetFileHash, &backup_My_GetFileHash); // need for get hash to name
 	//HookFuncRva(0x1924f30, &HK_My_LikeFindResourceByCoreFileName, &backup_My_LikeFindResourceByCoreFileName);
 	//HookFuncRva(0x1929bd0, &My_DecompressCoreFile, &backup_My_DecompressCoreFile);
-	HookFuncRva(0x1a98230, &My_LoadCoreFile, &backup_My_LoadCoreFile);
-	HookFuncRva(0x1927330, &My_AboutDecompressCoreFile, &backup_My_AboutDecompressCoreFile);
-	HookFuncRva(0x1929770, &My_RMDecompressCore7, &backup_My_RM_VT7_DecompressCoreFile3);
+	//HookFuncRva(0x1a98230, &My_LoadCoreFile, &backup_My_LoadCoreFile);
+	//HookFuncRva(0x1927330, &My_AboutDecompressCoreFile, &backup_My_AboutDecompressCoreFile);
+	//HookFuncRva(0x1929770, &My_RMDecompressCore7, &backup_My_RM_VT7_DecompressCoreFile3);
 	//HookFuncRva(0x1924330, &My_GetFileCountInPath, &backup_My_GetFileCountInPath);
 	//HookFuncRva(0x190b110, &My_StringIsSame2, &backup_My_StringCheck);
-	HookFuncRva(0x1a96c60, &My_AboutResolveLinkAsset, &backup_My_AboutResolveLinkAsset);
-	HookFuncRva(0x1a8f540, &My_FindTargetObject, &backup_My_FindTargetObject);
+	//HookFuncRva(0x1a96c60, &My_AboutResolveLinkAsset, &backup_My_AboutResolveLinkAsset);
+	//HookFuncRva(0x1a8f540, &My_FindTargetObject, &backup_My_FindTargetObject);
 	//HookFuncRva(0x19ccb80, &My_LoadMoviePakFile, &backup_LoadMoviePakFile);
 	//HookFuncRva(0x1928ac0, &Hook_LoadPakFile, &backup_LoadPakFile);
 	//HookFuncRva(0x190b0a0, &My_StringIsSame, &backup_My_StringIsSame);
@@ -737,6 +756,7 @@ void SetupHooksDebug() {
 	//HookFuncRva(0x1930560, &My_SetupPakFileNames2, &backup_My_SetupPakFileName2);
 	//HookFuncRva(0x190d340, &My_StringIsSame3, &backup_My_StringIsSame3);
 	HookFuncRva(0x18f6720, &My_GetCoreFilePathForReader, &backup_My_GetCoreFilePathForReader);
+	HookFuncRva(0x18f67d0, &My_GetCoreStreamFilePathForReader, &backup_My_GetCoreStreamFilePathForReader);
 
 
 	// Mod Register
@@ -758,7 +778,14 @@ void SetupHooksDebug() {
 			log("modFolderPath: %s", modEntry->modFolderPath.c_str());
 			log("modFolderName: %s", modEntry->modFolderName.c_str());
 			for (const auto& fileEntry : fs::recursive_directory_iterator(modDirPath)) {
-				if (fileEntry.is_regular_file() && fileEntry.path().extension() == ".core") {
+				if (fileEntry.is_regular_file()) {
+					auto fileName = fileEntry.path().filename().string();
+					bool isCoreOrStreamFile = fileName.find(".core") != std::string::npos;
+					if (!isCoreOrStreamFile) {
+						log("warning!, not support file: %s, only support .core or .stream.core files", fileName.c_str());
+						continue;
+					}
+
 					std::string filePath = fileEntry.path().string();
 					modEntry->fileFullPaths.insert(filePath);
 					std::string filePathRelative = filePath.substr(modEntry->modFolderPath.size() + 1);
