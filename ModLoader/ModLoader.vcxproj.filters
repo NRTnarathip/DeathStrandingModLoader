@@ -57,6 +57,9 @@
     <ClInclude Include="ini.h">
       <Filter>Source Files\utils</Filter>
     </ClInclude>
+    <ClInclude Include="ModManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -97,6 +100,9 @@
     </ClCompile>
     <ClCompile Include="ini.c">
       <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="ModManager.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

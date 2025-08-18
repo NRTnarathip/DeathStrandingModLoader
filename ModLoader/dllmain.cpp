@@ -27,6 +27,7 @@
 #include "types.h"
 #include "dll_version.h"
 #include "winlator_patch.h"
+#include "ModManager.h"
 
 bool enableLogMurmurHash3 = false;
 OpenResourceDevice_t fpOpenResourceDevice;
@@ -266,21 +267,17 @@ bool StartPrefetchGenerator() {
 	// setup hooks for winlator | gamehub
 	SetupWinlatorPatcher();
 
-
-	// setup mod api
-	RendererHook::Instance();
-	TexturePatcher::Instance();
-
 	// general utils
 	log("disable save corruption check...");
 	{
 		std::vector<uint8_t> bytes{ 0xEB };
 		PatchBytesRva(0x1a02945, bytes);
 	}
-	SetupHooksDebug();
+	ModManager::Initialize();
 
 	// debug
 #if false
+	SetupHooksDebug();
 	//HookFunc(0x190aa00, &BuildStringBuffer, reinterpret_cast<LPVOID*>(&fpBuildStringBuffer));
 	//HookFunc(0x1924850, &My_LoadAllArchive, reinterpret_cast<LPVOID*>(&fpMy_LoadAllArchive));
 	//HookFunc(0x190b8b0, &My_StringBuildInitWithLength, reinterpret_cast<LPVOID*>(&fpMy_StringBuildInitWithLength));

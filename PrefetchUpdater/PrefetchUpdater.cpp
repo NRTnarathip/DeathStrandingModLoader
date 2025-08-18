@@ -4,6 +4,9 @@
 #include <chrono>
 #include <iomanip>
 #include <filesystem>
+#include <functional> 
+#include <fstream>
+#include "MurmurHash3.h"
 
 namespace fs = std::filesystem;
 
@@ -25,55 +28,183 @@ void log(const char* format, ...)
 	std::cout << sstream.str();
 }
 
-const char* dsExe = "ds.exe";
 
-std::string CreateDir(std::string dirPath) {
+fs::path CreateDir(fs::path dirPath) {
 	if (!fs::exists(dirPath)) {
 		fs::create_directories(dirPath);
+		log("create dir: %s", dirPath.string().c_str());
 	}
-
 	return dirPath;
 }
-
-std::string CreateDir(std::string dirPath, std::string folderName1) {
-	dirPath.append("\\" + folderName1);
-	return CreateDir(dirPath);
+fs::path CreateDir(fs::path path0, std::string n1) {
+	return CreateDir(path0 / n1);
 }
-void RemoveAll(std::string dirPath) {
+fs::path CreateDir(fs::path path0, std::string n1, std::string n2) {
+	return CreateDir(path0 / n1 / n2);
+}
+
+void RemoveAll(fs::path dirPath) {
 	if (fs::exists(dirPath)) {
 		fs::remove_all(dirPath);
+		log("removed dir: %s", dirPath.string().c_str());
 	}
 }
 
-void DeleteDir(std::string dir) {
+void DeleteDir(fs::path dir) {
 	if (fs::exists(dir)) {
 		fs::remove(dir);
 	}
 }
 
-bool StartPrefetchGenerator(std::string gameFolderPath) {
-	std::string gameExecutePath = gameFolderPath + "\\" + dsExe;
-	if (fs::exists(gameExecutePath) == false) {
-		log("not found game ds.exe path: %s", gameExecutePath.c_str());
+std::string HashToHex128(const void* key, int len, uint32_t seed = 0) {
+	uint64_t out[2];
+	MurmurHash3_x64_128(key, len, seed, out);
+
+	std::ostringstream oss;
+	oss << std::hex << std::setw(16) << std::setfill('0') << out[0]
+		<< std::setw(16) << std::setfill('0') << out[1];
+	return oss.str();
+}
+
+fs::path GetExecutablePath() {
+	char buffer[MAX_PATH];
+	GetModuleFileNameA(NULL, buffer, MAX_PATH);
+	return fs::path(buffer);
+}
+
+std::string GenerateModsHash(const fs::path modsDir) {
+
+	std::ostringstream oss;
+
+	// include current software hash;
+	fs::path currentPath = GetExecutablePath();
+	oss << currentPath << fs::last_write_time(currentPath).time_since_epoch().count();
+
+	// include all files in mods directory
+	for (auto& p : fs::recursive_directory_iterator(modsDir)) {
+		if (fs::is_regular_file(p)) {
+			auto ftime = fs::last_write_time(p);
+			oss << p.path().string() << ftime.time_since_epoch().count();
+		}
+	}
+
+	auto ossString = oss.str();
+	auto hash = HashToHex128(ossString.c_str(), ossString.size());
+	return hash;
+}
+
+std::string GetModsHashFromFile(fs::path modsHashPath) {
+	if (fs::exists(modsHashPath)) {
+		std::ifstream file(modsHashPath);
+		if (file.is_open()) {
+			std::string hash;
+			std::getline(file, hash);
+			file.close();
+			return hash;
+		}
+	}
+	return "";
+}
+void UpdateModsHashFile(fs::path cachePath, std::string hash) {
+	auto cacheDir = cachePath.parent_path();
+	CreateDir(cacheDir);
+
+	std::ofstream file(cachePath);
+	if (file.is_open()) {
+		file << hash;
+		file.close();
+		log("Updated mods hash file: %s, hash: %s", cachePath.string().c_str(), hash.c_str());
+	}
+	else {
+		log("Failed to open mods hash file for writing: %s", cachePath.string().c_str());
+	}
+}
+void RemoveFile(fs::path path) {
+	if (fs::exists(path)) {
+		fs::remove(path);
+		log("removed file: %s", path.string().c_str());
+	}
+}
+
+bool RunCmdFile(fs::path filePath) {
+	std::string cmdLine = "\"" + filePath.string() + "\"";
+	fs::path dirPath = fs::path(filePath).parent_path();
+	STARTUPINFOA si = { sizeof(si) };
+	PROCESS_INFORMATION pi;
+	if (CreateProcessA(
+		NULL, cmdLine.data(),
+		NULL, NULL, FALSE, 0,
+		NULL, dirPath.string().c_str(), &si, &pi))
+	{
+		log("Process started: %s, waiting...", filePath.c_str());
+		WaitForSingleObject(pi.hProcess, INFINITE);
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+		log("Process finished.");
+		return true;
+	}
+	else {
+		log("Failed to start process. Error: %d", GetLastError());
 		return false;
 	}
-	log("found game ds.exe path: %s", gameExecutePath.c_str());
-	std::string gameDataFolderPath = gameFolderPath + "\\data";
+}
+
+bool StartPrefetchGenerator(fs::path gameDir) {
+	const char* dsExeName = "ds.exe";
+	fs::path gameExecutePath = gameDir / dsExeName;
+	if (fs::exists(gameExecutePath) == false) {
+		log("not found game ds.exe path: %s", gameExecutePath.string().c_str());
+		return false;
+	}
+	log("found game ds.exe path: %s", gameExecutePath.string().c_str());
+	fs::path gamePakDir = gameDir / "data";
+	fs::path modsDir = CreateDir(gameDir, "Mods");
+
 
 	// setup mod loader tools
-	const char* ModLoaderDataName = "ModLoaderData";
-	std::string modsDir = CreateDir(gameFolderPath, "mods");
-	std::string modLoaderDataDir = gameFolderPath + "\\" + ModLoaderDataName;
-	fs::copy_file(gameDataFolderPath + "\\oo2core_7_win64.dll",
-		modLoaderDataDir + "\\oo2core_7_win64.dll",
-		fs::copy_options::overwrite_existing);
+	const char* ModLoaderInternal = "ModLoaderInternal";
+	fs::path modLoaderInternalDir = gameDir / ModLoaderInternal;
+	if (fs::exists(modLoaderInternalDir) == false) {
+		log("folder %s not found, please setup mod loader tools first!!",
+			modLoaderInternalDir.string().c_str());
+		return false;
+	}
+
+	//check mods hash cache 
+	{
+		const std::string currentModsHash = GenerateModsHash(modsDir);
+		log("current mods hash: %s", currentModsHash.c_str());
+		const fs::path modsHashPath = modLoaderInternalDir / "mods_hash.txt";
+		const std::string cachedModsHashFromFile = GetModsHashFromFile(modsHashPath);
+		log("cached mods hash:  %s", cachedModsHashFromFile.c_str());
+		if (cachedModsHashFromFile == currentModsHash) {
+			// no need to update prefetch
+			log("Mods hash is the same, no need to update prefetch.");
+			return true;
+		}
+	}
+
+	// setup lib for decima tools 
+	fs::copy_file(gameDir / "oo2core_7_win64.dll",
+		modLoaderInternalDir / "oo2core_7_win64.dll", fs::copy_options::overwrite_existing);
+
+	// assert tool: decima-cli.exe
+	// assert tool: DecimaExplorer.exe
+	if (!fs::exists(modLoaderInternalDir / "decima-cli.exe")
+		|| !fs::exists(modLoaderInternalDir / "DecimaExplorer.exe"))
+	{
+		log("decima-cli.exe or DecimaExplorer.exe not found in %s", modLoaderInternalDir.string().c_str());
+		log("please read install instructions in README.md");
+		return false;
+	}
 
 	// setup folder core for generate .bin | pak file
 	const char* ModLoaderPrefetchFolderName = "ModLoaderPrefetch";
 	log("try remove folder new_core_files...");
-	RemoveAll(modLoaderDataDir + "\\new_core_files");
-	RemoveAll(modsDir + "\\" + ModLoaderPrefetchFolderName);
-	auto tempNewCoreFilesFolderPath = CreateDir(modLoaderDataDir, "new_core_files");
+	const char* new_core_files_folder_name = "new_core_files";
+	RemoveAll(modLoaderInternalDir / new_core_files_folder_name);
+	RemoveAll(modsDir / ModLoaderPrefetchFolderName);
+	auto tempNewCoreFilesFolderPath = CreateDir(modLoaderInternalDir, new_core_files_folder_name);
 
 	// clone .core files to temp core files
 	int foundCoreFileCount = 0;
@@ -96,8 +227,8 @@ bool StartPrefetchGenerator(std::string gameFolderPath) {
 			std::string filePathRelative = filePath.substr(modEntryPath.size() + 1);
 			std::string gameCoreFilePath = filePathRelative;
 			std::replace(gameCoreFilePath.begin(), gameCoreFilePath.end(), '\\', '/');
-			auto dstFilePath = tempNewCoreFilesFolderPath + "\\" + gameCoreFilePath;
-			auto dstFolderPath = dstFilePath.substr(0, dstFilePath.size() - fileName.size() - 1);
+			std::string dstFilePath = (tempNewCoreFilesFolderPath / gameCoreFilePath).string();
+			std::string dstFolderPath = dstFilePath.substr(0, dstFilePath.size() - fileName.size() - 1);
 			CreateDir(dstFolderPath);
 			fs::copy_file(filePath, dstFilePath, fs::copy_options::overwrite_existing);
 			foundCoreFileCount++;
@@ -113,47 +244,28 @@ bool StartPrefetchGenerator(std::string gameFolderPath) {
 
 	// force delete prefetch folder
 	log("try remove prefetch...");
-	RemoveAll(tempNewCoreFilesFolderPath + "\\prefetch");
+	RemoveAll(tempNewCoreFilesFolderPath / "prefetch");
 
 	//execute build_prefetch.cmd for prefetch
 	log("try rebuild prefetch...");
 	const char* build_prefetch_cmd = "build_prefetch.cmd";
-	fs::copy_file(
-		build_prefetch_cmd,
-		modLoaderDataDir + "\\" + build_prefetch_cmd,
-		fs::copy_options::overwrite_existing);
-
-	std::string cmdLine = "\"" + modLoaderDataDir + "\\" + build_prefetch_cmd + "\"";
-	STARTUPINFOA si = { sizeof(si) };
-	PROCESS_INFORMATION pi;
-	if (CreateProcessA(
-		NULL, cmdLine.data(),
-		NULL, NULL, FALSE, 0,
-		NULL, modLoaderDataDir.c_str(), &si, &pi))
-	{
-		log("Process started, waiting...");
-		WaitForSingleObject(pi.hProcess, INFINITE);
-		CloseHandle(pi.hProcess);
-		CloseHandle(pi.hThread);
-		log("Process finished.");
-	}
-	else {
-		log("Failed to start process. Error: %d", GetLastError());
+	if (!RunCmdFile(gameDir / build_prefetch_cmd))
 		return false;
-	}
 
 
 	// create prefetch mod loader
-	const char* fullgame_prefetch_core = "fullgame.prefetch.core";
-	std::string newPrefetchFilePath = modLoaderDataDir + "\\" + fullgame_prefetch_core;
-	auto modLoaderPrefetchDir = CreateDir(modsDir, "ModLoaderPrefetch\\prefetch");
-	fs::copy_file(newPrefetchFilePath,
-		modLoaderPrefetchDir + "\\" + fullgame_prefetch_core,
+	const char* newCoreFilesPrefetchName = "new_core_files_prefetch.core";
+	const char* fullgamePrefetchName = "fullgame.prefetch.core";
+	fs::path newCorePrefetchFilePath = modLoaderInternalDir / newCoreFilesPrefetchName;
+	auto modLoaderPrefetchDir = CreateDir(modsDir, ModLoaderPrefetchFolderName, "prefetch");
+	fs::copy_file(newCorePrefetchFilePath,
+		modLoaderPrefetchDir / fullgamePrefetchName,
 		fs::copy_options::overwrite_existing);
 
+	UpdateModsHashFile(modLoaderInternalDir / "mods_hash.txt", GenerateModsHash(modsDir));
 
 	// cleanup
-	fs::remove(newPrefetchFilePath);
+	RemoveFile(newCorePrefetchFilePath);
 	RemoveAll(tempNewCoreFilesFolderPath);
 
 	log("Successfully prefetch updated!");
@@ -163,10 +275,21 @@ bool StartPrefetchGenerator(std::string gameFolderPath) {
 int main()
 {
 	// tester only
-	bool ok = StartPrefetchGenerator("E:\\SteamLibrary\\steamapps\\common\\DEATH STRANDING DIRECTORS CUT");
-	log("end program!");
+	auto currentPath = fs::path(GetExecutablePath());
+	log("current path: %s", currentPath.string().c_str());
+	auto currentDir = currentPath.parent_path();
+	log("current dir: %s", currentDir.string().c_str());
+	//bool ok = StartPrefetchGenerator("E:\\SteamLibrary\\steamapps\\common\\DEATH STRANDING DIRECTORS CUT");
+	bool ok = StartPrefetchGenerator(currentDir);
 
-	system("pause");
+	if (!ok) {
+		log("error to update prefetch!");
+		system("pause");
+		return -1;
+	}
+
+	log("auto close in 2 seconds...");
+	Sleep(2000);
 	return 0;
 }
 

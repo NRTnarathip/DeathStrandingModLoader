@@ -128,12 +128,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="MurmurHash3.cpp" />
     <ClCompile Include="PrefetchUpdater.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="build_prefetch.cmd">
       <FileType>Document</FileType>
     </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MurmurHash3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

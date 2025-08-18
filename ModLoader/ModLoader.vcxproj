@@ -357,6 +357,7 @@ exit /b 0</Command>
     <ClInclude Include="ini.h" />
     <ClInclude Include="INIReader.h" />
     <ClInclude Include="MinHook.h" />
+    <ClInclude Include="ModManager.h" />
     <ClInclude Include="RendererHook.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TexturePatcher.h" />
@@ -371,6 +372,7 @@ exit /b 0</Command>
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="ini.c" />
     <ClCompile Include="INIReader.cpp" />
+    <ClCompile Include="ModManager.cpp" />
     <ClCompile Include="mydx12.h" />
     <ClCompile Include="note.cpp" />
     <ClCompile Include="RendererHook.cpp" />
