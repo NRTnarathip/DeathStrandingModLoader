@@ -782,7 +782,7 @@ void SetupHooksDebug() {
 					auto fileName = fileEntry.path().filename().string();
 					bool isCoreOrStreamFile = fileName.find(".core") != std::string::npos;
 					if (!isCoreOrStreamFile) {
-						log("warning!, not support file: %s, only support .core or .stream.core files", fileName.c_str());
+						log("warning!, not support file: %s, only support .core or .core.stream files", fileName.c_str());
 						continue;
 					}
 
