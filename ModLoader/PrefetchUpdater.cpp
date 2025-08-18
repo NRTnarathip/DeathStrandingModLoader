@@ -7,27 +7,11 @@
 #include <functional> 
 #include <fstream>
 #include "MurmurHash3.h"
+#include "PrefetchUpdater.h"
+#include "utils.h"
+
 
 namespace fs = std::filesystem;
-
-void log(const char* format, ...)
-{
-	char buffer[1024];
-	va_list args;
-	va_start(args, format);
-	vsnprintf(buffer, sizeof(buffer), format, args);
-	va_end(args);
-
-	auto now = std::chrono::system_clock::now();
-	auto in_time = std::chrono::system_clock::to_time_t(now);
-	DWORD tid = GetCurrentThreadId();
-
-	std::stringstream sstream;
-	sstream << "[" << std::put_time(std::localtime(&in_time), "%T") << "]";
-	sstream << " " << buffer << std::endl;
-	std::cout << sstream.str();
-}
-
 
 fs::path CreateDir(fs::path dirPath) {
 	if (!fs::exists(dirPath)) {
@@ -127,6 +111,11 @@ void RemoveFile(fs::path path) {
 }
 
 bool RunCmdFile(fs::path filePath) {
+	if (fs::exists(filePath) == false) {
+		log("not found cmd path: %s", filePath.string().c_str());
+		return  false;
+	}
+
 	std::string cmdLine = "\"" + filePath.string() + "\"";
 	fs::path dirPath = fs::path(filePath).parent_path();
 	STARTUPINFOA si = { sizeof(si) };
@@ -272,24 +261,6 @@ bool StartPrefetchGenerator(fs::path gameDir) {
 	return true;
 }
 
-int main()
-{
-	// tester only
-	auto currentPath = fs::path(GetExecutablePath());
-	log("current path: %s", currentPath.string().c_str());
-	auto currentDir = currentPath.parent_path();
-	log("current dir: %s", currentDir.string().c_str());
-	//bool ok = StartPrefetchGenerator("E:\\SteamLibrary\\steamapps\\common\\DEATH STRANDING DIRECTORS CUT");
-	bool ok = StartPrefetchGenerator(currentDir);
-
-	if (!ok) {
-		log("error to update prefetch!");
-		system("pause");
-		return -1;
-	}
-
-	log("auto close in 2 seconds...");
-	Sleep(2000);
-	return 0;
+bool StartPrefetchGenerator() {
+	return StartPrefetchGenerator(GetExecutablePath().parent_path());
 }
-

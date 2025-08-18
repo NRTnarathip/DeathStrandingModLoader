@@ -253,7 +253,7 @@ void* HookMy_AllocateMemForDummyRoot(ULONGLONG a1, ULONGLONG a2)
 #include "TexturePatcher.h"
 #include "RendererHook.h"
 
-bool StartPrefetchGenerator() {
+bool Start() {
 	SetupLogger();
 	log("starting mod loader...");
 	log("version: %s", GetDllVersionStr());
@@ -273,7 +273,11 @@ bool StartPrefetchGenerator() {
 		std::vector<uint8_t> bytes{ 0xEB };
 		PatchBytesRva(0x1a02945, bytes);
 	}
-	ModManager::Initialize();
+
+	ModManager& modManager = ModManager::Instance();
+	if (modManager.Initialize() == false) {
+		return false;
+	}
 
 	// debug
 #if false
@@ -311,7 +315,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
-		if (StartPrefetchGenerator() == false) {
+		if (Start() == false) {
 			system("pause");
 			exit(EXIT_FAILURE);
 		}

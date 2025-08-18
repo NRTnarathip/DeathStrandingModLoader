@@ -45,20 +45,23 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TexturePatcher.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RendererHook.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="INIReader.h">
       <Filter>Source Files\utils</Filter>
     </ClInclude>
     <ClInclude Include="ini.h">
       <Filter>Source Files\utils</Filter>
     </ClInclude>
+    <ClInclude Include="PrefetchUpdater.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TexturePatcher.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererHook.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="ModManager.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -104,6 +107,9 @@
     <ClCompile Include="ModManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PrefetchUpdater.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -120,5 +126,10 @@
     <ResourceCompile Include="file_header.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="build_prefetch.cmd">
+      <Filter>Resource Files</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

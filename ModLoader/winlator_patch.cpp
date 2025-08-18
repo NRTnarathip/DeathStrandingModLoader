@@ -258,6 +258,7 @@ extern void SetupWinlatorPatcher() {
 
 	log("starting winlator patcher...");
 	HookFuncRva(0x38fed90, &HookedVirtualAllocX, &fpVirtualAllocX);
+	RendererHook::Instance();
 
 #if true
 	// debug zone
@@ -266,7 +267,6 @@ extern void SetupWinlatorPatcher() {
 
 	//SetupHookRenderer();
 	// hook vtable
-
 #endif
 
 	log("winlator patch successfully.");

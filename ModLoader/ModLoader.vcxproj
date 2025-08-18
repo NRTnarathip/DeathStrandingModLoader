@@ -266,7 +266,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -358,6 +358,7 @@ exit /b 0</Command>
     <ClInclude Include="INIReader.h" />
     <ClInclude Include="MinHook.h" />
     <ClInclude Include="ModManager.h" />
+    <ClInclude Include="PrefetchUpdater.h" />
     <ClInclude Include="RendererHook.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TexturePatcher.h" />
@@ -375,6 +376,7 @@ exit /b 0</Command>
     <ClCompile Include="ModManager.cpp" />
     <ClCompile Include="mydx12.h" />
     <ClCompile Include="note.cpp" />
+    <ClCompile Include="PrefetchUpdater.cpp" />
     <ClCompile Include="RendererHook.cpp" />
     <ClCompile Include="TexturePatcher.cpp" />
     <ClCompile Include="types.cpp" />
@@ -384,6 +386,9 @@ exit /b 0</Command>
     <ClCompile Include="winlator_patch.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <CopyFileToFolders Include="build_prefetch.cmd">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

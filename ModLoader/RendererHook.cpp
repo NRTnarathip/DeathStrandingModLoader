@@ -677,14 +677,20 @@ HRESULT RendererHook::HK_SetupDx12(char* p1, uint64_t p2, int p3)
 	// Device Hooks
 	{
 		void** deviceVTable = *(void***)m_pDevice;
-		// error
-		HookFuncAddr(deviceVTable[8], &HKStatic_CreateCommandQueue, &backup_CreateCommandQueue);
-		HookFuncAddr(deviceVTable[12], &HK_CreateCommandList, &backup_CreateCommandList);
-		HookFuncAddr(deviceVTable[27], &HK_CreateCommittedResource, &backup_CreateCommittedResource);
-		HookFuncAddr(deviceVTable[29], &HK_CreatePlacedResource, &backup_CreatePlacedResource);
-		HookFuncAddr(deviceVTable[30], &HK_CreateReservedResource, &backup_CreateReservedResource);
+		// important for winlator
+		if (IsWineEnvironment()) {
+			HookFuncAddr(deviceVTable[27], &HK_CreateCommittedResource, &backup_CreateCommittedResource);
+		}
+
+#if false
+		// debug zone
+		//HookFuncAddr(deviceVTable[8], &HKStatic_CreateCommandQueue, &backup_CreateCommandQueue);
+		//HookFuncAddr(deviceVTable[12], &HK_CreateCommandList, &backup_CreateCommandList);
+		//HookFuncAddr(deviceVTable[29], &HK_CreatePlacedResource, &backup_CreatePlacedResource);
+		//HookFuncAddr(deviceVTable[30], &HK_CreateReservedResource, &backup_CreateReservedResource);
 		//HookFuncAddr(vtable[31], &HK_CreateSharedHandle, &backup_CreateSharedHandle);
 		//HookFuncAddr(vtable[20], &HK_CreateRenderTargetView, &backup_CreateRenderTargetView);
+#endif
 	}
 
 	return result;

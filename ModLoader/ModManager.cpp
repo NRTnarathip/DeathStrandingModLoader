@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <filesystem>
 
+#include "../PrefetchUpdater/PrefetchUpdater.h"
+
 namespace fs = std::filesystem;
 
 ModManager* g_modManager;
@@ -67,23 +69,30 @@ MyString* My_GetCoreStreamFilePathForReader(MyString* p1_coreStreamFileName, MyS
 	return retValue;
 }
 
-
-void ModManager::Initialize()
+bool ModManager::Initialize()
 {
-	log("ModManager::Initialize called");
+	log("ModManager Initialize...");
 
-	m_instance = new ModManager();
-	g_modManager = m_instance;
+	g_modManager = this;
 
-	log("ModManager initialized successfully");
-}
-
-ModManager::ModManager()
-{
+	log("setup hooks...");
 	HookFuncRva(0x18f6720, &My_GetCoreFilePathForReader, &backup_My_GetCoreFilePathForReader);
 	HookFuncRva(0x18f67d0, &My_GetCoreStreamFilePathForReader, &backup_My_GetCoreStreamFilePathForReader);
 
 	// Mod Register
+	// update prefetch!!
+	log("run prefetch updater...");
+	if (StartPrefetchGenerator() == false) {
+		log("Error!! prefetch updater");
+		system("pause");
+		exit(-1);
+		return false;
+	}
+
+	log("done prefetch updater.");
+
+	// register mod entry
+	log("register mod entries...");
 	for (const auto& modDirectoryEntry : fs::directory_iterator(rootModsFolderName)) {
 		if (modDirectoryEntry.is_directory()) {
 			auto modDirPath = modDirectoryEntry.path();
@@ -125,4 +134,5 @@ ModManager::ModManager()
 		}
 	}
 
+	log("ModManager initialized successfully");
 }

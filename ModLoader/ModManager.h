@@ -20,11 +20,16 @@ private:
 	std::unordered_map<std::string, ModEntry*> g_modRegistryLookupWithCoreFilePath;
 	std::vector<ModEntry*> g_modRegistry;
 	static ModManager* m_instance;
-	std::string rootModsFolderName = "mods";
-	ModManager();
+	const char* rootModsFolderName = "Mods";
 
 public:
-	static void Initialize();
+	static ModManager& Instance()
+	{
+		static ModManager inst;
+		m_instance = &inst;
+		return inst;
+	}
+	bool Initialize();
 	bool TryGetCoreOrStreamFileRedirect(const char* coreFilePathNoExt, ModEntry** outModEntry, const char** outCoreFilePathRedirect, bool isCoreStreamFileType);
 };
 
