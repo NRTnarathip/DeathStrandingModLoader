@@ -63,6 +63,9 @@
     <ClInclude Include="ModManager.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="LoaderConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -108,6 +111,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PrefetchUpdater.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LoaderConfig.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

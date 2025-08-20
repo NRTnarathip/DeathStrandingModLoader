@@ -5,12 +5,13 @@
 #include <vector>
 #include <d3dx12.h>
 #include "MurmurHash3.h"
+#include "LoaderConfig.h"
 
 struct ResourceReaderHandle;
 
 void log(const char* format, ...);
 
-void SetupLogger();
+void SetupLogger(LoaderConfig* config);
 
 bool DisableHook(LPVOID targetFunc);
 

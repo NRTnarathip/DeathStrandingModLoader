@@ -19,16 +19,18 @@
 
 #include "MinHook.h"
 #include "types.h"
+#include "LoaderConfig.h"
 
 std::ofstream m_logFile;
-bool m_isEnableLogFile = false;
-bool m_isEnableLogConsole = false;
-bool m_isEnableLogThreadID = true;
+LoaderConfig* config;
 
 void log(const char* format, ...)
 {
-	if (m_isEnableLogConsole == false
-		&& m_isEnableLogFile == false)
+	if (config == nullptr)
+		return;
+
+	if (config->logConsole == false
+		&& config->logFile == false)
 		return;
 
 	char buffer[1024];
@@ -37,52 +39,46 @@ void log(const char* format, ...)
 	vsnprintf(buffer, sizeof(buffer), format, args);
 	va_end(args);
 
-	auto now = std::chrono::system_clock::now();
-	auto in_time = std::chrono::system_clock::to_time_t(now);
-	DWORD tid = GetCurrentThreadId();
-
+	// build string
 	std::stringstream sstream;
-	sstream << "[" << std::put_time(std::localtime(&in_time), "%T") << "]";
-	if (m_isEnableLogThreadID)
-		sstream << " [TID:" << tid << "]";
+	if (config->logTimeStamp) {
+		auto now = std::chrono::system_clock::now();
+		auto in_time = std::chrono::system_clock::to_time_t(now);
+		sstream << "[" << std::put_time(std::localtime(&in_time), "%T") << "]";
+	}
 
-	sstream << " " << buffer << std::endl;
+	if (config->logThreadID) {
+		DWORD tid = GetCurrentThreadId();
+		sstream << "[TID:" << tid << "] ";
+	}
 
-	if (m_isEnableLogConsole)
+	sstream << buffer << std::endl;
+
+	// log it
+	if (config->logConsole)
 		std::cout << sstream.str();
 
-	if (m_isEnableLogFile) {
+	if (config->logFile) {
 		m_logFile << sstream.str();
 		m_logFile.flush();
 	}
 
 }
 
-std::string stringEmptyValue;
-std::string GetEnvVar(const char* name) {
-	auto var = std::getenv(name);
-	return var ? std::string(var) : stringEmptyValue;
-}
+void SetupLogger(LoaderConfig* loaderConfig) {
+	// init config
+	config = loaderConfig;
 
-void SetupLogger() {
+	// ready setup
+	if (config->enableConsole) {
+		// allow logger
+		AllocConsole();
+		freopen("CONOUT$", "w", stdout);
+		freopen("CONOUT$", "w", stderr);
+		freopen("CONIN$", "r", stdin);
+	}
 
-	// init env ar
-
-	// default enable
-	m_isEnableLogConsole = GetEnvVar("DSMOD_LOG_CONSOLE") == "0" ? false : true;
-	m_isEnableLogFile = GetEnvVar("DSMOD_LOG_FILE") == "1";
-
-	// ready
-	if (m_isEnableLogConsole == false)
-		return;
-
-	// allow logger
-	AllocConsole();
-	freopen("CONOUT$", "w", stdout);
-	freopen("CONOUT$", "w", stderr);
-	freopen("CONIN$", "r", stdin);
-
-	if (m_isEnableLogFile) {
+	if (config->logFile) {
 		m_logFile.open("mod_log.txt", std::ios::out | std::ios::trunc);
 	}
 

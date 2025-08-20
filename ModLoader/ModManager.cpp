@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <filesystem>
 
-#include "../PrefetchUpdater/PrefetchUpdater.h"
+#include "PrefetchUpdater.h"
 
 namespace fs = std::filesystem;
 

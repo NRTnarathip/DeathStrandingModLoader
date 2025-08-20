@@ -6,6 +6,14 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Dev|Win32">
+      <Configuration>Dev</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Dev|x64">
+      <Configuration>Dev</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release Android|Win32">
       <Configuration>Release Android</Configuration>
       <Platform>Win32</Platform>
@@ -96,6 +104,12 @@
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Dev|Win32'">
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -262,7 +276,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;MODLOADER_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;MODLOADER_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions);_CRT_NO_SECURE_WARNINS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
@@ -351,11 +365,17 @@ echo Continuing script...
 exit /b 0</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;MODLOADER_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions);_CRT_NO_SECURE_WARNINS</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="archive_reader.h" />
     <ClInclude Include="hooks.h" />
     <ClInclude Include="ini.h" />
     <ClInclude Include="INIReader.h" />
+    <ClInclude Include="LoaderConfig.h" />
     <ClInclude Include="MinHook.h" />
     <ClInclude Include="ModManager.h" />
     <ClInclude Include="PrefetchUpdater.h" />
@@ -373,6 +393,7 @@ exit /b 0</Command>
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="ini.c" />
     <ClCompile Include="INIReader.cpp" />
+    <ClCompile Include="LoaderConfig.cpp" />
     <ClCompile Include="ModManager.cpp" />
     <ClCompile Include="mydx12.h" />
     <ClCompile Include="note.cpp" />

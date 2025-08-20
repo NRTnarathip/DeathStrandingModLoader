@@ -9,9 +9,7 @@
 #include <sstream>
 #include <string>
 
-#define DISABLE_RENDERER_HOOK_LOG // toggle here
-
-#ifdef DISABLE_RENDERER_HOOK_LOG
+#ifndef DEV
 void logEmpty(const char* format, ...) {}
 #define log(...) logEmpty(__VA_ARGS__)
 #endif
@@ -598,6 +596,8 @@ HRESULT HK_CreateCommittedResource(
 
 	auto retValue = backup_CreateCommittedResource(self, pHeapProperties, HeapFlags, desc, InitialResourceState, pOptimizedClearValue, riidResource, ppvResource);
 
+	// debug zone
+#if DEV
 	auto resource = (void*)*ppvResource;
 	auto vtable = *(void***)resource;
 	if (backup_Resource_Map == nullptr) {
@@ -605,6 +605,7 @@ HRESULT HK_CreateCommittedResource(
 		HookFuncAddr(vtable[8], &HK_Resource_Map, &backup_Resource_Map);
 		HookFuncAddr(vtable[9], &HK_Resource_Unmap, &backup_Resource_Unmap);
 	}
+#endif
 
 	return retValue;
 }
@@ -682,7 +683,7 @@ HRESULT RendererHook::HK_SetupDx12(char* p1, uint64_t p2, int p3)
 			HookFuncAddr(deviceVTable[27], &HK_CreateCommittedResource, &backup_CreateCommittedResource);
 		}
 
-#if false
+#if DEV
 		// debug zone
 		//HookFuncAddr(deviceVTable[8], &HKStatic_CreateCommandQueue, &backup_CreateCommandQueue);
 		//HookFuncAddr(deviceVTable[12], &HK_CreateCommandList, &backup_CreateCommandList);
@@ -717,9 +718,12 @@ HRESULT RendererHook::HK_CreateSwapChainForHwnd(
 	m_pSwapChain = *(IDXGISwapChain3**)ppSwapChain;
 
 	// Hooks
-	void** vtable = *(void***)(m_pSwapChain);
+
+#if DEV
+	//void** vtable = *(void***)(m_pSwapChain);
 	//auto presentFuncAddr = vtable[8];
 	//HookFuncAddr(presentFuncAddr, &HK_DXGIPresent, &backup_DXGI_Present);
+#endif
 
 	return res;
 
