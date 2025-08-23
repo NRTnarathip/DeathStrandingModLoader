@@ -13,15 +13,19 @@ LoaderConfig::LoaderConfig()
 
 	// General
 #define General "general"
-	enableConsole = reader.GetBoolean(General, "console", false);
+	enableConsole = reader.GetBoolean(General, "console", enableConsole);
 
 
 	// Logger
 #define Logger "logger"
-	logConsole = reader.GetBoolean(Logger, "console", true) && enableConsole;
-	logFile = reader.GetBoolean(Logger, "file", false);
-	logRenderer = reader.GetBoolean(Logger, "renderer", false);
-	logTimeStamp = reader.GetBoolean(Logger, "timestamp", true);
-	logThreadID = reader.GetBoolean(Logger, "threadID", true);
+	logConsole = reader.GetBoolean(Logger, "console", logConsole) && enableConsole;
+	logFile = reader.GetBoolean(Logger, "file", logFile);
+	logRenderer = reader.GetBoolean(Logger, "renderer", logRenderer);
+	logTimeStamp = reader.GetBoolean(Logger, "timestamp", logTimeStamp);
+	logThreadID = reader.GetBoolean(Logger, "threadID", logThreadID);
+
+#define Dev "dev"
+	// debug zone
+	devDebug = reader.GetBoolean(Dev, "devDebug", devDebug);
 }
 

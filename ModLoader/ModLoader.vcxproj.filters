@@ -66,6 +66,12 @@
     <ClInclude Include="LoaderConfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DevDebug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RTTI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -114,6 +120,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LoaderConfig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DevDebug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RTTI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

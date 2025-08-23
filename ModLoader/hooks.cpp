@@ -689,3 +689,10 @@ void SetupHooksDebug() {
 	//HookFuncRva(0x1930560, &My_SetupPakFileNames2, &backup_My_SetupPakFileName2);
 	//HookFuncRva(0x190d340, &My_StringIsSame3, &backup_My_StringIsSame3);
 }
+
+
+
+
+void SetupDev() {
+
+}

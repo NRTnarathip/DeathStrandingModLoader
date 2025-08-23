@@ -372,6 +372,7 @@ exit /b 0</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="archive_reader.h" />
+    <ClInclude Include="DevDebug.h" />
     <ClInclude Include="hooks.h" />
     <ClInclude Include="ini.h" />
     <ClInclude Include="INIReader.h" />
@@ -381,6 +382,7 @@ exit /b 0</Command>
     <ClInclude Include="PrefetchUpdater.h" />
     <ClInclude Include="RendererHook.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="RTTI.h" />
     <ClInclude Include="TexturePatcher.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="MurmurHash3.h" />
@@ -390,6 +392,7 @@ exit /b 0</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="archive_reader.cpp" />
+    <ClCompile Include="DevDebug.cpp" />
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="ini.c" />
     <ClCompile Include="INIReader.cpp" />
@@ -399,6 +402,7 @@ exit /b 0</Command>
     <ClCompile Include="note.cpp" />
     <ClCompile Include="PrefetchUpdater.cpp" />
     <ClCompile Include="RendererHook.cpp" />
+    <ClCompile Include="RTTI.cpp" />
     <ClCompile Include="TexturePatcher.cpp" />
     <ClCompile Include="types.cpp" />
     <ClCompile Include="dllmain.cpp" />

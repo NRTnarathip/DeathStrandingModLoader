@@ -31,6 +31,8 @@
 #include "TexturePatcher.h"
 #include "RendererHook.h"
 #include "LoaderConfig.h"
+#include "DevDebug.h"
+
 void DisableSaveCorruptionCheck() {
 	log("disable save corruption check...");
 	std::vector<uint8_t> bytes{ 0xEB };
@@ -61,6 +63,12 @@ bool Start() {
 	ModManager* modManager = &ModManager::Instance();
 	if (modManager->Initialize() == false) {
 		return false;
+	}
+
+	// setup hooks debug
+	if (loaderConfig->devDebug) {
+		SetupHooksDebug();
+		SetupDevDebug();
 	}
 
 	log("successfully setup mod loader");

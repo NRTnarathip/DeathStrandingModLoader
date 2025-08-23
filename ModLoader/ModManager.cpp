@@ -5,12 +5,13 @@
 #include <string>
 #include <algorithm>
 #include <filesystem>
-
 #include "PrefetchUpdater.h"
+#include "LoaderConfig.h"
 
 namespace fs = std::filesystem;
 
 ModManager* g_modManager;
+LoaderConfig* g_modLoaderConfig;
 
 typedef MyString* (*My_GetCoreFilePathForReader_t)(MyString* p1_coreFileName, MyString* p2_outCoreFilePath);
 My_GetCoreFilePathForReader_t backup_My_GetCoreFilePathForReader;
@@ -74,6 +75,7 @@ bool ModManager::Initialize()
 	log("ModManager Initialize...");
 
 	g_modManager = this;
+	g_modLoaderConfig = &LoaderConfig::Instance();
 
 	log("setup hooks...");
 	HookFuncRva(0x18f6720, &My_GetCoreFilePathForReader, &backup_My_GetCoreFilePathForReader);

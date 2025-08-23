@@ -11,16 +11,21 @@ public:
 	/// <summary>
 	/// General
 	/// </summary>
-	bool enableConsole;
+	bool enableConsole = false;
 
 	/// <summary>
 	/// Logger
 	/// </summary>
-	bool logConsole;
-	bool logFile;
-	bool logRenderer;
-	bool logTimeStamp;
-	bool logThreadID;
+	bool logConsole = true;
+	bool logFile = false;
+	bool logRenderer = false;
+	bool logTimeStamp = true;
+	bool logThreadID = true;
+
+	/// <summary>
+	/// dev debug
+	/// </summary>
+	bool devDebug = false;
 
 private:
 	LoaderConfig();

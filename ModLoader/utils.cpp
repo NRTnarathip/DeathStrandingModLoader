@@ -106,7 +106,7 @@ bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
 		MessageBoxA(NULL, "Failed to enable hook", "Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
-	log("hooked function: %p", targetFunc);
+	log("hooked func rva: 0x%llx", (uintptr_t)targetFunc - g_imageBase);
 }
 
 bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, void* originalBackup) {
