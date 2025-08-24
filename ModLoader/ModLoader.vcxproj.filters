@@ -16,6 +16,9 @@
     <Filter Include="Source Files\utils">
       <UniqueIdentifier>{93987006-6eee-447d-848e-cc8f05d9036d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\decima-native-src">
+      <UniqueIdentifier>{6abf9b76-57f1-45ab-afd7-f64eb50d2128}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h">
@@ -69,8 +72,26 @@
     <ClInclude Include="DevDebug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RTTI.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="extern\decima-native\source\Core\RTTI.h">
+      <Filter>Source Files\decima-native-src</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\source\Core\RTTIObject.h">
+      <Filter>Source Files\decima-native-src</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\source\Core\RTTIRefObject.h">
+      <Filter>Source Files\decima-native-src</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\source\PCore\Array.h">
+      <Filter>Source Files\decima-native-src</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\source\PCore\Ref.h">
+      <Filter>Source Files\decima-native-src</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\source\XUtil.h">
+      <Filter>Source Files\decima-native-src</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\source\Offsets.h">
+      <Filter>Source Files\decima-native-src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -125,8 +146,14 @@
     <ClCompile Include="DevDebug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RTTI.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="extern\decima-native\source\Core\RTTI.cpp">
+      <Filter>Source Files\decima-native-src</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\decima-native\source\Offsets.cpp">
+      <Filter>Source Files\decima-native-src</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\decima-native\source\XUtil.cpp">
+      <Filter>Source Files\decima-native-src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

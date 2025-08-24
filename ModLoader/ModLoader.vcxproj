@@ -146,7 +146,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>mod_loader</TargetName>
-    <IncludePath>C:\Users\narat\Desktop\DeathStandingThai\mod-loader\DSDModLoader\ModLoader\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\narat\Desktop\DeathStandingThai\mod-loader\DSDModLoader\ModLoader\include;$(ProjectDir)extern/decima-native/source;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Users\narat\Desktop\DeathStandingThai\mod-loader\DSDModLoader\ModLoader\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Guy|x64'">
@@ -281,6 +281,7 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -373,6 +374,13 @@ exit /b 0</Command>
   <ItemGroup>
     <ClInclude Include="archive_reader.h" />
     <ClInclude Include="DevDebug.h" />
+    <ClInclude Include="extern\decima-native\source\Core\RTTI.h" />
+    <ClInclude Include="extern\decima-native\source\Core\RTTIObject.h" />
+    <ClInclude Include="extern\decima-native\source\Core\RTTIRefObject.h" />
+    <ClInclude Include="extern\decima-native\source\Offsets.h" />
+    <ClInclude Include="extern\decima-native\source\PCore\Array.h" />
+    <ClInclude Include="extern\decima-native\source\PCore\Ref.h" />
+    <ClInclude Include="extern\decima-native\source\XUtil.h" />
     <ClInclude Include="hooks.h" />
     <ClInclude Include="ini.h" />
     <ClInclude Include="INIReader.h" />
@@ -382,7 +390,6 @@ exit /b 0</Command>
     <ClInclude Include="PrefetchUpdater.h" />
     <ClInclude Include="RendererHook.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="RTTI.h" />
     <ClInclude Include="TexturePatcher.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="MurmurHash3.h" />
@@ -393,6 +400,9 @@ exit /b 0</Command>
   <ItemGroup>
     <ClCompile Include="archive_reader.cpp" />
     <ClCompile Include="DevDebug.cpp" />
+    <ClCompile Include="extern\decima-native\source\Core\RTTI.cpp" />
+    <ClCompile Include="extern\decima-native\source\Offsets.cpp" />
+    <ClCompile Include="extern\decima-native\source\XUtil.cpp" />
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="ini.c" />
     <ClCompile Include="INIReader.cpp" />
@@ -402,7 +412,6 @@ exit /b 0</Command>
     <ClCompile Include="note.cpp" />
     <ClCompile Include="PrefetchUpdater.cpp" />
     <ClCompile Include="RendererHook.cpp" />
-    <ClCompile Include="RTTI.cpp" />
     <ClCompile Include="TexturePatcher.cpp" />
     <ClCompile Include="types.cpp" />
     <ClCompile Include="dllmain.cpp" />
