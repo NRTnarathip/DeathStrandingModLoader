@@ -6,18 +6,17 @@
 #include <d3dx12.h>
 #include "MurmurHash3.h"
 #include "LoaderConfig.h"
+#include "Logger.h"
+#include <chrono>
 
 struct ResourceReaderHandle;
-
-void log(const char* format, ...);
-
-void SetupLogger(LoaderConfig* config);
 
 bool DisableHook(LPVOID targetFunc);
 
 bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup);
 bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, void* originalBackup);
 bool HookFuncRva(uintptr_t funcRva, LPVOID detour, void* originalBackup);
+bool HookFuncVTable(void* obj, int index, LPVOID detour, void* originalBackup);
 bool HookFuncModule(const char* moduleName, uintptr_t funvRva, LPVOID detour, void* backup);
 
 bool HookFuncModule(const char* moduleName, const char* funcName, LPVOID detour, void* backup);
@@ -106,7 +105,6 @@ typedef bool (*OpenResourceDevice_t)(ResourceReaderHandle* handleInfo,
 	UINT32 param_4, UINT32 param_5, int param_6);
 extern OpenResourceDevice_t fpOpenResourceDevice;
 
-#include <chrono>
 
 class Stopwatch {
 public:

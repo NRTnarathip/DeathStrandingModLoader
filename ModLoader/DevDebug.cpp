@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "types.h"
 #include "extern/decima-native/source/Core/RTTIObject.h"
+#include "Logger.h"
 
 typedef void (*MyAddWeapon2_t)(void* p1, byte p2);
 MyAddWeapon2_t backupMyAddWeapon2;
@@ -19,7 +20,7 @@ float DSNodePlayerGetParamFloat(int p1) {
 	return r;
 }
 
-struct PlayerEntity {
+struct PlayerEntity : RTTIObject {
 	char gap[0x88];
 	uint32_t id;
 };
@@ -43,23 +44,21 @@ PlayerEntity* My_GetDSPlayerByID(PlayerMgr* p1_playerMgr, int p2_id) {
 		log("player info:");
 		log("  id: %u", playerEnt->id);
 		log("rtti info:");
-		auto rtti = (RTTIObject*)playerEnt;
-		auto type = rtti->GetRTTI();
+		auto type = playerEnt->GetRTTI();
 		log("type: %p", type);
 		auto name = type->GetName();
-		log("name ptr: %p", name);
 		log("  type name: %s", name.c_str());
-		auto fields = type->GetAttrs();
-		log("  field count: %d", fields.size());
-		for (auto& field : fields) {
-			log("  field: %s", field.mName);
-		}
+		type->ForEachAttribute([&](const RTTIAttr& inAttr, size_t inOffset) {
+			log("attr: %s, offset: 0x%zx", inAttr.mName, inOffset);
+			return false;
+			});
 	}
 	return playerEnt;
 }
 
 void SetupDevDebug()
 {
+	return;
 	//HookFuncRva(0x278b160, &MyAddWeapon2, &backupMyAddWeapon2);
 	//HookFuncRva(0x2758c80, &DSNodePlayerGetParamFloat, &backupDSNodePlayerGetParamFloat);
 	HookFuncRva(0x23c60b0, &My_GetDSPlayerByID, &backupMyGetPlayerEntityByID);

@@ -32,6 +32,9 @@
 #include "RendererHook.h"
 #include "LoaderConfig.h"
 #include "DevDebug.h"
+#include "OverlayMenu.h"
+#include "Logger.h"
+Logger* logger;
 
 void DisableSaveCorruptionCheck() {
 	log("disable save corruption check...");
@@ -41,8 +44,8 @@ void DisableSaveCorruptionCheck() {
 
 bool Start() {
 	// init first!!
-	LoaderConfig* loaderConfig = &LoaderConfig::Instance();
-	SetupLogger(loaderConfig);
+	LoaderConfig* loaderConfig = LoaderConfig::Instance();
+	logger = Logger::Instance();
 
 	// init general
 	log("starting mod loader...");
@@ -60,10 +63,14 @@ bool Start() {
 	SetupWinlatorPatcher();
 
 	// setup mod manager
-	ModManager* modManager = &ModManager::Instance();
+	ModManager* modManager = ModManager::Instance();
 	if (modManager->Initialize() == false) {
+		log("ModManager initialize failed!");
 		return false;
 	}
+
+	//setup overlay menu
+	OverlayMenu::Instance()->Initialize();
 
 	// setup hooks debug
 	if (loaderConfig->devDebug) {

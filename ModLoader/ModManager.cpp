@@ -7,6 +7,7 @@
 #include <filesystem>
 #include "PrefetchUpdater.h"
 #include "LoaderConfig.h"
+#include "Logger.h"
 
 namespace fs = std::filesystem;
 
@@ -26,10 +27,10 @@ bool ModManager::TryGetCoreOrStreamFileRedirect(
 {
 	std::string newFilePathExt = coreFileNameNoExt;
 	newFilePathExt.append(isCoreStreamFileExt ? ".core.stream" : ".core");
-	if (g_modRegistryLookupWithCoreFilePath.find(newFilePathExt) == g_modRegistryLookupWithCoreFilePath.end())
+	if (m_modRegistryLookupWithCoreFilePath.find(newFilePathExt) == m_modRegistryLookupWithCoreFilePath.end())
 		return false;
 
-	auto mod = g_modRegistryLookupWithCoreFilePath[newFilePathExt];
+	auto mod = m_modRegistryLookupWithCoreFilePath[newFilePathExt];
 	*outModEntry = mod;
 
 	std::string redirectCoreFilePath = "source:" + mod->modFolderPath + '/' + newFilePathExt;
@@ -75,7 +76,7 @@ bool ModManager::Initialize()
 	log("ModManager Initialize...");
 
 	g_modManager = this;
-	g_modLoaderConfig = &LoaderConfig::Instance();
+	g_modLoaderConfig = LoaderConfig::Instance();
 
 	log("setup hooks...");
 	HookFuncRva(0x18f6720, &My_GetCoreFilePathForReader, &backup_My_GetCoreFilePathForReader);
@@ -126,15 +127,16 @@ bool ModManager::Initialize()
 					std::replace(gameCoreFilePath.begin(), gameCoreFilePath.end(), '\\', '/');
 					modEntry->gameCoreFileNames.insert(gameCoreFilePath);
 					modEntry->coreFilePathLookupByName[fileEntry.path().filename().string()] = gameCoreFilePath;
-					g_modRegistryLookupWithCoreFilePath[gameCoreFilePath] = modEntry;
+					m_modRegistryLookupWithCoreFilePath[gameCoreFilePath] = modEntry;
 					log("mapped coreFile: %s to mod: %s", gameCoreFilePath.c_str(), modEntry->modFolderName.c_str());
 				}
 			}
 
-			g_modRegistry.push_back(modEntry);
+			m_modRegistry.push_back(modEntry);
 			log("Added new mod: %s", modEntry->modFolderName.c_str());
 		}
 	}
 
 	log("ModManager initialized successfully");
+	return true;
 }

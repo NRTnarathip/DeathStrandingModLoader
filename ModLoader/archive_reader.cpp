@@ -1,8 +1,8 @@
 #include "archive_reader.h"
-
 #include <smmintrin.h>
 #include "MurmurHash3.h"
 #include "utils.h"
+#include "Logger.h"
 
 int m_readOffset = 0;
 void ReadBuffer(ResourceReaderHandle* reader, void* buffer, size_t size) {

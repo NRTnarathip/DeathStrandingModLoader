@@ -146,7 +146,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>mod_loader</TargetName>
-    <IncludePath>C:\Users\narat\Desktop\DeathStandingThai\mod-loader\DSDModLoader\ModLoader\include;$(ProjectDir)extern/decima-native/source;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\narat\Desktop\DeathStandingThai\mod-loader\DSDModLoader\ModLoader\include;$(ProjectDir)extern/decima-native/source;$(ProjectDir)extern/imgui;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Users\narat\Desktop\DeathStandingThai\mod-loader\DSDModLoader\ModLoader\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Guy|x64'">
@@ -282,6 +282,7 @@
       </PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4267;4244;4018;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -381,12 +382,22 @@ exit /b 0</Command>
     <ClInclude Include="extern\decima-native\source\PCore\Array.h" />
     <ClInclude Include="extern\decima-native\source\PCore\Ref.h" />
     <ClInclude Include="extern\decima-native\source\XUtil.h" />
+    <ClInclude Include="extern\imgui\backends\imgui_impl_dx12.h" />
+    <ClInclude Include="extern\imgui\backends\imgui_impl_win32.h" />
+    <ClInclude Include="extern\imgui\imconfig.h" />
+    <ClInclude Include="extern\imgui\imgui.h" />
+    <ClInclude Include="extern\imgui\imgui_internal.h" />
+    <ClInclude Include="extern\imgui\imstb_rectpack.h" />
+    <ClInclude Include="extern\imgui\imstb_textedit.h" />
+    <ClInclude Include="extern\imgui\imstb_truetype.h" />
     <ClInclude Include="hooks.h" />
     <ClInclude Include="ini.h" />
     <ClInclude Include="INIReader.h" />
     <ClInclude Include="LoaderConfig.h" />
+    <ClInclude Include="Logger.h" />
     <ClInclude Include="MinHook.h" />
     <ClInclude Include="ModManager.h" />
+    <ClInclude Include="OverlayMenu.h" />
     <ClInclude Include="PrefetchUpdater.h" />
     <ClInclude Include="RendererHook.h" />
     <ClInclude Include="resource.h" />
@@ -403,13 +414,22 @@ exit /b 0</Command>
     <ClCompile Include="extern\decima-native\source\Core\RTTI.cpp" />
     <ClCompile Include="extern\decima-native\source\Offsets.cpp" />
     <ClCompile Include="extern\decima-native\source\XUtil.cpp" />
+    <ClCompile Include="extern\imgui\backends\imgui_impl_dx12.cpp" />
+    <ClCompile Include="extern\imgui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="extern\imgui\imgui.cpp" />
+    <ClCompile Include="extern\imgui\imgui_demo.cpp" />
+    <ClCompile Include="extern\imgui\imgui_draw.cpp" />
+    <ClCompile Include="extern\imgui\imgui_tables.cpp" />
+    <ClCompile Include="extern\imgui\imgui_widgets.cpp" />
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="ini.c" />
     <ClCompile Include="INIReader.cpp" />
     <ClCompile Include="LoaderConfig.cpp" />
+    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="ModManager.cpp" />
     <ClCompile Include="mydx12.h" />
     <ClCompile Include="note.cpp" />
+    <ClCompile Include="OverlayMenu.cpp" />
     <ClCompile Include="PrefetchUpdater.cpp" />
     <ClCompile Include="RendererHook.cpp" />
     <ClCompile Include="TexturePatcher.cpp" />

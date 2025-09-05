@@ -1,5 +1,6 @@
 #include "TexturePatcher.h"
 #include "utils.h"
+#include "Logger.h"
 
 TexturePatcher::TexturePatcher()
 {

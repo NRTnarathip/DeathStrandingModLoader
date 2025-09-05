@@ -2,6 +2,8 @@
 #include "utils.h"
 #include <d3dx12.h>
 #include <dxgi1_6.h>
+#include <functional>
+#include <vector>
 
 typedef HRESULT(*CreateReservedResource_t)(
 	ID3D12Device* self,
@@ -81,24 +83,32 @@ typedef void(*ID3D12Resource_Unmap_t)(
 	ID3D12Resource* self, UINT Subresource,
 	_In_opt_  const D3D12_RANGE* pWrittenRange);
 
+using PresentCallback = std::function<void(UINT, UINT)>;
+
+
+class Logger;
+
 class RendererHook
 {
 public:
-	static RendererHook& Instance()
+	static RendererHook* Instance()
 	{
 		static RendererHook inst;
-		return inst;
+		return &inst;
 	}
-
-	ID3D12Device14* m_pDevice = 0;
-	inline ID3D12Device14* GetDevice() const {
-		return m_pDevice;
-	}
-
-	IDXGIFactory2* m_pFactory = 0;
-	IDXGISwapChain3* m_pSwapChain = 0;
-
 	RendererHook();
+
+	ID3D12Device14* m_device = 0;
+	inline ID3D12Device14* GetDevice() const {
+		return m_device;
+	}
+	HWND GetHwnd();
+
+	IDXGIFactory2* m_factory = 0;
+	IDXGISwapChain3* m_swapChain = 0;
+	ID3D12CommandQueue* m_commandQueue;
+
+	void logFormat(const char* format, ...);
 	void __stdcall HK_ExecuteCommandLists(ID3D12CommandQueue* self, UINT NumCommandLists, ID3D12CommandList* const* ppCommandLists);
 	HRESULT __stdcall HK_CreateCommandQueue(ID3D12Device* self, const D3D12_COMMAND_QUEUE_DESC* pDesc, REFIID riid, void** ppCommandQueue);
 	HRESULT HK_SetupDx12(char* p1, uint64_t p2, int p3);
@@ -112,8 +122,18 @@ public:
 		IDXGISwapChain1** ppSwapChain);
 
 	inline HRESULT GetDeviceRemoveCode() {
-		return m_pDevice->GetDeviceRemovedReason();
+		return m_device->GetDeviceRemovedReason();
 	}
+
+	void RegisterPresent(PresentCallback callback);
+
+	HRESULT HK_Present(void* pSwapChain, UINT SyncInterval, UINT Flags);
+
+private:
+	std::vector<PresentCallback> m_presentCallbacks;
+	bool m_isEnableLog = false;
+	Logger* m_logger;
+	HWND m_window = 0;
 };
 
 

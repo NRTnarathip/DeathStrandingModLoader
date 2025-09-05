@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <string>
 #include <unordered_set>
+#include "Logger.h"
 
 int GetTotalPakFileName() {
 	return *(int*)GetAddressFromRva(0x4f6d020);
@@ -664,6 +665,8 @@ void My_SetupPakFileNames2() {
 
 
 void SetupHooksDebug() {
+	// ready
+
 	//HookFuncRva(0x18f67d0, &HK_My_AboutCoreStreamFile, &backup_My_AboutCoreStreamFile);
 	//HookFuncRva(0x18f6890, &HK_My_MakeResourceCoreFullPath, &backup_My_MakeResourceCoreFullPath);
 	//HookFuncRva(0x1926990, &HK_FUN_141926990, &backup_FUN_141926990);
@@ -688,11 +691,4 @@ void SetupHooksDebug() {
 	//HookFuncRva(0x17ec340, &My_SetupPakFileNames1, &backup_My_SetupPakFileNameArray);
 	//HookFuncRva(0x1930560, &My_SetupPakFileNames2, &backup_My_SetupPakFileName2);
 	//HookFuncRva(0x190d340, &My_StringIsSame3, &backup_My_StringIsSame3);
-}
-
-
-
-
-void SetupDev() {
-
 }

@@ -9,7 +9,7 @@
 #include "MurmurHash3.h"
 #include "PrefetchUpdater.h"
 #include "utils.h"
-
+#include "Logger.h"
 
 namespace fs = std::filesystem;
 

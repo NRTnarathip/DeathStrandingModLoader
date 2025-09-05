@@ -1,5 +1,5 @@
 #include "RendererHook.h"
-#include "utils.h";
+#include "utils.h"
 #include <Windows.h>
 #include "DirectXTex.h"
 #include <unordered_map>
@@ -8,11 +8,60 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <wrl/client.h>
+using Microsoft::WRL::ComPtr;
 
-#ifndef DEV
-void logEmpty(const char* format, ...) {}
-#define log(...) logEmpty(__VA_ARGS__)
-#endif
+
+RendererHook* g_instance;
+
+#undef log
+#define log g_instance->logFormat
+
+MySetupDx12_t backup_MySetupDx12;
+HRESULT HKStatic_MySetupDx12(char* p1, uint64_t p2, int p3) {
+	return RendererHook::Instance()->HK_SetupDx12(p1, p2, p3);
+}
+
+RendererHook::RendererHook()
+{
+	// init static variables
+	auto modLoaderConfig = LoaderConfig::Instance();
+	m_isEnableLog = modLoaderConfig->logRenderer;
+	g_instance = this;
+	m_logger = Logger::Instance();
+
+	// ready
+	log("initialize renderer hook..");
+
+	HookFuncRva(0x19a6980, &HKStatic_MySetupDx12, &backup_MySetupDx12);
+
+	log("done initialize renderer hook");
+}
+
+HWND RendererHook::GetHwnd()
+{
+	if (m_swapChain == nullptr)
+		return 0;
+
+	if (m_window != 0)
+		return m_window;
+
+	m_swapChain->GetHwnd(&m_window);
+
+	return m_window;
+}
+
+void RendererHook::logFormat(const char* format, ...)
+{
+	if (m_isEnableLog == false) return;
+
+	char buffer[1024];
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buffer, sizeof(buffer), format, args);
+	va_end(args);
+	m_logger->logFormat("%s", buffer);
+}
 
 
 ID3D12CommandQueue* m_pCommandQueue_render = nullptr;
@@ -96,7 +145,7 @@ ID3D12Resource* CreateReadbackBuffer(const D3D12_RESOURCE_DESC& textureDesc, UIN
 	D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint;
 	UINT numRows;
 	UINT64 rowSizeInBytes;
-	auto device = RendererHook::Instance().GetDevice();
+	auto device = RendererHook::Instance()->GetDevice();
 	device->GetCopyableFootprints(&textureDesc, 0, 1, 0,
 		&footprint, &numRows, &rowSizeInBytes, &bufferSize);
 
@@ -121,7 +170,7 @@ ID3D12Resource* CreateReadbackBuffer(const D3D12_RESOURCE_DESC& textureDesc, UIN
 HRESULT SaveD3D12TextureToFile(ID3D12Resource* resource, const std::string& filename)
 {
 	//log("try save texture to file: %s", filename.c_str());
-	auto g_device = RendererHook::Instance().GetDevice();
+	auto g_device = RendererHook::Instance()->GetDevice();
 
 	// setup first time
 	if (g_readbackCommandList == nullptr) {
@@ -261,13 +310,13 @@ CreateSwapChainForHwnd_t backup_CreateSwapChainForHwnd;
 HRESULT HKStatic_CreateSwapChainForHwnd(
 	IDXGIFactory2* self,
 	IUnknown* pDevice,
-	HWND                                  hWnd,
+	HWND hWnd,
 	const DXGI_SWAP_CHAIN_DESC1* pDesc,
 	const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* pFullscreenDesc,
 	IDXGIOutput* pRestrictToOutput,
 	IDXGISwapChain1** ppSwapChain
 ) {
-	return RendererHook::Instance().HK_CreateSwapChainForHwnd(self, pDevice, hWnd, pDesc, pFullscreenDesc, pRestrictToOutput, ppSwapChain);
+	return RendererHook::Instance()->HK_CreateSwapChainForHwnd(self, pDevice, hWnd, pDesc, pFullscreenDesc, pRestrictToOutput, ppSwapChain);
 }
 
 size_t callCounter_ExecuteCommandLists;
@@ -277,7 +326,7 @@ void __stdcall HKStatic_ExecuteCommandLists(
 	_In_  UINT NumCommandLists,
 	_In_reads_(NumCommandLists)  ID3D12CommandList* const* ppCommandLists)
 {
-	RendererHook::Instance().HK_ExecuteCommandLists(self, NumCommandLists, ppCommandLists);
+	RendererHook::Instance()->HK_ExecuteCommandLists(self, NumCommandLists, ppCommandLists);
 }
 
 void __stdcall RendererHook::HK_ExecuteCommandLists(
@@ -318,7 +367,7 @@ HRESULT STDMETHODCALLTYPE HKStatic_CreateCommandQueue(
 	REFIID riid,
 	_COM_Outptr_  void** ppCommandQueue)
 {
-	return RendererHook::Instance().HK_CreateCommandQueue(self, pDesc, riid, ppCommandQueue);
+	return RendererHook::Instance()->HK_CreateCommandQueue(self, pDesc, riid, ppCommandQueue);
 }
 
 
@@ -412,7 +461,7 @@ void HK_CopyTextureRegion(
 		log("found texture 1920x1080, try replace with custom texture...");
 		auto src = pSrc;
 		DirectX::ScratchImage newImageReplace;
-		DirectX::TexMetadata metadata;
+		//DirectX::TexMetadata metadata;
 		//HRESULT hr = DirectX::LoadFromDDSFile(textureFileName.c_str(),
 		//	DirectX::DDS_FLAGS_NONE, &metadata, srcImage);
 		DirectX::ScratchImage pngImage;
@@ -647,10 +696,6 @@ HRESULT HK_CreateReservedResource(
 	return retResult;
 }
 
-MySetupDx12_t backup_MySetupDx12;
-HRESULT HKStatic_MySetupDx12(char* p1, uint64_t p2, int p3) {
-	return RendererHook::Instance().HK_SetupDx12(p1, p2, p3);
-}
 
 HRESULT RendererHook::HK_SetupDx12(char* p1, uint64_t p2, int p3)
 {
@@ -660,24 +705,24 @@ HRESULT RendererHook::HK_SetupDx12(char* p1, uint64_t p2, int p3)
 	log("Hook End: HK_MySetupDx12");
 
 	// init variable
-	m_pDevice = *(ID3D12Device14**)GetAddressFromRva(0x5558FA0);
-	m_pFactory = *(IDXGIFactory2**)(p1 + 0x10);
+	m_device = *(ID3D12Device14**)GetAddressFromRva(0x5558FA0);
+	m_factory = *(IDXGIFactory2**)(p1 + 0x10);
 
-	log("m_pDevice: %p", m_pDevice);
-	log("m_pFactory: %p", m_pFactory);
-	log("device level: %d", GetHighestID3D12DeviceVersion(m_pDevice));
+	log("m_pDevice: %p", m_device);
+	log("m_pFactory: %p", m_factory);
+	log("device level: %d", GetHighestID3D12DeviceVersion(m_device));
 
 
 	// ready hooks api
 	// Factory Hooks
 	{
-		void** factoryVTable = *(void***)m_pFactory;
+		void** factoryVTable = *(void***)m_factory;
 		HookFuncAddr(factoryVTable[15], &HKStatic_CreateSwapChainForHwnd, &backup_CreateSwapChainForHwnd);
 	}
 
 	// Device Hooks
 	{
-		void** deviceVTable = *(void***)m_pDevice;
+		void** deviceVTable = *(void***)m_device;
 		// important for winlator
 		if (IsWineEnvironment()) {
 			HookFuncAddr(deviceVTable[27], &HK_CreateCommittedResource, &backup_CreateCommittedResource);
@@ -695,6 +740,12 @@ HRESULT RendererHook::HK_SetupDx12(char* p1, uint64_t p2, int p3)
 	}
 
 	return result;
+}
+
+typedef HRESULT(*DXGI_Present_t)(void* pSwapChain, UINT SyncInterval, UINT Flags);
+DXGI_Present_t backupDXGI_Present;
+void HKStatic_Present(void* pSwapChain, UINT SyncInterval, UINT Flags) {
+	RendererHook::Instance()->HK_Present(pSwapChain, SyncInterval, Flags);
 }
 
 HRESULT RendererHook::HK_CreateSwapChainForHwnd(
@@ -715,26 +766,41 @@ HRESULT RendererHook::HK_CreateSwapChainForHwnd(
 	log("  result: 0x%x", res);
 
 	// init variable
-	m_pSwapChain = *(IDXGISwapChain3**)ppSwapChain;
+	ComPtr<ID3D12CommandQueue> commandQueue;
+	pDevice->QueryInterface(IID_PPV_ARGS(&commandQueue));
+	m_commandQueue = commandQueue.Get();
+	m_swapChain = *(IDXGISwapChain3**)ppSwapChain;
+	log("swapChain ptr: %p", m_swapChain);
 
 	// Hooks
-
-#if DEV
-	//void** vtable = *(void***)(m_pSwapChain);
-	//auto presentFuncAddr = vtable[8];
-	//HookFuncAddr(presentFuncAddr, &HK_DXGIPresent, &backup_DXGI_Present);
-#endif
+	if (m_presentCallbacks.size() != 0)
+		HookFuncVTable(m_swapChain, 8, &HKStatic_Present, &backupDXGI_Present);
 
 	return res;
-
 }
 
 
-RendererHook::RendererHook()
+HRESULT RendererHook::HK_Present(void* pSwapChain, UINT SyncInterval, UINT Flags)
 {
-	log("initialize renderer hook..");
 
-	HookFuncRva(0x19a6980, &HKStatic_MySetupDx12, &backup_MySetupDx12);
+	for (auto& callback : m_presentCallbacks) {
+		try {
+			callback(SyncInterval, Flags);
+		}
+		catch (const std::exception& e) {
+			log("Exception in PresentCallback: %s", e.what());
+		}
+	}
 
-	log("done initialize renderer hook");
+	auto hr = backupDXGI_Present(pSwapChain, SyncInterval, Flags);
+	return hr;
 }
+
+void RendererHook::RegisterPresent(PresentCallback callback)
+{
+	// check hook 
+
+	// register callback
+	m_presentCallbacks.push_back(callback);
+}
+

@@ -3,9 +3,9 @@ class LoaderConfig
 {
 
 public:
-	static LoaderConfig& Instance() {
+	static LoaderConfig* Instance() {
 		static LoaderConfig m_instance;
-		return m_instance;
+		return &m_instance;
 	}
 
 	/// <summary>

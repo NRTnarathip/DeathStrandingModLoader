@@ -16,75 +16,9 @@
 #include <tchar.h>
 #include <cstdio>
 #include <vector>
-
 #include "MinHook.h"
 #include "types.h"
-#include "LoaderConfig.h"
-
-std::ofstream m_logFile;
-LoaderConfig* config;
-
-void log(const char* format, ...)
-{
-	if (config == nullptr)
-		return;
-
-	if (config->logConsole == false
-		&& config->logFile == false)
-		return;
-
-	char buffer[1024];
-	va_list args;
-	va_start(args, format);
-	vsnprintf(buffer, sizeof(buffer), format, args);
-	va_end(args);
-
-	// build string
-	std::stringstream sstream;
-	if (config->logTimeStamp) {
-		auto now = std::chrono::system_clock::now();
-		auto in_time = std::chrono::system_clock::to_time_t(now);
-		sstream << "[" << std::put_time(std::localtime(&in_time), "%T") << "]";
-	}
-
-	if (config->logThreadID) {
-		DWORD tid = GetCurrentThreadId();
-		sstream << "[TID:" << tid << "] ";
-	}
-
-	sstream << buffer << std::endl;
-
-	// log it
-	if (config->logConsole)
-		std::cout << sstream.str();
-
-	if (config->logFile) {
-		m_logFile << sstream.str();
-		m_logFile.flush();
-	}
-
-}
-
-void SetupLogger(LoaderConfig* loaderConfig) {
-	// init config
-	config = loaderConfig;
-
-	// ready setup
-	if (config->enableConsole) {
-		// allow logger
-		AllocConsole();
-		freopen("CONOUT$", "w", stdout);
-		freopen("CONOUT$", "w", stderr);
-		freopen("CONIN$", "r", stdin);
-	}
-
-	if (config->logFile) {
-		m_logFile.open("mod_log.txt", std::ios::out | std::ios::trunc);
-	}
-
-	// ready logger
-	log("done setup logger");
-}
+#include "Logger.h"
 
 bool DisableHook(LPVOID targetFunc) {
 	if (MH_DisableHook(targetFunc) != MH_OK)
@@ -107,6 +41,7 @@ bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
 		return false;
 	}
 	log("hooked func rva: 0x%llx", (uintptr_t)targetFunc - g_imageBase);
+	return true;
 }
 
 bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, void* originalBackup) {
@@ -138,6 +73,11 @@ void* GetAddressFromRva(int rva) {
 }
 bool HookFuncRva(uintptr_t funcRva, LPVOID detour, void* backup) {
 	return HookFuncAddr(GetFuncAddr(funcRva), detour, reinterpret_cast<LPVOID*>(backup));
+}
+
+bool HookFuncVTable(void* obj, int index, LPVOID detour, void* originalBackup) {
+	void** vtable = *(void***)obj;
+	return HookFuncAddr(vtable[index], detour, originalBackup);
 }
 
 bool HookFuncModule(const char* moduleName, uintptr_t funvRva, LPVOID detour, void* backup) {
@@ -247,7 +187,7 @@ bool PatchBytesRva(uintptr_t targetRva, void* bytes, int size) {
 	DWORD oldProtect;
 	auto addr = GetAddressFromRva(targetRva);
 
-	log("before patch: %llx, %s, size: %d", targetRva, ToHex((void*)addr, size), size);
+	//log("before patch: %llx, %s, size: %d", targetRva, ToHex((void*)addr, size), size);
 	if (!VirtualProtect(addr, size, PAGE_EXECUTE_READWRITE, &oldProtect))
 		return false;
 
@@ -257,7 +197,7 @@ bool PatchBytesRva(uintptr_t targetRva, void* bytes, int size) {
 	WriteProcessMemory(hProc, addr, bytes, size, &writeBytes);
 	FlushInstructionCache(hProc, addr, size);
 	VirtualProtect(addr, size, oldProtect, &oldProtect);
-	log("after patch: %llx, %s, size: %d", targetRva, ToHex((void*)addr, size), size);
+	//log("after patch: %llx, %s, size: %d", targetRva, ToHex((void*)addr, size), size);
 	return true;
 }
 
