@@ -3,6 +3,9 @@
 #include "types.h"
 #include "extern/decima-native/source/Core/RTTIObject.h"
 #include "Logger.h"
+#include <vector>
+#include <mutex>
+#include "ObjectScanner.h"
 
 typedef void (*MyAddWeapon2_t)(void* p1, byte p2);
 MyAddWeapon2_t backupMyAddWeapon2;
@@ -48,20 +51,52 @@ PlayerEntity* My_GetDSPlayerByID(PlayerMgr* p1_playerMgr, int p2_id) {
 		log("type: %p", type);
 		auto name = type->GetName();
 		log("  type name: %s", name.c_str());
-		type->ForEachAttribute([&](const RTTIAttr& inAttr, size_t inOffset) {
-			log("attr: %s, offset: 0x%zx", inAttr.mName, inOffset);
-			return false;
-			});
+		void** vtable = *(void***)playerEnt;
+		log("GetRTTI func rva: %p", ConvertAddressToRva(vtable[0]));
+
 	}
 	return playerEnt;
 }
 
+//typedef RTTIClass* (*GetRTTI_t)(RTTIObject* obj);
+//GetRTTI_t backupGetRTTI;
+//RTTIClass* GetRTTI(RTTIObject* obj) {
+//	auto klass = backupGetRTTI(obj);
+//	if (klass) {
+//		log("GetRTTI called for obj: %p", obj);
+//		log("  type: %p", klass);
+//		log("  type name: %s", klass->GetName().c_str());
+//	}
+//	return klass;
+//}
+
+
+void* (*backupGetEntityPos)(Vec3* p1, void* p2);
+void* GetEntityPos(Vec3* pos, void* ent) {
+	auto r = backupGetEntityPos(pos, ent);
+	auto entities = &ObjectScanner::Instance()->entities;
+	entities->push(ent);
+	//log("GetEntityPos called for entity: %p", pos);
+	//log("  pos: %.2f, %.2f, %.2f", pos->x, pos->y, pos->z);
+	//try {
+	//	auto type = ((RTTIObject*)ent)->GetRTTI();
+	//	log("  entity type: %s", type->GetName().c_str());
+	//}
+	//catch (...) {
+	//	log("  entity type: <error getting type>");
+	//}
+	return r;
+}
+
 void SetupDevDebug()
 {
-	return;
+	//return;
 	//HookFuncRva(0x278b160, &MyAddWeapon2, &backupMyAddWeapon2);
 	//HookFuncRva(0x2758c80, &DSNodePlayerGetParamFloat, &backupDSNodePlayerGetParamFloat);
-	HookFuncRva(0x23c60b0, &My_GetDSPlayerByID, &backupMyGetPlayerEntityByID);
+	//HookFuncRva(0x23c60b0, &My_GetDSPlayerByID, &backupMyGetPlayerEntityByID);
+	//HookFuncRva(0x262B920, &GetRTTI, &backupGetRTTI);
+	HookFuncRva(0x2362af0, &GetEntityPos, &backupGetEntityPos);
+
 
 	// from decima-native/source/main.cpp
 	Offsets::MapSignature("RTTIRefObject::DecrementRef", "40 53 48 83 EC 20 48 8B D9 B8 ? ? ? ? F0 0F C1 41 ? 25 ? ? ? ? 83 F8 01 75 34 8B 41");

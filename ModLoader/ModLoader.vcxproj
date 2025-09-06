@@ -390,6 +390,7 @@ exit /b 0</Command>
     <ClInclude Include="extern\imgui\imstb_rectpack.h" />
     <ClInclude Include="extern\imgui\imstb_textedit.h" />
     <ClInclude Include="extern\imgui\imstb_truetype.h" />
+    <ClInclude Include="GameTypes.h" />
     <ClInclude Include="hooks.h" />
     <ClInclude Include="ini.h" />
     <ClInclude Include="INIReader.h" />
@@ -397,6 +398,7 @@ exit /b 0</Command>
     <ClInclude Include="Logger.h" />
     <ClInclude Include="MinHook.h" />
     <ClInclude Include="ModManager.h" />
+    <ClInclude Include="ObjectScanner.h" />
     <ClInclude Include="OverlayMenu.h" />
     <ClInclude Include="PrefetchUpdater.h" />
     <ClInclude Include="RendererHook.h" />
@@ -421,6 +423,7 @@ exit /b 0</Command>
     <ClCompile Include="extern\imgui\imgui_draw.cpp" />
     <ClCompile Include="extern\imgui\imgui_tables.cpp" />
     <ClCompile Include="extern\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="GameTypes.cpp" />
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="ini.c" />
     <ClCompile Include="INIReader.cpp" />
@@ -429,6 +432,7 @@ exit /b 0</Command>
     <ClCompile Include="ModManager.cpp" />
     <ClCompile Include="mydx12.h" />
     <ClCompile Include="note.cpp" />
+    <ClCompile Include="ObjectScanner.cpp" />
     <ClCompile Include="OverlayMenu.cpp" />
     <ClCompile Include="PrefetchUpdater.cpp" />
     <ClCompile Include="RendererHook.cpp" />

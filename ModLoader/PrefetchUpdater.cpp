@@ -199,9 +199,17 @@ bool StartPrefetchGenerator(fs::path gameDir) {
 	int foundCoreFileCount = 0;
 	for (const auto& modDirEntry : fs::directory_iterator(modsDir)) {
 		if (modDirEntry.is_directory() == false) continue;
-		auto modEntryPath = modDirEntry.path().string();
+
+		auto modDirPath = modDirEntry.path();
+		auto modDirPathString = modDirPath.string();
+		auto modFolderName = modDirPath.filename().string();
+		if (modFolderName[0] == '.') {
+			log("skip mod folder: %s", modFolderName.c_str());
+			continue;
+		}
+
 		// get other core files
-		for (const auto& fileEntry : fs::recursive_directory_iterator(modEntryPath)) {
+		for (const auto& fileEntry : fs::recursive_directory_iterator(modDirPathString)) {
 			if (fileEntry.is_regular_file() == false)
 				continue;
 
@@ -213,7 +221,7 @@ bool StartPrefetchGenerator(fs::path gameDir) {
 				continue;
 			}
 
-			std::string filePathRelative = filePath.substr(modEntryPath.size() + 1);
+			std::string filePathRelative = filePath.substr(modDirPathString.size() + 1);
 			std::string gameCoreFilePath = filePathRelative;
 			std::replace(gameCoreFilePath.begin(), gameCoreFilePath.end(), '\\', '/');
 			std::string dstFilePath = (tempNewCoreFilesFolderPath / gameCoreFilePath).string();

@@ -1,16 +1,31 @@
 #include "OverlayMenu.h"
 #include "RendererHook.h"
 #include "utils.h"
+#include "ObjectScanner.h"
+#include "extern/decima-native/source/Core/RTTI.h"
+#include "extern/decima-native/source/Core/RTTIObject.h"
 #include "extern/imgui/imgui.h"
 #include "extern/imgui/backends/imgui_impl_win32.h"
 #include "extern/imgui/backends/imgui_impl_dx12.h"
 #include <wrl/client.h>
 using Microsoft::WRL::ComPtr;
+OverlayMenu* g_overlay;
 
 OverlayMenu::OverlayMenu()
 {
 	renderer = RendererHook::Instance();
+	g_overlay = this;
 }
+
+void OverlayMenu::UpdateOverlayToggle() {
+	static bool wasPressed = false;
+	bool pressed = (GetAsyncKeyState(VK_HOME) & 0x8000) != 0;
+	if (pressed && !wasPressed)
+		isShow = !isShow;
+
+	wasPressed = pressed;
+}
+
 
 // Config for example app
 static const int APP_NUM_FRAMES_IN_FLIGHT = 2;
@@ -46,6 +61,12 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 LRESULT APIENTRY WndProc_Hook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
 	ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
+	if (g_overlay->isShow) {
+		ImGuiIO& io = ImGui::GetIO();
+		if (io.WantCaptureMouse || io.WantCaptureKeyboard) {
+			return true;
+		}
+	}
 
 	return CallWindowProcW(WndProc, hWnd, uMsg, wParam, lParam);
 }
@@ -90,6 +111,7 @@ void OverlayMenu::InitializeBeforePresent()
 	ImGuiIO& io = ImGui::GetIO();
 	io.WantCaptureMouse = true;
 	io.WantCaptureKeyboard = true;
+	io.MouseDrawCursor = true;
 
 
 
@@ -112,22 +134,64 @@ void OverlayMenu::InitializeBeforePresent()
 	WndProc = (WNDPROC)(SetWindowLongPtrW(window, GWLP_WNDPROC, (LONG_PTR)WndProc_Hook));
 }
 
+
 void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
 {
+	UpdateOverlayToggle();
+	if (!isShow)
+		return;
+
+	// init imgui
 	if (isInitializeBeforePresent == false)
 		InitializeBeforePresent();
 
-
-	// draw menus
+	// init frame
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	ImGui::ShowDemoWindow();
 
-	ImGui::Render();
+	// draw menu here
+	//ImGui::ShowDemoWindow();
+	auto entityList = &ObjectScanner::Instance()->entities;
+	auto entityTotal = entityList->size();
+	ImGui::Begin("Entity List");
+	ImGui::LabelText("##entitycount", "Total Entities: %zu", entityTotal);
+
+	ImGui::BeginChild("EntityListChild", ImVec2(0, 0), true);
+
+	int index = -1;
+	std::lock_guard<std::recursive_mutex> lock(entityList->mtx);
+	for (Entity* e : entityList->entities) {
+		index++;
+		if (e == nullptr) {
+			continue;
+		}
+
+		ImGui::PushID(e);
+
+		auto rtti = (RTTIObject*)e;
+		auto type = rtti->GetRTTI();
+		std::string label = "[" + std::to_string(index) + "] " + type->GetName().c_str();
+
+		if (ImGui::TreeNode(label.c_str())) {
+			auto pos = e->position;
+			ImGui::Text("pos: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
+			ImGui::Text("speed: %.2f", e->GetLinearSpeed());
+			ImGui::TreePop();
+		}
+
+
+		ImGui::PopID();
+
+	}
+
+	ImGui::EndChild();
+	ImGui::End();
+
 
 	// final
+	ImGui::Render();
 	DrawImGuiData();
 }
 

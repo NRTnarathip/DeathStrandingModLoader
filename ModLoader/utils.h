@@ -159,5 +159,5 @@ inline uint64_t GetFileCoreHash(const std::string& filename) {
 struct ResourceManager;
 ResourceManager* GetResourceManager();
 
-extern uintptr_t g_imageBase;
 uintptr_t ConvertAddressToRva(void* addr);
+void* GetFuncRva(uintptr_t rva);

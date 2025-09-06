@@ -40,7 +40,7 @@ bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
 		MessageBoxA(NULL, "Failed to enable hook", "Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
-	log("hooked func rva: 0x%llx", (uintptr_t)targetFunc - g_imageBase);
+	log("hooked func rva: 0x%llx", (uintptr_t)ConvertAddressToRva(targetFunc));
 	return true;
 }
 
@@ -48,13 +48,13 @@ bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, void* originalBackup) {
 	return HookFuncAddr(targetFunc, detour, reinterpret_cast<LPVOID*>(originalBackup));
 }
 
-uintptr_t g_imageBase;
-void* GetFuncAddr(uintptr_t rva) {
-	if (g_imageBase == 0) {
-		g_imageBase = (uintptr_t)GetModuleHandleA(NULL);
-	}
+uintptr_t GetImageBase() {
+	static uintptr_t g_imageBase = (uintptr_t)GetModuleHandleA(NULL);
+	return g_imageBase;
+}
 
-	return (void*)(g_imageBase + rva);
+void* GetFuncAddr(uintptr_t rva) {
+	return (void*)(GetImageBase() + rva);
 }
 ResourceManager* g_resourceManager = nullptr;
 ResourceManager* GetResourceManager()
@@ -65,11 +65,16 @@ ResourceManager* GetResourceManager()
 }
 
 uintptr_t ConvertAddressToRva(void* addr) {
-	return (uintptr_t)addr - g_imageBase;
+	return (uintptr_t)addr - GetImageBase();
+}
+
+void* GetFuncRva(uintptr_t rva)
+{
+	return (void*)(GetImageBase() + rva);
 }
 
 void* GetAddressFromRva(int rva) {
-	return (void*)(g_imageBase + rva);
+	return (void*)(GetImageBase() + rva);
 }
 bool HookFuncRva(uintptr_t funcRva, LPVOID detour, void* backup) {
 	return HookFuncAddr(GetFuncAddr(funcRva), detour, reinterpret_cast<LPVOID*>(backup));
