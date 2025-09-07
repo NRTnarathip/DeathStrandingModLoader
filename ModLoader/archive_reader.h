@@ -2,7 +2,8 @@
 #include <Windows.h>
 #include <cstdint>
 #include <vector>
-#include "types.h"
+#include "GameTypes.h"
+
 
 // code src from https://github.com/Jayveer/Decima-Explorer
 

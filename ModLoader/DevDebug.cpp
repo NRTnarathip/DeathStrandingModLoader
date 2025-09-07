@@ -1,11 +1,11 @@
 #include "DevDebug.h"
 #include "utils.h"
-#include "types.h"
+#include "GameTypes.h"
+#include "ObjectScanner.h"
 #include "extern/decima-native/source/Core/RTTIObject.h"
 #include "Logger.h"
 #include <vector>
 #include <mutex>
-#include "ObjectScanner.h"
 
 typedef void (*MyAddWeapon2_t)(void* p1, byte p2);
 MyAddWeapon2_t backupMyAddWeapon2;
@@ -71,11 +71,11 @@ PlayerEntity* My_GetDSPlayerByID(PlayerMgr* p1_playerMgr, int p2_id) {
 //}
 
 
-void* (*backupGetEntityPos)(Vec3* p1, void* p2);
-void* GetEntityPos(Vec3* pos, void* ent) {
+void* (*backupGetEntityPos)(MyVector3* p1, void* p2);
+void* GetEntityPos(MyVector3* pos, void* ent) {
 	auto r = backupGetEntityPos(pos, ent);
-	auto entities = &ObjectScanner::Instance()->entities;
-	entities->push(ent);
+	auto entities = &ObjectScanner::Instance()->entityList;
+	entities->add(ent);
 	//log("GetEntityPos called for entity: %p", pos);
 	//log("  pos: %.2f, %.2f, %.2f", pos->x, pos->y, pos->z);
 	//try {
@@ -88,6 +88,43 @@ void* GetEntityPos(Vec3* pos, void* ent) {
 	return r;
 }
 
+int* (*backupMultiSpawnpoint_ExportedGetEntities)(int* param_1, void* param_2);
+int* MultiSpawnpoint_ExportedGetEntities(int* param_1, void* param_2)
+{
+	auto result = backupMultiSpawnpoint_ExportedGetEntities(param_1, param_2);
+	MyVector* list = (MyVector*)param_2;
+	log("MultiSpawnpoint_ExportedGetEntities: %p", list);
+	log("list count: %d", list->count);
+	return result;
+}
+
+void LogObjectType(const char* label, void* o) {
+	auto type = TryGetRTTI(o);
+	if (type) {
+		log("[%s] object ptr: %p type: %s", label, o, type->GetName().c_str());
+	}
+	else {
+		log("[%s] object ptr: %p type: <error>", label, o);
+	}
+}
+void LogVec3(const char* label, void* o) {
+	auto vec = (MyVector3*)o;
+	log("[%s] x: %.2f, y: %.2f, z: %.2f", label, vec->x, vec->y, vec->z);
+}
+
+void* (*bakcupMyLikeSearchEntityInRadius) (RTTIObject* param_1,
+	MyVector* p2_position, float p3_radius, MyVector* p4_vector);
+void* HK_MyLikeSearchEntityInRadius(RTTIObject* p1_manager,
+	MyVector* p2_position, float p3_radius, MyVector* p4_vector) {
+	log("MyLikeSearchEntityInRadius called");
+	LogVec3("position", p2_position);
+	log("radius: %f", p3_radius);
+	auto result = bakcupMyLikeSearchEntityInRadius(p1_manager, p2_position, p3_radius, p4_vector);
+	log("found count: %d", p4_vector->count);
+
+	return result;
+}
+
 void SetupDevDebug()
 {
 	//return;
@@ -95,7 +132,9 @@ void SetupDevDebug()
 	//HookFuncRva(0x2758c80, &DSNodePlayerGetParamFloat, &backupDSNodePlayerGetParamFloat);
 	//HookFuncRva(0x23c60b0, &My_GetDSPlayerByID, &backupMyGetPlayerEntityByID);
 	//HookFuncRva(0x262B920, &GetRTTI, &backupGetRTTI);
-	HookFuncRva(0x2362af0, &GetEntityPos, &backupGetEntityPos);
+	//HookFuncRva(0x2362af0, &GetEntityPos, &backupGetEntityPos);
+	//HookFuncRva(0x23da700, &MultiSpawnpoint_ExportedGetEntities, &backupMultiSpawnpoint_ExportedGetEntities);
+	//HookFuncRva(0x252a470, &HK_MyLikeSearchEntityInRadius, &bakcupMyLikeSearchEntityInRadius);
 
 
 	// from decima-native/source/main.cpp

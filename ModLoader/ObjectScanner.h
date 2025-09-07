@@ -1,10 +1,6 @@
 #pragma once
-#include <vector>
-#include <mutex>
-#include <unordered_set>
-#include "GameTypes.h"
-
-struct RTTIObject;
+#include "GameTypes.h" 
+#include "EntityList.hpp" 
 
 class ObjectScanner
 {
@@ -14,6 +10,9 @@ public:
 		return &instance;
 	}
 
-	EntityList entities;
+	ObjectScanner();
+
+	EntityList entityList;
+	void ScanAllObject();
 };
 

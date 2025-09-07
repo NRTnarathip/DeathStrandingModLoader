@@ -161,3 +161,4 @@ ResourceManager* GetResourceManager();
 
 uintptr_t ConvertAddressToRva(void* addr);
 void* GetFuncRva(uintptr_t rva);
+

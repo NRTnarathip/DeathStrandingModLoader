@@ -1,6 +1,6 @@
 #include "ModManager.h"
 #include "utils.h"
-#include "types.h"
+#include "GameTypes.h" 
 #include <iostream>
 #include <string>
 #include <algorithm>

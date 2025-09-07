@@ -24,7 +24,7 @@
 #include <iostream>
 #include "hooks.h"
 #include "utils.h"
-#include "types.h"
+#include "GameTypes.h" 
 #include "dll_version.h"
 #include "winlator_patch.h"
 #include "ModManager.h"

@@ -71,6 +71,19 @@ LRESULT APIENTRY WndProc_Hook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 	return CallWindowProcW(WndProc, hWnd, uMsg, wParam, lParam);
 }
 
+void InitImGuiStyle() {
+	ImGui::CreateContext();
+	ImGui::StyleColorsDark();
+	ImGuiIO& io = ImGui::GetIO();
+	io.WantCaptureMouse = true;
+	io.WantCaptureKeyboard = true;
+	io.MouseDrawCursor = true;
+
+	// font
+	ImFont* consolas = io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/consolab.ttf", 20.0f);
+	ImGui::PushFont(consolas);
+}
+
 void OverlayMenu::InitializeBeforePresent()
 {
 	isInitializeBeforePresent = true;
@@ -106,12 +119,7 @@ void OverlayMenu::InitializeBeforePresent()
 
 
 	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGui::StyleColorsDark();
-	ImGuiIO& io = ImGui::GetIO();
-	io.WantCaptureMouse = true;
-	io.WantCaptureKeyboard = true;
-	io.MouseDrawCursor = true;
+	InitImGuiStyle();
 
 
 
@@ -134,7 +142,6 @@ void OverlayMenu::InitializeBeforePresent()
 	WndProc = (WNDPROC)(SetWindowLongPtrW(window, GWLP_WNDPROC, (LONG_PTR)WndProc_Hook));
 }
 
-
 void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
 {
 	UpdateOverlayToggle();
@@ -153,7 +160,10 @@ void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
 
 	// draw menu here
 	//ImGui::ShowDemoWindow();
-	auto entityList = &ObjectScanner::Instance()->entities;
+	ObjectScanner* objScanner = ObjectScanner::Instance();
+	objScanner->ScanAllObject();
+
+	auto entityList = &objScanner->entityList;
 	auto entityTotal = entityList->size();
 	ImGui::Begin("Entity List");
 	ImGui::LabelText("##entitycount", "Total Entities: %zu", entityTotal);
@@ -162,28 +172,42 @@ void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
 
 	int index = -1;
 	std::lock_guard<std::recursive_mutex> lock(entityList->mtx);
-	for (Entity* e : entityList->entities) {
-		index++;
-		if (e == nullptr) {
-			continue;
-		}
-
+	for (Entity* e : entityList->entitiesSet) {
 		ImGui::PushID(e);
+		index++;
 
-		auto rtti = (RTTIObject*)e;
-		auto type = rtti->GetRTTI();
-		std::string label = "[" + std::to_string(index) + "] " + type->GetName().c_str();
+		auto entityRTTI = (RTTIObject*)e;
+		auto type = entityRTTI->GetRTTI();
+		std::string typeNameString = type->GetName().str();
+		bool typeError = false;
+		if (typeNameString.empty()) {
+			typeNameString = "<type error>";
+			typeError = true;
+		}
+		std::string label = "[" + std::to_string(index) + "] " + typeNameString;
 
-		if (ImGui::TreeNode(label.c_str())) {
+		if (ImGui::TreeNode(label.c_str()) && !typeError) {
 			auto pos = e->position;
+			auto ptr = (byte*)e;
 			ImGui::Text("pos: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
-			ImGui::Text("speed: %.2f", e->GetLinearSpeed());
+
+			auto vtable = *(void***)e;
+			ImGui::Text("VTable rva: %llx", ConvertAddressToRva(vtable));
+			ImGui::Text("GetRTTI() rva: %llx", ConvertAddressToRva(vtable[0]));
+			ImGui::Text("Deconstruct rva: %llx", ConvertAddressToRva(vtable[1]));
+			Entity* parent = nullptr;
+			try {
+				parent = entityRTTI->Get<Entity*>("Parent");
+			}
+			catch (...) {
+
+			}
+			ImGui::Text("Parent: %p", parent);
+
 			ImGui::TreePop();
 		}
 
-
 		ImGui::PopID();
-
 	}
 
 	ImGui::EndChild();

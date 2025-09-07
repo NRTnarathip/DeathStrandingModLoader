@@ -17,7 +17,7 @@
 #include <cstdio>
 #include <vector>
 #include "MinHook.h"
-#include "types.h"
+#include "GameTypes.h" 
 #include "Logger.h"
 
 bool DisableHook(LPVOID targetFunc) {

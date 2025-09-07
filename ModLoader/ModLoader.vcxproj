@@ -375,6 +375,7 @@ exit /b 0</Command>
   <ItemGroup>
     <ClInclude Include="archive_reader.h" />
     <ClInclude Include="DevDebug.h" />
+    <ClInclude Include="EntityList.hpp" />
     <ClInclude Include="extern\decima-native\source\Core\RTTI.h" />
     <ClInclude Include="extern\decima-native\source\Core\RTTIObject.h" />
     <ClInclude Include="extern\decima-native\source\Core\RTTIRefObject.h" />
@@ -390,7 +391,6 @@ exit /b 0</Command>
     <ClInclude Include="extern\imgui\imstb_rectpack.h" />
     <ClInclude Include="extern\imgui\imstb_textedit.h" />
     <ClInclude Include="extern\imgui\imstb_truetype.h" />
-    <ClInclude Include="GameTypes.h" />
     <ClInclude Include="hooks.h" />
     <ClInclude Include="ini.h" />
     <ClInclude Include="INIReader.h" />
@@ -404,7 +404,7 @@ exit /b 0</Command>
     <ClInclude Include="RendererHook.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TexturePatcher.h" />
-    <ClInclude Include="types.h" />
+    <ClInclude Include="GameTypes.h" />
     <ClInclude Include="MurmurHash3.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="dll_version.h" />
@@ -423,7 +423,6 @@ exit /b 0</Command>
     <ClCompile Include="extern\imgui\imgui_draw.cpp" />
     <ClCompile Include="extern\imgui\imgui_tables.cpp" />
     <ClCompile Include="extern\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="GameTypes.cpp" />
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="ini.c" />
     <ClCompile Include="INIReader.cpp" />
@@ -437,7 +436,7 @@ exit /b 0</Command>
     <ClCompile Include="PrefetchUpdater.cpp" />
     <ClCompile Include="RendererHook.cpp" />
     <ClCompile Include="TexturePatcher.cpp" />
-    <ClCompile Include="types.cpp" />
+    <ClCompile Include="GameTypes.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="MurmurHash3.cpp" />
     <ClCompile Include="utils.cpp" />
