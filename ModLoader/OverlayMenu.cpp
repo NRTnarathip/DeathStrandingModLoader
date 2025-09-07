@@ -7,8 +7,13 @@
 #include "extern/imgui/imgui.h"
 #include "extern/imgui/backends/imgui_impl_win32.h"
 #include "extern/imgui/backends/imgui_impl_dx12.h"
+#include "extern/imgui/misc/cpp/imgui_stdlib.h"
+#include <format>
 #include <wrl/client.h>
+#include <algorithm>
+
 using Microsoft::WRL::ComPtr;
+
 OverlayMenu* g_overlay;
 
 OverlayMenu::OverlayMenu()
@@ -142,6 +147,14 @@ void OverlayMenu::InitializeBeforePresent()
 	WndProc = (WNDPROC)(SetWindowLongPtrW(window, GWLP_WNDPROC, (LONG_PTR)WndProc_Hook));
 }
 
+bool IsContains(const std::string& src, const std::string& word) {
+	std::string srcLowerCase = src;
+	std::string wordLowerCase = word;
+	std::transform(srcLowerCase.begin(), srcLowerCase.end(), srcLowerCase.begin(), ::tolower);
+	std::transform(wordLowerCase.begin(), wordLowerCase.end(), wordLowerCase.begin(), ::tolower);
+	return srcLowerCase.find(wordLowerCase) != std::string::npos;
+}
+
 void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
 {
 	UpdateOverlayToggle();
@@ -164,45 +177,71 @@ void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
 	objScanner->ScanAllObject();
 
 	auto entityList = &objScanner->entityList;
+
+	// lock first!!
+	std::lock_guard<std::recursive_mutex> lock(entityList->mtx);
 	auto entityTotal = entityList->size();
 	ImGui::Begin("Entity List");
 	ImGui::LabelText("##entitycount", "Total Entities: %zu", entityTotal);
 
 	ImGui::BeginChild("EntityListChild", ImVec2(0, 0), true);
 
+	static std::string entityListFilter;
+	ImGui::InputText("Entity Filter", &entityListFilter);
+
 	int index = -1;
-	std::lock_guard<std::recursive_mutex> lock(entityList->mtx);
-	for (Entity* e : entityList->entitiesSet) {
+	for (Entity* e : entityList->list) {
 		ImGui::PushID(e);
 		index++;
 
 		auto entityRTTI = (RTTIObject*)e;
 		auto type = entityRTTI->GetRTTI();
 		std::string typeNameString = type->GetName().str();
-		bool typeError = false;
-		if (typeNameString.empty()) {
-			typeNameString = "<type error>";
-			typeError = true;
+		bool anyMatch = true;
+		if (!entityListFilter.empty())
+			anyMatch = IsContains(typeNameString, entityListFilter);
+
+		if (!anyMatch) {
+			ImGui::PopID();
+			continue;
 		}
+
 		std::string label = "[" + std::to_string(index) + "] " + typeNameString;
 
-		if (ImGui::TreeNode(label.c_str()) && !typeError) {
+		if (ImGui::TreeNode(label.c_str())) {
 			auto pos = e->position;
 			auto ptr = (byte*)e;
-			ImGui::Text("pos: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
+			ImGui::Text("ptr: %p", e);
+			ImGui::Text("position: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
 
 			auto vtable = *(void***)e;
 			ImGui::Text("VTable rva: %llx", ConvertAddressToRva(vtable));
 			ImGui::Text("GetRTTI() rva: %llx", ConvertAddressToRva(vtable[0]));
 			ImGui::Text("Deconstruct rva: %llx", ConvertAddressToRva(vtable[1]));
-			Entity* parent = nullptr;
+			const Entity* parent = nullptr;
 			try {
-				parent = entityRTTI->Get<Entity*>("Parent");
+				parent = entityRTTI->Get<const Entity*>("Parent");
+				if (parent) {
+					log("found parent: %p", parent);
+				}
 			}
-			catch (...) {
-
-			}
+			catch (...) {}
 			ImGui::Text("Parent: %p", parent);
+
+			auto componentContainer = e->GetAllComponent();
+			auto componentArray = &componentContainer->Components;
+			if (ImGui::TreeNode(componentArray, "Components (%d)", componentArray->size())) {
+				int compIndex = -1;
+				for (auto comp : *componentArray) {
+					compIndex++;
+					auto compRTTI = (RTTIObject*)comp;
+					auto compType = compRTTI->GetRTTI();
+					std::string compTypeName = compType->GetName().str();
+					ImGui::Text("[%d] %s", compIndex, compTypeName.c_str());
+				}
+
+				ImGui::TreePop();
+			}
 
 			ImGui::TreePop();
 		}
@@ -211,6 +250,8 @@ void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
 	}
 
 	ImGui::EndChild();
+
+
 	ImGui::End();
 
 

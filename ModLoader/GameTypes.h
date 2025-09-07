@@ -12,6 +12,7 @@
 #include <unordered_set>
 #include "extern/decima-native/source/Core/RTTI.h"
 #include "extern/decima-native/source/Core/RTTIObject.h"
+#include "extern/decima-native/source/PCore/Array.h"
 
 
 #define ASSERT_OFFSET(struct_type, member, expected_offset) \
@@ -168,6 +169,12 @@ enum EPackFileCategory : int {
 	PackFileCategries = 11,
 };
 
+struct EntityComponent {
+
+};
+struct EntityComponentContainer {
+	Array<const EntityComponent*> Components;
+};
 
 struct MyVector3 {
 	double x, y, z;
@@ -185,6 +192,7 @@ struct Entity {
 
 	// function
 	double GetLinearSpeed();
+	EntityComponentContainer* GetAllComponent();
 
 	// vtable:  0x3d04050
 	// vfunc 0: 0x234e590

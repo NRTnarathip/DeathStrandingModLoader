@@ -53,6 +53,11 @@ double Entity::GetLinearSpeed()
 	return g_GetLinearSpeed(this);
 }
 
+EntityComponentContainer* Entity::GetAllComponent()
+{
+	return (EntityComponentContainer*)((byte*)this + 144);
+}
+
 void* TryReadPtr(void** ptr) {
 	__try {
 		return *ptr;

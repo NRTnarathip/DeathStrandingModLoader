@@ -391,6 +391,8 @@ exit /b 0</Command>
     <ClInclude Include="extern\imgui\imstb_rectpack.h" />
     <ClInclude Include="extern\imgui\imstb_textedit.h" />
     <ClInclude Include="extern\imgui\imstb_truetype.h" />
+    <ClInclude Include="extern\imgui\misc\cpp\imgui_stdlib.h" />
+    <ClInclude Include="extern\imgui\misc\single_file\imgui_single_file.h" />
     <ClInclude Include="hooks.h" />
     <ClInclude Include="ini.h" />
     <ClInclude Include="INIReader.h" />
@@ -423,6 +425,8 @@ exit /b 0</Command>
     <ClCompile Include="extern\imgui\imgui_draw.cpp" />
     <ClCompile Include="extern\imgui\imgui_tables.cpp" />
     <ClCompile Include="extern\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="extern\imgui\misc\cpp\imgui_stdlib.cpp" />
+    <ClCompile Include="extern\imgui\misc\fonts\binary_to_compressed_c.cpp" />
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="ini.c" />
     <ClCompile Include="INIReader.cpp" />

@@ -132,6 +132,12 @@
     <ClInclude Include="EntityList.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="extern\imgui\misc\cpp\imgui_stdlib.h">
+      <Filter>Source Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\imgui\misc\single_file\imgui_single_file.h">
+      <Filter>Source Files\imgui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -223,6 +229,12 @@
     </ClCompile>
     <ClCompile Include="ObjectScanner.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui\misc\cpp\imgui_stdlib.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\imgui\misc\fonts\binary_to_compressed_c.cpp">
+      <Filter>Source Files\imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
