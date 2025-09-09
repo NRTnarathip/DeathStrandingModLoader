@@ -168,6 +168,13 @@ enum EPackFileCategory : int {
 	PackFileCategries = 11,
 };
 
+struct FieldInfo {
+	const RTTIAttr attr;
+	size_t offset;
+};
+
+std::vector<FieldInfo> GetFields(void* o);
+
 struct EntityComponent {
 
 };
@@ -182,8 +189,11 @@ struct MyUUID {
 	static bool IsEmptyString(std::string string);
 };
 
-struct MyVector3 {
+struct MyVec3 {
 	double x, y, z;
+};
+struct MyVec4Float {
+	float x, y, z, w;
 };
 
 struct MyVec3Pack {
@@ -199,9 +209,24 @@ struct MyRotMatrix {
 
 //size 60bit
 struct WorldTransform {
-	MyVector3 position; // size 24bit
+	MyVec3 position; // size 24bit
 	MyRotMatrix rotation; // size 36bit
 };
+
+namespace Flags {
+	enum EntityFlags : uint32_t {
+		Empty = 0,
+		Unk0 = 1 << 0,      // 0x1
+		Visable = 1 << 1,      // 0x2
+		Unk2 = 1 << 2,      // 0x4
+		Unk3 = 1 << 3,		// 0x8
+		Unk4 = 1 << 4,      // 0x10
+		Unk5 = 1 << 5,      // 0x20
+		Unk6 = 1 << 6,      // 0x40
+		Dead = 1 << 7,      // 0x80
+		Sleep = 1 << 8,     // 0x100
+	};
+}
 
 struct Entity {
 	// vtable:  0x3d04050
@@ -210,10 +235,18 @@ struct Entity {
 
 	// fields
 	void** vtable; // 0x0
-	MyUUID uuid; // 0x8 + 16
-	char gap[0xa8]; // 0x18 -> 0xC0
-	WorldTransform transform;
-	WorldTransform transform2;
+	MyUUID uuid; // 0x8 -> 0x18
+	byte gap0x18_0x70[0x70 - 0x18];
+	Entity* parent; // 0x70
+	Entity* childBegin; // 0x78
+	Entity* childEnd; // 0x80
+	uint32_t flag; // 0x88 -> 0x8C
+	byte gap0x8C_0xB0[0xB0 - 0x8C];
+	RTTIObject* mover; // 0xb0
+	RTTIObject* model;// 0xb8
+	RTTIObject* destructibility;// 0xc0
+	WorldTransform transform; // 0xC8
+	WorldTransform transform2; // 0x104
 
 	// function
 	double GetLinearSpeed();
@@ -222,7 +255,11 @@ struct Entity {
 	int GetChildCount();
 	Entity* GetChild(int index);
 	const char* TypeName();
-	std::string GetUUID();
+	std::string GetUUIDString();
+	bool IsDead();
+	void SetSleeping(bool sleep);
+	void SetInvulnerable(bool on);
+	MyVec4Float GetVelocity();
 };
 
 class ControlledEntity : RTTIObject {

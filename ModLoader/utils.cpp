@@ -130,7 +130,6 @@ void  WaitForDebug() {
 	log("waiting for debugger to attach...");
 	while (!IsDebuggerPresent())
 	{
-		Sleep(100);
 	}
 	log("some debug attached");
 }

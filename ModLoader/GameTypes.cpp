@@ -34,6 +34,18 @@ const RTTIClass* SafeGetRTTI(RTTIObject* obj) {
 	}
 }
 
+std::vector<FieldInfo> GetFields(void* obj)
+{
+	std::vector<FieldInfo> fields;
+	auto type = ((RTTIObject*)obj)->GetRTTI();
+	type->ForEachAttribute([&](const RTTIAttr& inAttr, size_t inOffset) {
+		FieldInfo field = { .attr = inAttr, .offset = inOffset };
+		fields.push_back(field);
+		return false;
+		});
+	return fields;
+}
+
 const RTTIClass* TryGetRTTI(void* o) {
 	if (o == nullptr || !IsReadable(o))
 		return nullptr;
@@ -111,9 +123,38 @@ const char* Entity::TypeName() {
 	return type->GetName().c_str();
 }
 
-std::string Entity::GetUUID()
+std::string Entity::GetUUIDString()
 {
 	return uuid.ToString();
+}
+
+bool Entity::IsDead()
+{
+	return flag & Flags::EntityFlags::Dead;
+}
+
+void Entity::SetSleeping(bool sleep)
+{
+	typedef void (*SetSleepingFunc)(Entity* ent, bool sleep);
+	static auto fn = (SetSleepingFunc)(GetFuncRva(0x2361e20));
+	fn(this, sleep);
+}
+
+void Entity::SetInvulnerable(bool on)
+{
+	typedef void (*SetInvulnerableFunc)(Entity* ent, bool on);
+	static auto fn = (SetInvulnerableFunc)(GetFuncRva(0x2361d90));
+	fn(this, on);
+	log("setted god mod: %d", on);
+}
+
+MyVec4Float Entity::GetVelocity()
+{
+	MyVec4Float velocity;
+	typedef void* (*GetVelocityFunc)(Entity* ent, void* velo);
+	static auto fn = (GetVelocityFunc)GetFuncRva(0x234c180);
+	fn(this, &velocity);
+	return velocity;
 }
 
 Array<const EntityComponent*>* Entity::GetAllComponent()

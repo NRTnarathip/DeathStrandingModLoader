@@ -158,14 +158,14 @@ bool IsContains(const std::string& src, const std::string& word) {
 	return srcLowerCase.find(wordLowerCase) != std::string::npos;
 }
 
-MyVector3 RotationMatrixToEuler(MyRotMatrix& rotMatrix)
+MyVec3 RotationMatrixToEuler(MyRotMatrix& rotMatrix)
 {
 	auto& col0 = rotMatrix.Col0;
 	auto& col1 = rotMatrix.Col1;
 	auto& col2 = rotMatrix.Col2;
 	auto pi = std::numbers::pi;
 	auto pi_2 = pi / 2.0;
-	MyVector3 euler;
+	MyVec3 euler;
 	// Assuming matrix is column-major
 	if (col0.z < 1.0f)
 	{
@@ -202,7 +202,7 @@ MyVector3 RotationMatrixToEuler(MyRotMatrix& rotMatrix)
 void OverlayMenu::DrawEntityInspectorMenu() {
 	ImGui::Begin("Entity Inspector");
 
-	auto entity = entityList->get(selectedEntityUUID);
+	auto entity = entityList->get(selectedEntityUUIDString);
 	if (entity == nullptr) {
 		ImGui::LabelText("##no_entity_selected", "No entity selected");
 		ImGui::End();
@@ -210,37 +210,78 @@ void OverlayMenu::DrawEntityInspectorMenu() {
 	}
 
 	auto entityType = entity->TypeName();
-	ImGui::Text("type: %s", entityType);
-	ImGui::Text("uuid: %s", selectedEntityUUID.c_str());
+	ImGui::Text("Type: %s", entityType);
+	ImGui::Text("UUID: %s", selectedEntityUUIDString.c_str());
+	ImGui::Text("Flags: %u", entity->flag);
+	ImGui::Text("Model: %s", entity->model ? entity->model->GetRTTI()->mTypeName : "null");
+	ImGui::Text("Mover: %s", entity->mover ? entity->mover->GetRTTI()->mTypeName : "null");
+	ImGui::Text("Destructibility: %s",
+		entity->destructibility ? entity->destructibility->GetRTTI()->mTypeName : "null");
+
+	auto entityFields = GetFields(entity);
+	if (ImGui::TreeNode("##entity_fields", "Fields %d", entityFields.size())) {
+		for (auto& field : entityFields) {
+			auto fieldType = field.attr.mType;
+			ImGui::Text("%s %s = (?) || offset: 0x%x",
+				fieldType->GetName().c_str(), field.attr.mName, field.offset);
+		}
+		ImGui::TreePop();
+	}
+
+	if (ImGui::TreeNode("Utils Functions")) {
+		if (ImGui::Button("Sleep()")) entity->SetSleeping(true);
+		if (ImGui::Button("Wakeup()")) entity->SetSleeping(false);
+		ImGui::TreePop();
+	}
 
 	if (ImGui::TreeNode("Transform")) {
 		{
-			ImGui::Text("Local Transform");
+			ImGui::Text("Transform 0xC8");
 			auto pos = entity->transform.position;
 			ImGui::Text("  position: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
 			auto rot = RotationMatrixToEuler(entity->transform.rotation);
 			ImGui::Text("  rotation: %.2f, %.2f, %.2f", rot.x, rot.y, rot.z);
 		}
 		{
-			ImGui::Text("World Transform");
-			auto pos2 = entity->transform2.position;
-			ImGui::Text("  position: %.2f, %.2f, %.2f", pos2.x, pos2.y, pos2.z);
-			auto rot2 = RotationMatrixToEuler(entity->transform2.rotation);
-			ImGui::Text("  rotation: %.2f, %.2f, %.2f", rot2.x, rot2.y, rot2.z);
+			ImGui::Text("Transform 0x104");
+			auto pos = entity->transform2.position;
+			ImGui::Text("  position: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
+			auto rot = RotationMatrixToEuler(entity->transform2.rotation);
+			ImGui::Text("  rotation: %.2f, %.2f, %.2f", rot.x, rot.y, rot.z);
 		}
 		ImGui::TreePop();
 	}
 
-	auto componentArray = entity->GetAllComponent();
-	if (ImGui::TreeNode(componentArray, "Components (%d)", componentArray->size())) {
+	if (ImGui::TreeNode("Mover Info")) {
+		auto velocity = entity->GetVelocity();
+		ImGui::Text("Velocity: %.2f, %.2f, %.2f, %.2f", velocity.x, velocity.y, velocity.z, velocity.w);
+		ImGui::TreePop();
+	}
+
+	auto& componentArray = *entity->GetAllComponent();
+	if (ImGui::TreeNode("##entity_components", "Components (%d)", componentArray.size())) {
 		int compIndex = -1;
-		for (auto comp : *componentArray) {
+		for (auto comp : componentArray) {
+			ImGui::PushID(comp);
+
 			compIndex++;
 			auto compRTTI = (RTTIObject*)comp;
-			auto compType = compRTTI->GetRTTI();
-			std::string compTypeName = compType->GetName().str();
+			auto type = compRTTI->GetRTTI();
+			std::string compTypeName = type->GetName().str();
 			ImGui::Text("[%d] %s", compIndex, compTypeName.c_str());
+			auto fields = GetFields((void*)comp);
+			if (ImGui::TreeNode(comp, "Fields (%d)", fields.size())) {
+				for (auto& field : fields) {
+					auto fieldType = field.attr.mType;
+					ImGui::Text("%s %s | offset: 0x%x",
+						fieldType->GetName().c_str(), field.attr.mName, field.offset);
+				}
+				ImGui::TreePop();
+			}
+
+			ImGui::PopID();
 		}
+
 		ImGui::TreePop();
 	}
 
@@ -257,18 +298,29 @@ void DrawEntityNodeLoop(Entity* ent) {
 		&& !IsContains(typeName, entityListFilter))
 		return;
 
-	if (ImGui::TreeNode(ent, "[%p] %s", ent, typeName)) {
-		auto childCount = ent->GetChildCount();
+	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
+
+	auto childCount = ent->GetChildCount();
+	if (childCount == 0)
+		flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+
+	auto isSelected = (g_overlay->selectedEntityUUIDString == ent->GetUUIDString());
+	if (isSelected)
+		flags = flags | ImGuiTreeNodeFlags_Selected;
+	auto uuid = ent->GetUUIDString();
+
+	if (ImGui::TreeNodeEx(ent, flags, "%s", typeName)) {
 		for (int i = 0; i < childCount; i++) {
 			auto child = ent->GetChild(i);
 			DrawEntityNodeLoop(child);
 		}
 
-		ImGui::TreePop();
+		if (childCount > 0)
+			ImGui::TreePop();
 	}
 
 	if (ImGui::IsItemClicked())
-		g_overlay->selectedEntityUUID = ent->GetUUID();
+		g_overlay->selectedEntityUUIDString = uuid;
 
 };
 void OverlayMenu::DrawEntityListViewer() {

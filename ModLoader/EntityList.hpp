@@ -30,7 +30,7 @@ struct EntityList {
 			list.erase(it->second);
 			set.erase(it);
 			if (e->uuid.IsEmpty() == false) {
-				auto uuidString = e->GetUUID();
+				auto uuidString = e->GetUUIDString();
 				if (lookupByUUID.find(uuidString) != lookupByUUID.end())
 					lookupByUUID.erase(uuidString);
 			}
@@ -47,7 +47,7 @@ struct EntityList {
 
 		// try loop get
 		for (auto e : list) {
-			if (e->GetUUID() == uuid) {
+			if (e->GetUUIDString() == uuid) {
 				lookupByUUID[uuid] = e;
 				return e;
 			}

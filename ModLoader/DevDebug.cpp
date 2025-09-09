@@ -71,8 +71,8 @@ PlayerEntity* My_GetDSPlayerByID(PlayerMgr* p1_playerMgr, int p2_id) {
 //}
 
 
-void* (*backupGetEntityPos)(MyVector3* p1, void* p2);
-void* GetEntityPos(MyVector3* pos, void* ent) {
+void* (*backupGetEntityPos)(MyVec3* p1, void* p2);
+void* GetEntityPos(MyVec3* pos, void* ent) {
 	auto r = backupGetEntityPos(pos, ent);
 	auto entities = &ObjectScanner::Instance()->entityList;
 	entities->add(ent);
@@ -108,7 +108,7 @@ void LogObjectType(const char* label, void* o) {
 	}
 }
 void LogVec3(const char* label, void* o) {
-	auto vec = (MyVector3*)o;
+	auto vec = (MyVec3*)o;
 	log("[%s] x: %.2f, y: %.2f, z: %.2f", label, vec->x, vec->y, vec->z);
 }
 

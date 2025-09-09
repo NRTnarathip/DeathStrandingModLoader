@@ -16,7 +16,7 @@ public:
 
 	OverlayMenu();
 	void Initialize();
-	std::string selectedEntityUUID;
+	std::string selectedEntityUUIDString;
 
 private:
 	RendererHook* renderer;
