@@ -10,8 +10,10 @@ struct EntityList {
 	mutable std::recursive_mutex mtx;
 	std::unordered_map<Entity*, std::list<Entity*>::iterator> set;
 	std::list<Entity*> list;
+	std::unordered_map<std::string, Entity*> lookupByUUID;
 
 	void add(void* item) {
+		if (item == nullptr) return;
 		std::lock_guard<std::recursive_mutex> lock(mtx);
 		auto e = (Entity*)item;
 		if (set.find(e) == set.end()) {
@@ -27,7 +29,31 @@ struct EntityList {
 		if (it != set.end()) {
 			list.erase(it->second);
 			set.erase(it);
+			if (e->uuid.IsEmpty() == false) {
+				auto uuidString = e->GetUUID();
+				if (lookupByUUID.find(uuidString) != lookupByUUID.end())
+					lookupByUUID.erase(uuidString);
+			}
 		}
+	}
+
+	Entity* get(std::string uuid) {
+		if (MyUUID::IsEmptyString(uuid))
+			return nullptr;
+
+		std::lock_guard<std::recursive_mutex> lock(mtx);
+		if (lookupByUUID.find(uuid) != lookupByUUID.end())
+			return lookupByUUID[uuid];
+
+		// try loop get
+		for (auto e : list) {
+			if (e->GetUUID() == uuid) {
+				lookupByUUID[uuid] = e;
+				return e;
+			}
+		}
+
+		return nullptr;
 	}
 
 	size_t size() {

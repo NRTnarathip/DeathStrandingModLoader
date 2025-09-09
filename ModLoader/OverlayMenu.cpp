@@ -10,6 +10,7 @@
 #include "extern/imgui/misc/cpp/imgui_stdlib.h"
 #include <format>
 #include <wrl/client.h>
+#include <numbers> // std::numbers
 #include <algorithm>
 
 using Microsoft::WRL::ComPtr;
@@ -18,8 +19,10 @@ OverlayMenu* g_overlay;
 
 OverlayMenu::OverlayMenu()
 {
-	renderer = RendererHook::Instance();
 	g_overlay = this;
+	renderer = RendererHook::Instance();
+	objScanner = ObjectScanner::Instance();
+	entityList = &objScanner->entityList;
 }
 
 void OverlayMenu::UpdateOverlayToggle() {
@@ -155,6 +158,140 @@ bool IsContains(const std::string& src, const std::string& word) {
 	return srcLowerCase.find(wordLowerCase) != std::string::npos;
 }
 
+MyVector3 RotationMatrixToEuler(MyRotMatrix& rotMatrix)
+{
+	auto& col0 = rotMatrix.Col0;
+	auto& col1 = rotMatrix.Col1;
+	auto& col2 = rotMatrix.Col2;
+	auto pi = std::numbers::pi;
+	auto pi_2 = pi / 2.0;
+	MyVector3 euler;
+	// Assuming matrix is column-major
+	if (col0.z < 1.0f)
+	{
+		if (col0.z > -1.0f)
+		{
+			euler.y = std::asin(-col0.z);                    // pitch
+			euler.x = std::atan2(col1.z, col2.z);           // roll
+			euler.z = std::atan2(col0.y, col0.x);           // yaw
+		}
+		else
+		{
+			// col0.z == -1
+			euler.y = pi_2;        // pitch 90 deg
+			euler.x = -std::atan2(-col1.x, col1.y);
+			euler.z = 0;
+		}
+	}
+	else
+	{
+		// col0.z == 1
+		euler.y = -pi_2;       // pitch -90 deg
+		euler.x = std::atan2(-col1.x, col1.y);
+		euler.z = 0;
+	}
+
+	// Convert from radians to degrees
+	euler.x = euler.x * 180.0f / pi;
+	euler.y = euler.y * 180.0f / pi;
+	euler.z = euler.z * 180.0f / pi;
+
+	return euler;
+}
+
+void OverlayMenu::DrawEntityInspectorMenu() {
+	ImGui::Begin("Entity Inspector");
+
+	auto entity = entityList->get(selectedEntityUUID);
+	if (entity == nullptr) {
+		ImGui::LabelText("##no_entity_selected", "No entity selected");
+		ImGui::End();
+		return;
+	}
+
+	auto entityType = entity->TypeName();
+	ImGui::Text("type: %s", entityType);
+	ImGui::Text("uuid: %s", selectedEntityUUID.c_str());
+
+	if (ImGui::TreeNode("Transform")) {
+		{
+			ImGui::Text("Local Transform");
+			auto pos = entity->transform.position;
+			ImGui::Text("  position: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
+			auto rot = RotationMatrixToEuler(entity->transform.rotation);
+			ImGui::Text("  rotation: %.2f, %.2f, %.2f", rot.x, rot.y, rot.z);
+		}
+		{
+			ImGui::Text("World Transform");
+			auto pos2 = entity->transform2.position;
+			ImGui::Text("  position: %.2f, %.2f, %.2f", pos2.x, pos2.y, pos2.z);
+			auto rot2 = RotationMatrixToEuler(entity->transform2.rotation);
+			ImGui::Text("  rotation: %.2f, %.2f, %.2f", rot2.x, rot2.y, rot2.z);
+		}
+		ImGui::TreePop();
+	}
+
+	auto componentArray = entity->GetAllComponent();
+	if (ImGui::TreeNode(componentArray, "Components (%d)", componentArray->size())) {
+		int compIndex = -1;
+		for (auto comp : *componentArray) {
+			compIndex++;
+			auto compRTTI = (RTTIObject*)comp;
+			auto compType = compRTTI->GetRTTI();
+			std::string compTypeName = compType->GetName().str();
+			ImGui::Text("[%d] %s", compIndex, compTypeName.c_str());
+		}
+		ImGui::TreePop();
+	}
+
+	ImGui::End();
+}
+
+std::string entityListFilter;
+void DrawEntityNodeLoop(Entity* ent) {
+	if (ent == nullptr)
+		return;
+
+	auto typeName = ent->TypeName();
+	if (!entityListFilter.empty()
+		&& !IsContains(typeName, entityListFilter))
+		return;
+
+	if (ImGui::TreeNode(ent, "[%p] %s", ent, typeName)) {
+		auto childCount = ent->GetChildCount();
+		for (int i = 0; i < childCount; i++) {
+			auto child = ent->GetChild(i);
+			DrawEntityNodeLoop(child);
+		}
+
+		ImGui::TreePop();
+	}
+
+	if (ImGui::IsItemClicked())
+		g_overlay->selectedEntityUUID = ent->GetUUID();
+
+};
+void OverlayMenu::DrawEntityListViewer() {
+	// lock first!!
+	std::lock_guard<std::recursive_mutex> lock(entityList->mtx);
+	auto entityTotal = entityList->size();
+	ImGui::Begin("Entity List");
+	ImGui::LabelText("##entity_total", "Entities Total: %zu", entityTotal);
+
+	ImGui::InputText("Entity Filter", &entityListFilter);
+
+	ImGui::BeginChild("EntityListChild", ImVec2(0, 0), true);
+	for (Entity* e : entityList->list) {
+		if (e->GetParent() == nullptr) {
+			DrawEntityNodeLoop(e);
+		}
+	}
+
+	ImGui::EndChild();
+	ImGui::End();
+
+}
+
 void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
 {
 	UpdateOverlayToggle();
@@ -170,96 +307,17 @@ void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-
-	// draw menu here
-	//ImGui::ShowDemoWindow();
-	ObjectScanner* objScanner = ObjectScanner::Instance();
-	objScanner->ScanAllObject();
-
-	auto entityList = &objScanner->entityList;
-
-	// lock first!!
+	// helper safe thread
 	std::lock_guard<std::recursive_mutex> lock(entityList->mtx);
-	auto entityTotal = entityList->size();
-	ImGui::Begin("Entity List");
-	ImGui::LabelText("##entitycount", "Total Entities: %zu", entityTotal);
 
-	ImGui::BeginChild("EntityListChild", ImVec2(0, 0), true);
-
-	static std::string entityListFilter;
-	ImGui::InputText("Entity Filter", &entityListFilter);
-
-	int index = -1;
-	for (Entity* e : entityList->list) {
-		ImGui::PushID(e);
-		index++;
-
-		auto entityRTTI = (RTTIObject*)e;
-		auto type = entityRTTI->GetRTTI();
-		std::string typeNameString = type->GetName().str();
-		bool anyMatch = true;
-		if (!entityListFilter.empty())
-			anyMatch = IsContains(typeNameString, entityListFilter);
-
-		if (!anyMatch) {
-			ImGui::PopID();
-			continue;
-		}
-
-		std::string label = "[" + std::to_string(index) + "] " + typeNameString;
-
-		if (ImGui::TreeNode(label.c_str())) {
-			auto pos = e->position;
-			auto ptr = (byte*)e;
-			ImGui::Text("ptr: %p", e);
-			ImGui::Text("position: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
-
-			auto vtable = *(void***)e;
-			ImGui::Text("VTable rva: %llx", ConvertAddressToRva(vtable));
-			ImGui::Text("GetRTTI() rva: %llx", ConvertAddressToRva(vtable[0]));
-			ImGui::Text("Deconstruct rva: %llx", ConvertAddressToRva(vtable[1]));
-			const Entity* parent = nullptr;
-			try {
-				parent = entityRTTI->Get<const Entity*>("Parent");
-				if (parent) {
-					log("found parent: %p", parent);
-				}
-			}
-			catch (...) {}
-			ImGui::Text("Parent: %p", parent);
-
-			auto componentContainer = e->GetAllComponent();
-			auto componentArray = &componentContainer->Components;
-			if (ImGui::TreeNode(componentArray, "Components (%d)", componentArray->size())) {
-				int compIndex = -1;
-				for (auto comp : *componentArray) {
-					compIndex++;
-					auto compRTTI = (RTTIObject*)comp;
-					auto compType = compRTTI->GetRTTI();
-					std::string compTypeName = compType->GetName().str();
-					ImGui::Text("[%d] %s", compIndex, compTypeName.c_str());
-				}
-
-				ImGui::TreePop();
-			}
-
-			ImGui::TreePop();
-		}
-
-		ImGui::PopID();
-	}
-
-	ImGui::EndChild();
-
-
-	ImGui::End();
-
+	// Entity Inspector
+	DrawEntityListViewer();
+	DrawEntityInspectorMenu();
 
 	// final
 	ImGui::Render();
 	DrawImGuiData();
 }
-
 void OverlayMenu::DrawImGuiData()
 {
 	ImDrawData* drawData = ImGui::GetDrawData();

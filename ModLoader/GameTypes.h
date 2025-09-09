@@ -14,7 +14,6 @@
 #include "extern/decima-native/source/Core/RTTIObject.h"
 #include "extern/decima-native/source/PCore/Array.h"
 
-
 #define ASSERT_OFFSET(struct_type, member, expected_offset) \
     static_assert(offsetof(struct_type, member) == expected_offset, \
                   #member " offset mismatch")
@@ -176,27 +175,54 @@ struct EntityComponentContainer {
 	Array<const EntityComponent*> Components;
 };
 
+struct MyUUID {
+	uint8_t uuid[16];
+	std::string ToString();
+	bool IsEmpty();
+	static bool IsEmptyString(std::string string);
+};
+
 struct MyVector3 {
 	double x, y, z;
 };
 
+struct MyVec3Pack {
+	float x, y, z;
+};
+
+// size 36bit
+struct MyRotMatrix {
+	MyVec3Pack Col0;
+	MyVec3Pack Col1;
+	MyVec3Pack Col2;
+};
+
+//size 60bit
 struct WorldTransform {
 	MyVector3 position; // size 24bit
-	// rotMatrix size 36bit
+	MyRotMatrix rotation; // size 36bit
 };
 
 struct Entity {
-	// fields
-	char gap[0xc8];
-	MyVector3 position;
-
-	// function
-	double GetLinearSpeed();
-	EntityComponentContainer* GetAllComponent();
-
 	// vtable:  0x3d04050
 	// vfunc 0: 0x234e590
 	// vfunc 1: 0x23478c0
+
+	// fields
+	void** vtable; // 0x0
+	MyUUID uuid; // 0x8 + 16
+	char gap[0xa8]; // 0x18 -> 0xC0
+	WorldTransform transform;
+	WorldTransform transform2;
+
+	// function
+	double GetLinearSpeed();
+	Array<const EntityComponent*>* GetAllComponent();
+	Entity* GetParent();
+	int GetChildCount();
+	Entity* GetChild(int index);
+	const char* TypeName();
+	std::string GetUUID();
 };
 
 class ControlledEntity : RTTIObject {

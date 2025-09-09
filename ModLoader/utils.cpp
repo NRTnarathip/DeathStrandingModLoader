@@ -145,11 +145,8 @@ void PrintStackTrace()
 
 	for (USHORT i = 0; i < frames; ++i)
 	{
-		DWORD64 addr = (DWORD64)(stack[i]);
-		auto modName = GetModuleNameFromAddress((void*)addr);
-		auto modBase = GetModuleHandleA(modName);
-		auto rva = addr - (DWORD64)modBase;
-		log("[%d] %s + %x", i, modName, rva);
+		uintptr_t addr = (uintptr_t)stack[i] - 1; // prev instruction
+		log("[%d] rva: %llx, addr: %llx", i, ConvertAddressToRva((void*)addr), addr);
 	}
 }
 
@@ -272,44 +269,6 @@ const char* ToHex(void* ptr, int length) {
 	static std::string result;
 	result = oss.str();
 	return result.c_str();
-}
-
-GUID BytesToGUID(const unsigned char bytes[16]) {
-	GUID guid;
-	guid.Data1 = (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3];
-	guid.Data2 = (bytes[4] << 8) | bytes[5];
-	guid.Data3 = (bytes[6] << 8) | bytes[7];
-	for (int i = 0; i < 8; i++) guid.Data4[i] = bytes[8 + i];
-	return guid;
-}
-
-const char* GUIDToString(uint8_t* uuid) {
-	std::ostringstream oss;
-	oss << std::hex << std::setfill('0') << "{";
-
-	// Data1 (4 bytes, little-endian)
-	uint32_t data1 = uuid[3] << 24 | uuid[2] << 16 | uuid[1] << 8 | uuid[0];
-	oss << std::setw(8) << data1 << "-";
-
-	// Data2 (2 bytes, little-endian)
-	uint16_t data2 = uuid[5] << 8 | uuid[4];
-	oss << std::setw(4) << data2 << "-";
-
-	// Data3 (2 bytes, little-endian)
-	uint16_t data3 = uuid[7] << 8 | uuid[6];
-	oss << std::setw(4) << data3 << "-";
-
-	// Data4 (8 bytes, big-endian/direct)
-	for (int i = 8; i < 10; ++i) oss << std::setw(2) << (int)uuid[i];
-	oss << "-";
-	for (int i = 10; i < 16; ++i) oss << std::setw(2) << (int)uuid[i];
-
-	oss << "}";
-	return oss.str().c_str();
-}
-
-const char* GUIDToString(void* uuid) {
-	return GUIDToString((uint8_t*)uuid);
 }
 
 void toHexDigits(uint64_t value, uint8_t* dst, size_t offset) {

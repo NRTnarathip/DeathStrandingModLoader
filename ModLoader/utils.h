@@ -79,12 +79,6 @@ const char* ToHex(uintptr_t val, int width = 8);
 
 const char* ToHex(void* ptr, int length);
 
-GUID BytesToGUID(const unsigned char bytes[16]);
-
-const char* GUIDToString(uint8_t* uuid);
-
-const char* GUIDToString(void* uuid);
-
 std::string GetPakFileHashFromName(const std::string& name);
 
 void AddStringToArray(void* arrayPtr, const char* newStr);

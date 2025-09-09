@@ -1,4 +1,5 @@
 #pragma once
+#include "ObjectScanner.h"
 
 class RendererHook;
 
@@ -15,12 +16,17 @@ public:
 
 	OverlayMenu();
 	void Initialize();
+	std::string selectedEntityUUID;
 
 private:
 	RendererHook* renderer;
+	ObjectScanner* objScanner;
+	EntityList* entityList = nullptr;
 	void UpdateOverlayToggle();
 	void OnPresent(unsigned int sync, unsigned int flags);
 	void DrawImGuiData();
 	void InitializeBeforePresent();
+	void DrawEntityInspectorMenu();
+	void DrawEntityListViewer();
 };
 
