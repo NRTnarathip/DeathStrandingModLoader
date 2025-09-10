@@ -18,6 +18,10 @@
     static_assert(offsetof(struct_type, member) == expected_offset, \
                   #member " offset mismatch")
 
+#define assert_size(type, expected_size) \
+    static_assert(sizeof(type) == (expected_size), "Size of " #type " is not " #expected_size)
+
+
 struct MyString {
 	char* str; //0x0 -> 0x7
 
@@ -175,11 +179,10 @@ struct FieldInfo {
 
 std::vector<FieldInfo> GetFields(void* o);
 
-struct EntityComponent {
-
+struct EntityComponent : public RTTIObject {
 };
 struct EntityComponentContainer {
-	Array<const EntityComponent*> Components;
+	fn<const EntityComponent*> Components;
 };
 
 struct MyUUID {
@@ -189,22 +192,28 @@ struct MyUUID {
 	static bool IsEmptyString(std::string string);
 };
 
-struct MyVec3 {
+struct MyVec3Double {
 	double x, y, z;
 };
-struct MyVec4Float {
-	float x, y, z, w;
-};
-
-struct MyVec3Pack {
+struct MyVec3Float {
 	float x, y, z;
 };
+struct MyVec4Double : MyVec3Double {
+	double w;
+};
+struct MyVec4Float : MyVec3Float {
+	float w;
+};
+#define MyVec3 MyVec3Double
+#define MyVec3Pack MyVec3Float
+#define MyVec4 MyVec4Double
+#define MyVec4Pack MyVec4Float
 
 // size 36bit
 struct MyRotMatrix {
-	MyVec3Pack Col0;
-	MyVec3Pack Col1;
-	MyVec3Pack Col2;
+	MyVec3Float Col0;
+	MyVec3Float Col1;
+	MyVec3Float Col2;
 };
 
 //size 60bit
@@ -215,42 +224,92 @@ struct WorldTransform {
 
 namespace Flags {
 	enum EntityFlags : uint32_t {
-		Empty = 0,
-		Unk0 = 1 << 0,      // 0x1
-		Visable = 1 << 1,      // 0x2
-		Unk2 = 1 << 2,      // 0x4
-		Unk3 = 1 << 3,		// 0x8
-		Unk4 = 1 << 4,      // 0x10
-		Unk5 = 1 << 5,      // 0x20
-		Unk6 = 1 << 6,      // 0x40
-		Dead = 1 << 7,      // 0x80
-		Sleep = 1 << 8,     // 0x100
+		Empty = 0x0,
+		WorldTransformChanged = 0x1,
+		Visible = 0x2,
+		Dead = 0x80,
+		Sleeping = 0x100,
+		HasParent = 0x200,
+		Dispensable = 0x800,
+		HasCollisionVolume = 0x4000,
+		VisualBoundsUpdatePending = 0x800000,
+		// PreviousWorldTransformChanged = 0x8000000, ?
+		PreventComponentModification = 0x80000000,
 	};
 }
 
+template<typename T> requires (std::is_base_of_v<RTTIRefObject, T>)
+struct Ref {
+	T* mPtr;
+};
+
+class StreamingRefHandle
+{
+public:
+	enum StreamFlags : uint8_t
+	{
+		None = 0,
+		Loaded = 0x80,
+	};
+
+	struct StreamData
+	{
+		uint32_t m_RefCount;			// 0x0
+		String m_CorePath;				// 0x8
+		MyUUID m_UUID;					// 0x10
+		uint64_t m_Unknown20;			// 0x20
+		void* m_Manager;	// 0x28
+		Ref<RTTIRefObject> m_Ref;		// 0x30
+	};
+	assert_size(StreamData, 0x38);
+
+	StreamData* m_Data = nullptr;					// 0x0 Ref counted pointer
+	void* m_RefCallback = nullptr;	// 0x8
+	void* m_Unknown10 = nullptr;					// 0x10
+	StreamFlags m_Flags = None;						// 0x18
+	uint8_t m_UnknownFlags = 0;						// 0x19
+
+	RTTIRefObject* Get() {
+		if (m_Data && (m_Flags & Loaded) != 0)
+			return m_Data->m_Ref.mPtr;
+		return nullptr;
+	}
+};
+assert_size(StreamingRefHandle, 0x20);
+
 struct Entity {
 	// vtable:  0x3d04050
-	// vfunc 0: 0x234e590
-	// vfunc 1: 0x23478c0
+	// 0: 0x234e590
+	// 1: 0x23478c0
+	// 15: 0x234dd10 GetHealth
+	// 16: 0x234dd10 GetMaxHealth
 
 	// fields
 	void** vtable; // 0x0
 	MyUUID uuid; // 0x8 -> 0x18
-	byte gap0x18_0x70[0x70 - 0x18];
+	void* weakPtrList; // 0x18 -> 0x20;
+	byte gap0x20_0x58[0x58 - 0x20];
+	//StreamingRefHandle resource; // 0x58 -> 0x60 !!actually size 0x20
+	//void* unk0x60; // 0x60 -> 0x68
+	//void* unk0x68; // 0x68 -> 0x70
+	//void* unk0x70; // 0x70 -> 0x78
 	Entity* parent; // 0x70
 	Entity* childBegin; // 0x78
 	Entity* childEnd; // 0x80
 	uint32_t flag; // 0x88 -> 0x8C
 	byte gap0x8C_0xB0[0xB0 - 0x8C];
-	RTTIObject* mover; // 0xb0
-	RTTIObject* model;// 0xb8
-	RTTIObject* destructibility;// 0xc0
-	WorldTransform transform; // 0xC8
-	WorldTransform transform2; // 0x104
+	EntityComponent* mover; // 0xb0
+	EntityComponent* model;// 0xb8
+	EntityComponent* destructibility;// 0xc0
+	WorldTransform worldTransform; // 0xC8
+	WorldTransform localTransform; // 0x104
 
 	// function
-	double GetLinearSpeed();
-	Array<const EntityComponent*>* GetAllComponent();
+	const char* GetName();
+	MyVec4Float GetVelocity();
+	MyVec3Float GetAngularVelocity();
+	float GetLinearSpeed();
+	fn<const EntityComponent*>* GetAllComponent();
 	Entity* GetParent();
 	int GetChildCount();
 	Entity* GetChild(int index);
@@ -259,7 +318,8 @@ struct Entity {
 	bool IsDead();
 	void SetSleeping(bool sleep);
 	void SetInvulnerable(bool on);
-	MyVec4Float GetVelocity();
+	float GetHealth();
+	float GetMaxHealth();
 };
 
 class ControlledEntity : RTTIObject {

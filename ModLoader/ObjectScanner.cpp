@@ -25,7 +25,7 @@ void HK_MyEntityFreeObject(void* p1) {
 	MyEntityFreeObject(p1);
 }
 const char* GetRTTITypeName(void* p1) {
-	return ((RTTIObject*)p1)->GetRTTI()->GetName().c_str();
+	return ((RTTIObject*)p1)->GetTypeName();
 }
 
 struct EntitySpawnerInfo {
@@ -95,17 +95,27 @@ void* MyLikeEntitySpawner3(EntityResource* p1_entityResource, void* param_2) {
 	return result;
 }
 
+void* (*backupMyEntityResourceUnk)(void* p1);
+void* MyEntityResourceUnk(void* p1) {
+	log("MyEntityResourceUnk called, p1: %p", p1);
+	auto result = backupMyEntityResourceUnk(p1);
+	log("MyEntityResourceUnk result: %p", result);
+	return result;
+}
+
 ObjectScanner::ObjectScanner()
 {
 	log("ObjectScanner init...");
 
 	HookFuncRva(0x2345a10, &HK_MyEntityNewObject, &backupMyEntityNewObject);
 	HookFuncRva(0x23466b0, &HK_MyEntityFreeObject, &MyEntityFreeObject);
+
+
+	// debug
 	//HookFuncRva(0x19f4830, &MyLikeCreateObjectByClassType, &backupMyLikeCreateObjectByClassType);
 	//HookFuncRva(0x19f41b0, &MyLikeGetClassTypeFromString, &backupMyLikeGetClassTypeFromString);
 	//HookFuncRva(0x2373940, &MyLikeEntitySpawner3, &backupMyLikeEntitySpawner3);
-
-
+	//HookFuncRva(0x1dde990, &MyEntityResourceUnk, &backupMyEntityResourceUnk);
 	log("ObjectScanner init successfully");
 }
 

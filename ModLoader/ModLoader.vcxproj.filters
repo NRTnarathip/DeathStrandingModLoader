@@ -138,6 +138,9 @@
     <ClInclude Include="extern\imgui\misc\single_file\imgui_single_file.h">
       <Filter>Source Files\imgui</Filter>
     </ClInclude>
+    <ClInclude Include="MoverComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -235,6 +238,9 @@
     </ClCompile>
     <ClCompile Include="extern\imgui\misc\fonts\binary_to_compressed_c.cpp">
       <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="MoverComponent.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

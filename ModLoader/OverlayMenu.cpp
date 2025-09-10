@@ -4,6 +4,7 @@
 #include "ObjectScanner.h"
 #include "extern/decima-native/source/Core/RTTI.h"
 #include "extern/decima-native/source/Core/RTTIObject.h"
+#include "extern/decima-native/source/Core/RTTIRefObject.h"
 #include "extern/imgui/imgui.h"
 #include "extern/imgui/backends/imgui_impl_win32.h"
 #include "extern/imgui/backends/imgui_impl_dx12.h"
@@ -12,6 +13,7 @@
 #include <wrl/client.h>
 #include <numbers> // std::numbers
 #include <algorithm>
+#include "MoverComponent.h"
 
 using Microsoft::WRL::ComPtr;
 
@@ -86,10 +88,12 @@ void InitImGuiStyle() {
 	io.WantCaptureMouse = true;
 	io.WantCaptureKeyboard = true;
 	io.MouseDrawCursor = true;
-
 	// font
 	ImFont* consolas = io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/consolab.ttf", 20.0f);
 	ImGui::PushFont(consolas);
+	// background
+	float opacity = 0.8;
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, opacity));
 }
 
 void OverlayMenu::InitializeBeforePresent()
@@ -199,6 +203,13 @@ MyVec3 RotationMatrixToEuler(MyRotMatrix& rotMatrix)
 	return euler;
 }
 
+void DrawVec3(const char* label, MyVec3Float vec) {
+	float arr[] = { vec.x, vec.y, vec.z };
+	ImGui::InputFloat3(label, arr);
+}
+void DrawVec3(const char* label, MyVec3Double vec) {
+	DrawVec3(label, MyVec3Float{ (float)vec.x, (float)vec.y, (float)vec.z });
+}
 void OverlayMenu::DrawEntityInspectorMenu() {
 	ImGui::Begin("Entity Inspector");
 
@@ -209,52 +220,50 @@ void OverlayMenu::DrawEntityInspectorMenu() {
 		return;
 	}
 
+	ImGui::BeginChild("StructFields");
+
 	auto entityType = entity->TypeName();
+	ImGui::Text("Name: %s", entity->GetName());
 	ImGui::Text("Type: %s", entityType);
 	ImGui::Text("UUID: %s", selectedEntityUUIDString.c_str());
 	ImGui::Text("Flags: %u", entity->flag);
-	ImGui::Text("Model: %s", entity->model ? entity->model->GetRTTI()->mTypeName : "null");
-	ImGui::Text("Mover: %s", entity->mover ? entity->mover->GetRTTI()->mTypeName : "null");
-	ImGui::Text("Destructibility: %s",
-		entity->destructibility ? entity->destructibility->GetRTTI()->mTypeName : "null");
+	ImGui::Text("Model: %s", entity->model ? entity->model->GetTypeName() : "null");
+	ImGui::Text("Parent Name: %s", entity->parent ? entity->parent->GetName() : "null");
 
-	auto entityFields = GetFields(entity);
-	if (ImGui::TreeNode("##entity_fields", "Fields %d", entityFields.size())) {
-		for (auto& field : entityFields) {
-			auto fieldType = field.attr.mType;
-			ImGui::Text("%s %s = (?) || offset: 0x%x",
-				fieldType->GetName().c_str(), field.attr.mName, field.offset);
+
+	auto mover = (MoverComponent*)entity->mover;
+	if (ImGui::TreeNode("##entity_mover", "Mover: %s",
+		mover ? mover->GetTypeName() : "null")) {
+		if (mover) {
+			DrawVec3("velocity", mover->GetVelocity());
+			DrawVec3("angular velocity", entity->GetAngularVelocity());
+			ImGui::Text("linear speed: %.2f", entity->GetLinearSpeed());
 		}
 		ImGui::TreePop();
 	}
 
-	if (ImGui::TreeNode("Utils Functions")) {
-		if (ImGui::Button("Sleep()")) entity->SetSleeping(true);
-		if (ImGui::Button("Wakeup()")) entity->SetSleeping(false);
+	if (ImGui::TreeNode("##entity_destructibility", "Destructibility: %s",
+		entity->destructibility ? entity->destructibility->GetTypeName() : "null")) {
+		if (entity->destructibility) {
+			ImGui::Text("health: %.2f", entity->GetHealth());
+			ImGui::Text("max health: %.2f", entity->GetMaxHealth());
+		}
 		ImGui::TreePop();
 	}
 
-	if (ImGui::TreeNode("Transform")) {
+	if (ImGui::TreeNode("##entity_transform", "Transform")) {
 		{
-			ImGui::Text("Transform 0xC8");
-			auto pos = entity->transform.position;
-			ImGui::Text("  position: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
-			auto rot = RotationMatrixToEuler(entity->transform.rotation);
-			ImGui::Text("  rotation: %.2f, %.2f, %.2f", rot.x, rot.y, rot.z);
+			auto pos = entity->worldTransform.position;
+			DrawVec3("world position", pos);
+			auto rot = RotationMatrixToEuler(entity->worldTransform.rotation);
+			DrawVec3("world rotation", rot);
 		}
 		{
-			ImGui::Text("Transform 0x104");
-			auto pos = entity->transform2.position;
-			ImGui::Text("  position: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
-			auto rot = RotationMatrixToEuler(entity->transform2.rotation);
-			ImGui::Text("  rotation: %.2f, %.2f, %.2f", rot.x, rot.y, rot.z);
+			auto pos = entity->localTransform.position;
+			DrawVec3("local position", pos);
+			auto rot = RotationMatrixToEuler(entity->localTransform.rotation);
+			DrawVec3("local rotation", rot);
 		}
-		ImGui::TreePop();
-	}
-
-	if (ImGui::TreeNode("Mover Info")) {
-		auto velocity = entity->GetVelocity();
-		ImGui::Text("Velocity: %.2f, %.2f, %.2f, %.2f", velocity.x, velocity.y, velocity.z, velocity.w);
 		ImGui::TreePop();
 	}
 
@@ -285,6 +294,28 @@ void OverlayMenu::DrawEntityInspectorMenu() {
 		ImGui::TreePop();
 	}
 
+	ImGui::EndChild();
+
+	ImGui::BeginChild("OhterInfo");
+
+	auto entityFields = GetFields(entity);
+	if (ImGui::TreeNode("##entity_fields", "Fields %d", entityFields.size())) {
+		for (auto& field : entityFields) {
+			auto fieldType = field.attr.mType;
+			ImGui::Text("%s %s = (?) || offset: 0x%x",
+				fieldType->GetName().c_str(), field.attr.mName, field.offset);
+		}
+		ImGui::TreePop();
+	}
+
+	if (ImGui::TreeNode("Utils Functions")) {
+		if (ImGui::Button("Sleep()")) entity->SetSleeping(true);
+		if (ImGui::Button("Wakeup()")) entity->SetSleeping(false);
+		ImGui::TreePop();
+	}
+
+	ImGui::EndChild();
+
 	ImGui::End();
 }
 
@@ -309,7 +340,7 @@ void DrawEntityNodeLoop(Entity* ent) {
 		flags = flags | ImGuiTreeNodeFlags_Selected;
 	auto uuid = ent->GetUUIDString();
 
-	if (ImGui::TreeNodeEx(ent, flags, "%s", typeName)) {
+	if (ImGui::TreeNodeEx(ent, flags, "[%s] - %s", typeName, ent->GetName())) {
 		for (int i = 0; i < childCount; i++) {
 			auto child = ent->GetChild(i);
 			DrawEntityNodeLoop(child);

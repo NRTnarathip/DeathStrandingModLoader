@@ -400,6 +400,7 @@ exit /b 0</Command>
     <ClInclude Include="Logger.h" />
     <ClInclude Include="MinHook.h" />
     <ClInclude Include="ModManager.h" />
+    <ClInclude Include="MoverComponent.h" />
     <ClInclude Include="ObjectScanner.h" />
     <ClInclude Include="OverlayMenu.h" />
     <ClInclude Include="PrefetchUpdater.h" />
@@ -433,6 +434,7 @@ exit /b 0</Command>
     <ClCompile Include="LoaderConfig.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="ModManager.cpp" />
+    <ClCompile Include="MoverComponent.cpp" />
     <ClCompile Include="mydx12.h" />
     <ClCompile Include="note.cpp" />
     <ClCompile Include="ObjectScanner.cpp" />

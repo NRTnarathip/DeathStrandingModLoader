@@ -94,11 +94,35 @@ bool MyUUID::IsEmptyString(std::string string)
 	return string.empty() || string == empty;
 }
 
-double Entity::GetLinearSpeed()
+const char* Entity::GetName()
 {
-	typedef double (*GetLinearSpeed_t)(Entity* ent);
-	static GetLinearSpeed_t g_GetLinearSpeed = (GetLinearSpeed_t)GetFuncRva(0x234b940);
-	return g_GetLinearSpeed(this);
+	typedef MyString(*GetNameFunc)(Entity* ent);
+	GetNameFunc fn = (GetNameFunc)vtable[2];
+	return fn(this).str;
+}
+
+MyVec4Float Entity::GetVelocity()
+{
+	MyVec4Float velocity;
+	typedef void* (*GetVelocityFunc)(Entity* ent, void* velo);
+	static auto fn = (GetVelocityFunc)GetFuncRva(0x234c180);
+	fn(this, &velocity);
+	return velocity;
+}
+
+MyVec3Float Entity::GetAngularVelocity()
+{
+	static auto fn = (void* (*)(Entity * ent, void* veloOut))GetFuncRva(0x23628b0);
+	MyVec3Double velo;
+	fn(this, &velo);
+	MyVec3Float velo3 = { (float)velo.x, (float)velo.y, (float)velo.z };
+	return velo3;
+}
+
+float Entity::GetLinearSpeed()
+{
+	auto velo = GetVelocity();
+	return sqrt(velo.x * velo.x + velo.y * velo.y + velo.z * velo.z);
 }
 
 #define RTTI_GET ((RTTIObject*)this)->Get
@@ -148,16 +172,22 @@ void Entity::SetInvulnerable(bool on)
 	log("setted god mod: %d", on);
 }
 
-MyVec4Float Entity::GetVelocity()
+
+float Entity::GetHealth()
 {
-	MyVec4Float velocity;
-	typedef void* (*GetVelocityFunc)(Entity* ent, void* velo);
-	static auto fn = (GetVelocityFunc)GetFuncRva(0x234c180);
-	fn(this, &velocity);
-	return velocity;
+	typedef float (*GetHealth_t)(Entity* ent);
+	static GetHealth_t fn = (GetHealth_t)vtable[15];
+	return fn(this);
 }
 
-Array<const EntityComponent*>* Entity::GetAllComponent()
+float Entity::GetMaxHealth()
+{
+	typedef float (*GetMaxHealth_t)(Entity* ent);
+	static GetMaxHealth_t fn = (GetMaxHealth_t)vtable[16];
+	return fn(this);
+}
+
+fn<const EntityComponent*>* Entity::GetAllComponent()
 {
 	auto componentContainer = (EntityComponentContainer*)((byte*)this + 144);
 	return &componentContainer->Components;
