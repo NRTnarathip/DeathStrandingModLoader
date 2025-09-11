@@ -266,15 +266,31 @@ void OverlayMenu::DrawEntityInspectorMenu() {
 		ImGui::InputInt("struct size", &structSize);
 		if (structSize < 0x10) structSize = 0x10;
 		auto entityPtr = (byte*)entity;
-		ImGui::BeginChild("DumpArrayChild", ImVec2(0, 200), true);
+		struct DumpFieldInfo {
+			RTTI* type;
+			uint32_t offset;
+			void* instance;
+		};
+		std::vector<DumpFieldInfo> dumpFields;
 		for (int offset = 1; offset < structSize; offset++) {
 			void* addr = (byte*)entity + offset;
 			if (!IsReadable(addr))
 				continue;
 			void* objectPtr = *(void**)addr;
-			auto name = scanner->TryGetObjectTypeName(objectPtr);
-			if (name)
-				ImGui::Text("0x%x : %s : %p", offset, name, objectPtr);
+			RTTI* type = scanner->TryGetObjectTypeUnsafe(objectPtr);
+			if (type) {
+				DumpFieldInfo field;
+				field.instance = objectPtr;
+				field.offset = offset;
+				field.type = type;
+				dumpFields.push_back(field);
+			}
+		}
+		ImGui::Text("total fields: %d", dumpFields.size());
+		ImGui::BeginChild("DumpFieldArrayChild", ImVec2(0, 200), true);
+		for (auto& field : dumpFields) {
+			const char* name = field.type->GetName().c_str();
+			ImGui::Text("0x%x : %s : %p", field.offset, name, field.instance);
 		}
 		ImGui::EndChild();
 		ImGui::TreePop();

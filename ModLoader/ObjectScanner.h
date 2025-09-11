@@ -11,9 +11,6 @@ private:
 	std::set<void*> objInstanceSet;
 	std::unordered_map<void*, RTTI*> rttiLookupByObject;
 
-	inline bool IsRTTIObjectExistUnsafe(void* o) {
-		return objInstanceSet.find(o) != objInstanceSet.end();
-	}
 
 public:
 	static ObjectScanner* Instance() {
@@ -25,13 +22,18 @@ public:
 	auto GetLock() { return std::unique_lock<std::recursive_mutex>(mtx); }
 	EntityList entityList;
 
-	void AddRTTI(RTTI* o);
-	bool IsRTTIExist(RTTI* o);
+	void AddRTTIUnsafe(RTTI* o);
+	bool IsRTTIUnsafe(RTTI* o);
 	bool IsRTTIObjectExist(void* o);
 	void AddRTTIObjectInstance(RTTI* rtti, void* o);
 	void RemoveRTTIObjectInstance(RTTI* rtti, void* o);
 	void AddEntity(Entity* e);
 	void RemoveEntity(Entity* e);
-	const char* TryGetObjectTypeName(void* o);
+	RTTI* TryGetObjectTypeUnsafe(void* o);
+	inline RTTI* TryGetObjectType(void* o);
+	inline const char* TryGetObjectTypeName(void* o);
+	inline bool IsRTTIObjectInstanceUnsafe(void* o) {
+		return objInstanceSet.find(o) != objInstanceSet.end();
+	}
 };
 

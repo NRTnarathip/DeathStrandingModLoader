@@ -72,9 +72,8 @@ void* HK_FuncRTTIClassObjDtor(RTTI* rtti, void* p2) {
 	return p2;
 }
 
-HookRTTICtorDtorInfo* AddHookRTTIObjectCtorDtor(RTTI* rtti) {
+HookRTTICtorDtorInfo* AddHookRTTIObjectCtorDtorUnsafe(RTTI* rtti) {
 	auto instance = ObjectScanner::Instance();
-	auto lock = instance->GetLock();
 
 	// already hook
 	if (g_hookRTTICtorDtorMap.find(rtti) != g_hookRTTICtorDtorMap.end())
@@ -109,20 +108,17 @@ uint32_t(*backupGetRTTISize)(RTTI* p1);
 uint32_t HK_GetRTTISize(RTTI* p1) {
 	auto instance = ObjectScanner::Instance();
 	auto lock = instance->GetLock();
-	bool exist = instance->IsRTTIExist(p1);
-	if (exist)
-		return backupGetRTTISize(p1);
 
-	//log("Begin GetRTTISize, p1: %p", p1);
-	//log("rtti kind name: %s", p1->GetKindName());
-	//log("rtti name: %s", p1->GetName().c_str());
-	instance->AddRTTI(p1);
-	//log("End GetRTTISize result: 0x%x", result);
+	bool exist = instance->IsRTTIUnsafe(p1);
+	if (exist) return backupGetRTTISize(p1);
+
+	// added RTTI & Object Instance
+	instance->AddRTTIUnsafe(p1);
 
 	// hook class ctor & dtor
 	std::string typeName = p1->GetName().c_str();
 	if (!typeName.empty()) {
-		AddHookRTTIObjectCtorDtor(p1);
+		AddHookRTTIObjectCtorDtorUnsafe(p1);
 	}
 
 	auto result = backupGetRTTISize(p1);
@@ -201,15 +197,14 @@ ObjectScanner::ObjectScanner()
 
 
 	// debug
-	HookFuncRva(0x19f4830, &MyCreateObjectByRTTI, &backupMyCreateObjectByRTTI);
+	//HookFuncRva(0x19f4830, &MyCreateObjectByRTTI, &backupMyCreateObjectByRTTI);
 	//HookFuncRva(0x19f41b0, &MyLikeGetClassTypeFromString, &backupMyLikeGetClassTypeFromString);
 	//HookFuncRva(0x2373940, &MyLikeEntitySpawner3, &backupMyLikeEntitySpawner3);
 	//HookFuncRva(0x1dde990, &MyEntityResourceUnk, &backupMyEntityResourceUnk);
 	log("ObjectScanner init successfully");
 }
 
-inline bool ObjectScanner::IsRTTIExist(RTTI* o) {
-	std::lock_guard<std::recursive_mutex> lock(mtx);
+inline bool ObjectScanner::IsRTTIUnsafe(RTTI* o) {
 	return rttiSet.find(o) != rttiSet.end();
 }
 
@@ -218,9 +213,8 @@ inline bool ObjectScanner::IsRTTIObjectExist(void* o) {
 	return objInstanceSet.find(o) != objInstanceSet.end();
 }
 
-void ObjectScanner::AddRTTI(RTTI* o)
+void ObjectScanner::AddRTTIUnsafe(RTTI* o)
 {
-	std::lock_guard<std::recursive_mutex> lock(mtx);
 	rttiSet.insert(o);
 }
 
@@ -233,7 +227,7 @@ void ObjectScanner::AddRTTIObjectInstance(RTTI* rtti, void* o)
 
 inline void ObjectScanner::RemoveRTTIObjectInstance(RTTI* rtti, void* o) {
 	std::lock_guard<std::recursive_mutex> lock(mtx);
-	if (IsRTTIObjectExistUnsafe(o)) {
+	if (IsRTTIObjectInstanceUnsafe(o)) {
 		objInstanceSet.erase(o);
 		rttiLookupByObject.erase(o);
 	}
@@ -242,8 +236,8 @@ inline void ObjectScanner::RemoveRTTIObjectInstance(RTTI* rtti, void* o) {
 void ObjectScanner::AddEntity(Entity* e)
 {
 	std::lock_guard<std::recursive_mutex> lock(mtx);
-	auto type = rttiLookupByObject[e];
-	AddRTTIObjectInstance(type, e);
+	RTTIClass* entityRTTI = (RTTIClass*)((RTTIObject*)e)->GetRTTI();
+	AddRTTIObjectInstance(entityRTTI, e);
 	entityList.add(e);
 }
 
@@ -255,26 +249,41 @@ void ObjectScanner::RemoveEntity(Entity* e)
 	entityList.remove(e);
 }
 
-const char* ObjectScanner::TryGetObjectTypeName(void* o)
+inline const char* ObjectScanner::TryGetObjectTypeName(void* o)
 {
 	if (!IsReadable(o))
 		return nullptr;
 
 	std::lock_guard<std::recursive_mutex> lock(mtx);
+	auto type = TryGetObjectTypeUnsafe(o);
+	if (type) return type->GetName().c_str();
 
-	if (IsRTTIObjectExistUnsafe(o)) {
+	return nullptr;
+}
+
+inline RTTI* ObjectScanner::TryGetObjectType(void* o)
+{
+	std::lock_guard<std::recursive_mutex> lock(mtx);
+	return TryGetObjectTypeUnsafe(o);
+}
+
+RTTI* ObjectScanner::TryGetObjectTypeUnsafe(void* o)
+{
+	if (!IsReadable(o))
+		return nullptr;
+
+	if (IsRTTIObjectInstanceUnsafe(o)) {
 		if (rttiLookupByObject.find(o) == rttiLookupByObject.end()) {
 			log("error: obj instance not in lookup map");
 			return nullptr;
 		}
-		auto type = rttiLookupByObject[o];
-		return type->GetName().c_str();
+
+		return rttiLookupByObject[o];
 	}
 
 	auto tempRTTI = (RTTI*)o;
-	if (IsRTTIExist(tempRTTI)) {
-		return tempRTTI->GetName().c_str();
-	}
+	if (IsRTTIUnsafe(tempRTTI))
+		return tempRTTI;
 
 	return nullptr;
 }
