@@ -179,6 +179,7 @@ struct FieldInfo {
 
 std::vector<FieldInfo> GetFields(void* o);
 
+struct EntityResource {};
 struct EntityComponent : public RTTIObject {
 };
 struct EntityComponentContainer {
@@ -288,14 +289,12 @@ struct Entity {
 	void** vtable; // 0x0
 	MyUUID uuid; // 0x8 -> 0x18
 	void* weakPtrList; // 0x18 -> 0x20;
-	byte gap0x20_0x58[0x58 - 0x20];
-	//StreamingRefHandle resource; // 0x58 -> 0x60 !!actually size 0x20
-	//void* unk0x60; // 0x60 -> 0x68
-	//void* unk0x68; // 0x68 -> 0x70
-	//void* unk0x70; // 0x70 -> 0x78
+	byte gap0x20_0x60[0x60 - 0x20];
+	RTTIObject* EntityRep; // 0x60
+	void* gap0x68;
 	Entity* parent; // 0x70
 	Entity* childBegin; // 0x78
-	Entity* childEnd; // 0x80
+	Entity* childNext; // 0x80
 	uint32_t flag; // 0x88 -> 0x8C
 	byte gap0x8C_0xB0[0xB0 - 0x8C];
 	EntityComponent* mover; // 0xb0

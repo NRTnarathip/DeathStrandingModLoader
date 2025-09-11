@@ -15,7 +15,7 @@ bool DisableHook(LPVOID targetFunc);
 
 bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup);
 bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, void* originalBackup);
-bool HookFuncRva(uintptr_t funcRva, LPVOID detour, void* originalBackup);
+bool HookFuncRva(uintptr_t funcRva, void* detour, void* originalBackup);
 bool HookFuncVTable(void* obj, int index, LPVOID detour, void* originalBackup);
 bool HookFuncModule(const char* moduleName, uintptr_t funvRva, LPVOID detour, void* backup);
 
@@ -153,6 +153,6 @@ inline uint64_t GetFileCoreHash(const std::string& filename) {
 struct ResourceManager;
 ResourceManager* GetResourceManager();
 
-uintptr_t ConvertAddressToRva(void* addr);
+uintptr_t AddrToRva(const void* addr);
 void* GetFuncRva(uintptr_t rva);
 

@@ -5,22 +5,23 @@
 void* (*backupMyEntityNewObject)(void* p1);
 void* HK_MyEntityNewObject(void* p1) {
 	//log("Begin MyEntityNewObject called, p1: %p", p1);
-	Entity* result = (Entity*)backupMyEntityNewObject(p1);
+	Entity* ent = (Entity*)backupMyEntityNewObject(p1);
 
-	auto list = &ObjectScanner::Instance()->entityList;
-	list->add(result);
+	auto instance = ObjectScanner::Instance();
+	auto lock = instance->GetLock();
+
+	instance->AddEntity(ent);
 
 	//log("End MyEntityNewObject result: %p", result);
-	return result;
+	return ent;
 }
 
-void (*MyEntityFreeObject)(void* p1);
-void HK_MyEntityFreeObject(void* p1) {
+void (*MyEntityFreeObject)(Entity* p1);
+void HK_MyEntityFreeObject(Entity* p1) {
 	//log("MyEntityFreeObject called, p1: %p", p1);
-
-	auto scanner = ObjectScanner::Instance();
-	auto list = &scanner->entityList;
-	list->remove(p1);
+	auto instance = ObjectScanner::Instance();
+	auto lock = instance->GetLock();
+	instance->RemoveEntity(p1);
 
 	MyEntityFreeObject(p1);
 }
@@ -35,29 +36,132 @@ struct EntitySpawnerInfo {
 	void* unk0x20; // 0x20
 };
 
-UINT32 GetAllocSizeOf(void* p1) {
-	typedef UINT32(*GetAllocSize_t)(void* p1);
-	static GetAllocSize_t funcAddr = (GetAllocSize_t)GetFuncAddr(0x19f43b0);
-	return funcAddr(p1);
+
+typedef void* (*FuncRTTIClassObjCtorDtor_t)(void* p1, void* p2);
+struct HookRTTICtorDtorInfo {
+	RTTI* rtti;
+	FuncRTTIClassObjCtorDtor_t originalCtor;
+	FuncRTTIClassObjCtorDtor_t originalDtor;
+};
+std::unordered_map<RTTI*, HookRTTICtorDtorInfo*> g_hookRTTICtorDtorMap;
+
+void* HK_FuncRTTIClassObjCtor(RTTI* rtti, void* p2) {
+	//std::string typeName = rtti->GetName().c_str();
+	//log("Begin HK_FuncRTTIClassObjCtor, p1: %p, p1_rttiType: %s, p2: %p",
+	//	p1, typeName.c_str(), p2);
+
+	auto instance = ObjectScanner::Instance();
+	auto lock = instance->GetLock();
+	auto hook = g_hookRTTICtorDtorMap[rtti];
+	auto result = hook->originalCtor(rtti, p2);
+	//log("result: %p", result);
+
+	instance->AddRTTIObjectInstance(rtti, result);
+
+	//log("End HK_FuncRTTIClassObjCtor");
+
+	return result;
 }
 
-void* (*backupMyLikeCreateObjectByClassType)(void* p1_unk);
-void* MyLikeCreateObjectByClassType(void* p1_unk) {
-	log("Begin MyLikeCreateObjectByClassType called");
-	//log("p1 type: %s", GetRTTITypeName(p1_unk));
-	auto result = backupMyLikeCreateObjectByClassType(p1_unk);
-	log("MyLikeCreateObjectByClassType result: %p", result);
+void* HK_FuncRTTIClassObjDtor(RTTI* rtti, void* p2) {
+	auto instance = ObjectScanner::Instance();
+	auto lock = instance->GetLock();
+	auto hook = g_hookRTTICtorDtorMap[rtti];
+	instance->RemoveRTTIObjectInstance(rtti, p2);
+	hook->originalDtor(rtti, p2);
+	return p2;
+}
 
-	EntitySpawnerInfo& info = *(EntitySpawnerInfo*)p1_unk;
-	log("ent create type: %d", info.createType);
-	if (info.createType == 4) {
-		void* funcPtr = *(void**)&info.unk0x20;
-		log("  func ptr 0x20 rva: 0x%llx", ConvertAddressToRva(funcPtr));
+HookRTTICtorDtorInfo* AddHookRTTIObjectCtorDtor(RTTI* rtti) {
+	auto instance = ObjectScanner::Instance();
+	auto lock = instance->GetLock();
+
+	// already hook
+	if (g_hookRTTICtorDtorMap.find(rtti) != g_hookRTTICtorDtorMap.end())
+		return nullptr;
+
+	if (rtti->mKind == RTTIKind::Compound) {
+		HookRTTICtorDtorInfo* hook = new HookRTTICtorDtorInfo();
+		auto rttiClass = (RTTIClass*)rtti;
+		bool canHook = rttiClass->mConstructor && rttiClass->mDestructor;
+		if (!canHook)
+			return nullptr;
+
+		hook->rtti = rtti;
+		hook->originalCtor = (FuncRTTIClassObjCtorDtor_t)rttiClass->mConstructor;
+		hook->originalDtor = (FuncRTTIClassObjCtorDtor_t)rttiClass->mDestructor;
+		g_hookRTTICtorDtorMap[rtti] = hook;
+
+		// change ctor & dtor
+		rttiClass->mConstructor = (const void*)HK_FuncRTTIClassObjCtor;
+		rttiClass->mDestructor = (const void*)HK_FuncRTTIClassObjDtor;
+		log("Hooked RTTI: %s, ctor: %p, dtor: %p",
+			rtti->GetName().c_str(),
+			hook->originalCtor,
+			hook->originalDtor);
+		return hook;
 	}
 
-	auto allocateSize = GetAllocSizeOf(p1_unk);
-	log("p1 alloc size: 0x%x", allocateSize);
-	log("End MyLikeCreateObjectByClassType");
+	return nullptr;
+}
+
+uint32_t(*backupGetRTTISize)(RTTI* p1);
+uint32_t HK_GetRTTISize(RTTI* p1) {
+	auto instance = ObjectScanner::Instance();
+	auto lock = instance->GetLock();
+	bool exist = instance->IsRTTIExist(p1);
+	if (exist)
+		return backupGetRTTISize(p1);
+
+	//log("Begin GetRTTISize, p1: %p", p1);
+	//log("rtti kind name: %s", p1->GetKindName());
+	//log("rtti name: %s", p1->GetName().c_str());
+	instance->AddRTTI(p1);
+	//log("End GetRTTISize result: 0x%x", result);
+
+	// hook class ctor & dtor
+	std::string typeName = p1->GetName().c_str();
+	if (!typeName.empty()) {
+		AddHookRTTIObjectCtorDtor(p1);
+	}
+
+	auto result = backupGetRTTISize(p1);
+
+	return result;
+}
+
+uint32_t GetRTTISize(void* p1) {
+	if (backupGetRTTISize)
+		return backupGetRTTISize((RTTI*)p1);
+
+	typedef UINT32(*GetRTTISize_t)(void* p1);
+	static GetRTTISize_t fn = (GetRTTISize_t)GetFuncAddr(0x19f43b0);
+	return fn(p1);
+}
+
+void* (*backupMyCreateObjectByRTTI)(RTTI* p1_unk);
+void* MyCreateObjectByRTTI(RTTI* rtti) {
+
+	//log("Begin MyCreateObjectByRTTI, p1: %p", rtti);
+	RTTIObject* result = (RTTIObject*)backupMyCreateObjectByRTTI(rtti);
+
+	//auto instance = ObjectScanner::Instance();
+	//instance->AddRTTIToSet(rtti);
+	//instance->AddRTTIObjectToSet(result);
+
+	//log("MyCreateObjectByRTTI result: %p", result);
+	//log("rtti name: %s", rtti->GetName().c_str());
+	//log("rtti kind: %s", rtti->GetKindName());
+	//auto allocateSize = GetRTTISize(rtti);
+	//log("rtti size: 0x%x", allocateSize);
+
+
+	// crash some time when get result type name
+	// RGBAColorRev
+	//log("result type name: %s", ((RTTIObject*)result)->GetTypeName());
+	//log("result size: %d", GetRTTISize(result));
+	//log("End MyCreateObjectByRTTI");
+
 	return result;
 }
 
@@ -68,22 +172,6 @@ void* MyLikeGetClassTypeFromString(void* param_1, const char* p2_classTypeName) 
 	log("MyLikeGetClassTypeFromString result: %p", result);
 	return result;
 }
-struct EntityResource {
-	virtual void* VF0() = 0;
-	virtual void* VF1() = 0;
-	virtual void* VF2() = 0;
-	virtual void* VF3() = 0;
-	virtual void* VF4() = 0;
-	virtual void* VF5() = 0;
-	virtual void* VF6() = 0;
-	virtual void* VF7() = 0;
-	virtual void* VF8() = 0;
-	virtual void* VF9() = 0;
-	virtual void* VF10() = 0;
-	virtual void* VF11() = 0;
-	virtual void* VF12() = 0;
-	virtual void* GetClassType() = 0;
-};
 
 void* (*backupMyLikeEntitySpawner3)(EntityResource* param_1, void* param_2);
 void* MyLikeEntitySpawner3(EntityResource* p1_entityResource, void* param_2) {
@@ -109,16 +197,84 @@ ObjectScanner::ObjectScanner()
 
 	HookFuncRva(0x2345a10, &HK_MyEntityNewObject, &backupMyEntityNewObject);
 	HookFuncRva(0x23466b0, &HK_MyEntityFreeObject, &MyEntityFreeObject);
+	HookFuncRva(0x19f43b0, &HK_GetRTTISize, &backupGetRTTISize);
 
 
 	// debug
-	//HookFuncRva(0x19f4830, &MyLikeCreateObjectByClassType, &backupMyLikeCreateObjectByClassType);
+	HookFuncRva(0x19f4830, &MyCreateObjectByRTTI, &backupMyCreateObjectByRTTI);
 	//HookFuncRva(0x19f41b0, &MyLikeGetClassTypeFromString, &backupMyLikeGetClassTypeFromString);
 	//HookFuncRva(0x2373940, &MyLikeEntitySpawner3, &backupMyLikeEntitySpawner3);
 	//HookFuncRva(0x1dde990, &MyEntityResourceUnk, &backupMyEntityResourceUnk);
 	log("ObjectScanner init successfully");
 }
 
-void ObjectScanner::ScanAllObject()
+inline bool ObjectScanner::IsRTTIExist(RTTI* o) {
+	std::lock_guard<std::recursive_mutex> lock(mtx);
+	return rttiSet.find(o) != rttiSet.end();
+}
+
+inline bool ObjectScanner::IsRTTIObjectExist(void* o) {
+	std::lock_guard<std::recursive_mutex> lock(mtx);
+	return objInstanceSet.find(o) != objInstanceSet.end();
+}
+
+void ObjectScanner::AddRTTI(RTTI* o)
 {
+	std::lock_guard<std::recursive_mutex> lock(mtx);
+	rttiSet.insert(o);
+}
+
+void ObjectScanner::AddRTTIObjectInstance(RTTI* rtti, void* o)
+{
+	std::lock_guard<std::recursive_mutex> lock(mtx);
+	objInstanceSet.insert(o);
+	rttiLookupByObject[o] = rtti;
+}
+
+inline void ObjectScanner::RemoveRTTIObjectInstance(RTTI* rtti, void* o) {
+	std::lock_guard<std::recursive_mutex> lock(mtx);
+	if (IsRTTIObjectExistUnsafe(o)) {
+		objInstanceSet.erase(o);
+		rttiLookupByObject.erase(o);
+	}
+}
+
+void ObjectScanner::AddEntity(Entity* e)
+{
+	std::lock_guard<std::recursive_mutex> lock(mtx);
+	auto type = rttiLookupByObject[e];
+	AddRTTIObjectInstance(type, e);
+	entityList.add(e);
+}
+
+void ObjectScanner::RemoveEntity(Entity* e)
+{
+	std::lock_guard<std::recursive_mutex> lock(mtx);
+	auto type = rttiLookupByObject[e];
+	RemoveRTTIObjectInstance(type, e);
+	entityList.remove(e);
+}
+
+const char* ObjectScanner::TryGetObjectTypeName(void* o)
+{
+	if (!IsReadable(o))
+		return nullptr;
+
+	std::lock_guard<std::recursive_mutex> lock(mtx);
+
+	if (IsRTTIObjectExistUnsafe(o)) {
+		if (rttiLookupByObject.find(o) == rttiLookupByObject.end()) {
+			log("error: obj instance not in lookup map");
+			return nullptr;
+		}
+		auto type = rttiLookupByObject[o];
+		return type->GetName().c_str();
+	}
+
+	auto tempRTTI = (RTTI*)o;
+	if (IsRTTIExist(tempRTTI)) {
+		return tempRTTI->GetName().c_str();
+	}
+
+	return nullptr;
 }

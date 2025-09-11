@@ -20,6 +20,7 @@ void SetNewMyString(MyString* p1_self, const char* p2_newString)
 }
 
 bool IsReadable(void* p, size_t size) {
+	if (p == nullptr) return false;
 	MEMORY_BASIC_INFORMATION mbi{};
 	if (VirtualQuery(p, &mbi, sizeof(mbi)) == 0) return false;
 	if (mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD)) return false;
@@ -96,9 +97,10 @@ bool MyUUID::IsEmptyString(std::string string)
 
 const char* Entity::GetName()
 {
-	typedef MyString(*GetNameFunc)(Entity* ent);
-	GetNameFunc fn = (GetNameFunc)vtable[2];
-	return fn(this).str;
+	//typedef MyString(*GetNameFunc)(Entity* ent);
+	//GetNameFunc fn = (GetNameFunc)vtable[3];
+	//return fn(this).str;
+	return "null";
 }
 
 MyVec4Float Entity::GetVelocity()

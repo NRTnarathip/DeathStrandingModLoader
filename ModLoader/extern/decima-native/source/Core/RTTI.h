@@ -67,6 +67,18 @@ struct RTTI {
 	[[nodiscard]] const RTTIContainer* AsContainer() const {
 		return mKind == RTTIKind::Container ? reinterpret_cast<const RTTIContainer*>(this) : nullptr;
 	}
+	const char* GetKindName() {
+		switch (mKind)
+		{
+		case RTTIKind::Atom: return "RTTIAtom";
+		case RTTIKind::Compound: return "RTTICompound";
+		case RTTIKind::Container: return "Container";
+		case RTTIKind::Enum: return "Enum";
+		case RTTIKind::EnumFlags: return "EnumFlags";
+		case RTTIKind::POD: return "POD";
+		case RTTIKind::Pointer: return "Pointer";
+		}
+	}
 };
 
 #pragma pack(pop)
@@ -173,11 +185,11 @@ struct RTTIClass : RTTI {
 	uint8_t _mPad0B[3];
 	uint16_t mVersion;
 	uint8_t _mPad10[4];
-	uint32_t mSize;
-	uint16_t mAlignment;
-	uint16_t mFlags;
-	const void* mConstructor;
-	const void* mDestructor;
+	uint32_t mSize; // 0x14
+	uint16_t mAlignment; // 0x18
+	uint16_t mFlags; // 0x1A
+	const void* mConstructor; // 0x20
+	const void* mDestructor; // 0x28
 	pFromStringFunction mFromString;
 	pToStringFunction mToString;
 	const char* mTypeName;

@@ -52,7 +52,7 @@ PlayerEntity* My_GetDSPlayerByID(PlayerMgr* p1_playerMgr, int p2_id) {
 		auto name = type->GetName();
 		log("  type name: %s", name.c_str());
 		void** vtable = *(void***)playerEnt;
-		log("GetRTTI func rva: %p", ConvertAddressToRva(vtable[0]));
+		log("GetRTTI func rva: %p", AddrToRva(vtable[0]));
 
 	}
 	return playerEnt;

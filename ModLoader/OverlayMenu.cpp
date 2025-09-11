@@ -210,6 +210,12 @@ void DrawVec3(const char* label, MyVec3Float vec) {
 void DrawVec3(const char* label, MyVec3Double vec) {
 	DrawVec3(label, MyVec3Float{ (float)vec.x, (float)vec.y, (float)vec.z });
 }
+void CopyToClipboard(const void* ptr) {
+	if (ptr == nullptr)
+		return;
+	auto str = std::format("0x{:X}", (uintptr_t)ptr);
+	ImGui::SetClipboardText(str.c_str());
+}
 void OverlayMenu::DrawEntityInspectorMenu() {
 	ImGui::Begin("Entity Inspector");
 
@@ -223,12 +229,56 @@ void OverlayMenu::DrawEntityInspectorMenu() {
 	ImGui::BeginChild("StructFields");
 
 	auto entityType = entity->TypeName();
+	ImGui::Text("Ptr: %p", entity);
+	if (ImGui::Button("Copy Ptr")) {
+		CopyToClipboard(entity);
+	}
 	ImGui::Text("Name: %s", entity->GetName());
 	ImGui::Text("Type: %s", entityType);
 	ImGui::Text("UUID: %s", selectedEntityUUIDString.c_str());
 	ImGui::Text("Flags: %u", entity->flag);
 	ImGui::Text("Model: %s", entity->model ? entity->model->GetTypeName() : "null");
-	ImGui::Text("Parent Name: %s", entity->parent ? entity->parent->GetName() : "null");
+	ImGui::Text("Parent Type: %s", entity->parent ? entity->parent->TypeName() : "null");
+
+	if (ImGui::TreeNode("RTTI Info")) {
+		auto rttiObj = (RTTIObject*)entity;
+		auto rtti = rttiObj->GetRTTI();
+		ImGui::Text("ptr: %p", rtti);
+		ImGui::Text("size: 0x%x", rtti->mSize);
+
+		auto ctor = (void*)AddrToRva(rtti->mConstructor);
+		ImGui::Text("ctor: %p", ctor);
+		if (ImGui::Button("Copy ctor"))
+			CopyToClipboard(ctor);
+
+		auto dtor = (void*)AddrToRva(rtti->mDestructor);
+		ImGui::Text("dtor: %p", dtor);
+		if (ImGui::Button("Copy dtor"))
+			CopyToClipboard(dtor);
+
+		ImGui::TreePop();
+	}
+
+	if (ImGui::TreeNode("Dump Struct"))
+	{
+		auto scanner = ObjectScanner::Instance();
+		static int structSize = 0x100;
+		ImGui::InputInt("struct size", &structSize);
+		if (structSize < 0x10) structSize = 0x10;
+		auto entityPtr = (byte*)entity;
+		ImGui::BeginChild("DumpArrayChild", ImVec2(0, 200), true);
+		for (int offset = 1; offset < structSize; offset++) {
+			void* addr = (byte*)entity + offset;
+			if (!IsReadable(addr))
+				continue;
+			void* objectPtr = *(void**)addr;
+			auto name = scanner->TryGetObjectTypeName(objectPtr);
+			if (name)
+				ImGui::Text("0x%x : %s : %p", offset, name, objectPtr);
+		}
+		ImGui::EndChild();
+		ImGui::TreePop();
+	}
 
 
 	auto mover = (MoverComponent*)entity->mover;
@@ -354,9 +404,8 @@ void DrawEntityNodeLoop(Entity* ent) {
 		g_overlay->selectedEntityUUIDString = uuid;
 
 };
+
 void OverlayMenu::DrawEntityListViewer() {
-	// lock first!!
-	std::lock_guard<std::recursive_mutex> lock(entityList->mtx);
 	auto entityTotal = entityList->size();
 	ImGui::Begin("Entity List");
 	ImGui::LabelText("##entity_total", "Entities Total: %zu", entityTotal);
@@ -372,7 +421,6 @@ void OverlayMenu::DrawEntityListViewer() {
 
 	ImGui::EndChild();
 	ImGui::End();
-
 }
 
 void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
@@ -390,9 +438,10 @@ void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	// helper safe thread
-	std::lock_guard<std::recursive_mutex> lock(entityList->mtx);
+	// setup safe thread
+	auto lock = objScanner->GetLock();
 
+	// ready to draw
 	// Entity Inspector
 	DrawEntityListViewer();
 	DrawEntityInspectorMenu();
