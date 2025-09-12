@@ -33,7 +33,7 @@ struct MyString {
 
 void SetNewMyString(MyString* self, const char* newString);
 
-bool IsReadable(void* p, size_t size = sizeof(void*));
+bool IsReadable(void* p);
 
 // define struct type
 struct Metadata {

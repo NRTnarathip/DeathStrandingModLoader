@@ -261,44 +261,6 @@ void OverlayMenu::DrawEntityInspector() {
 		ImGui::TreePop();
 	}
 
-	if (ImGui::TreeNode("Dump Struct"))
-	{
-		auto scanner = ObjectScanner::Instance();
-		static int structSize = 0x100;
-		ImGui::InputInt("struct size", &structSize);
-		if (structSize < 0x10) structSize = 0x10;
-		auto entityPtr = (byte*)entity;
-		struct DumpFieldInfo {
-			RTTI* type;
-			uint32_t offset;
-			void* instance;
-		};
-		std::vector<DumpFieldInfo> dumpFields;
-		for (int offset = 1; offset < structSize; offset++) {
-			void* addr = (byte*)entity + offset;
-			if (!IsReadable(addr))
-				continue;
-			void* objectPtr = *(void**)addr;
-			RTTI* type = scanner->TryGetObjectTypeUnsafe(objectPtr);
-			if (type) {
-				DumpFieldInfo field;
-				field.instance = objectPtr;
-				field.offset = offset;
-				field.type = type;
-				dumpFields.push_back(field);
-			}
-		}
-		ImGui::Text("total fields: %d", dumpFields.size());
-		ImGui::BeginChild("DumpFieldArrayChild", ImVec2(0, 200), true);
-		for (auto& field : dumpFields) {
-			const char* name = field.type->GetName().c_str();
-			ImGui::Text("0x%x : %s : %p", field.offset, name, field.instance);
-		}
-		ImGui::EndChild();
-		ImGui::TreePop();
-	}
-
-
 	auto mover = (MoverComponent*)entity->mover;
 	if (ImGui::TreeNode("##entity_mover", "Mover: %s",
 		mover ? mover->GetTypeName() : "null")) {
@@ -421,7 +383,7 @@ void DrawEntityNodeLoop(Entity* ent) {
 
 	if (ImGui::IsItemClicked()) {
 		g_overlay->selectedEntityUUIDString = uuid;
-		g_overlay->SetDumpStructPtr(ent, 0x100);
+		g_overlay->SetDumpStructPtr(ent, GetRTTITypeSize(type));
 	}
 
 };
@@ -561,18 +523,20 @@ void OverlayMenu::DrawDumpStructMenu()
 
 	std::string dumpStructPtrString = PtrToStrHex(dumpStructPtr);
 	ImGui::InputText("Pointer (Hex)", &dumpStructPtrString);
-	{
-		auto type = objScanner->TryGetObjectType(dumpStructPtr);
-		ImGui::Text("Object Type: %s", objScanner->TryGetObjectTypeName(dumpStructPtr));
-		ImGui::Text("Instance Kind: %s", objScanner->TryGetObjectInstanceKind(dumpStructPtr));
-		ImGui::Text("RTTI Type Size: 0x%x", GetRTTITypeSize(type));
-	}
-
-	dumpStructPtr = PtrStrHexToPtr(dumpStructPtrString);
-
 	if (!IsReadable(dumpStructPtr)) {
 		ImGui::Text("Pointer can't read");
 	}
+
+	int maxStructSize = -1;
+	auto currentObjType = objScanner->TryGetObjectType(dumpStructPtr);
+	if (currentObjType)
+		maxStructSize = GetRTTITypeSize(currentObjType);
+
+	ImGui::Text("Object Type: %s", objScanner->TryGetObjectTypeName(dumpStructPtr));
+	ImGui::Text("Instance Kind: %s", objScanner->TryGetObjectInstanceKind(dumpStructPtr));
+	ImGui::Text("RTTI Type Size: 0x%x", GetRTTITypeSize(currentObjType));
+
+	dumpStructPtr = PtrStrHexToPtr(dumpStructPtrString);
 
 	if (dumpStructPtr) {
 		const int k_DumpStructSizeMin = 0x8;
@@ -580,7 +544,10 @@ void OverlayMenu::DrawDumpStructMenu()
 		if (dumpStructSizeCurrent < k_DumpStructSizeMin)
 			dumpStructSizeCurrent = k_DumpStructSizeMin;
 
-		std::vector<std::string> columeNames = { "Type", "Instance Kind","Offset", "Address" };
+		if (maxStructSize > 0 && dumpStructSizeCurrent > maxStructSize)
+			dumpStructSizeCurrent = maxStructSize;
+
+		std::vector<std::string> columeNames = { "Type", "Instance Kind","Offset", "Object Address" };
 		if (ImGui::BeginTable("DumpStructTable",
 			columeNames.size(),
 			ImGuiTableFlags_ScrollY
@@ -595,31 +562,34 @@ void OverlayMenu::DrawDumpStructMenu()
 				ImGui::TableSetupColumn(name.c_str());
 
 			ImGui::TableHeadersRow();
-			for (int offset = 0; offset < dumpStructSizeCurrent; offset++) {
-				void* addr = (byte*)dumpStructPtr + offset;
+			for (int offset = 0; offset < dumpStructSizeCurrent; offset += 8) {
+				if (currentObjType == nullptr)
+					break;
 
-				if (!IsReadable(addr)) continue;
-				void* objPtr = *(void**)addr;
-				auto type = objScanner->TryGetObjectTypeUnsafe(objPtr);
+				void* currentFieldAddr = (byte*)dumpStructPtr + offset;
+				if (!IsReadable(currentFieldAddr)) continue;
+				void* currentObj = *(void**)currentFieldAddr;
+				auto type = objScanner->TryGetObjectTypeUnsafe(currentObj);
 				if (!type) continue;
 
 				auto typeName = type->GetName().c_str();
 
+				ImGui::PushID(offset);
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
-				if (ImGui::Selectable(typeName, dumpStructPtr == objPtr,
+				if (ImGui::Selectable(typeName, dumpStructPtr == currentObj,
 					ImGuiSelectableFlags_SpanAllColumns))
 				{
-					CopyToClipboard(objPtr);
-					dumpStructPtr = objPtr;
+					CopyToClipboard(currentObj);
+					dumpStructPtr = currentObj;
 				}
 				ImGui::TableNextColumn();
-				ImGui::Text("%s", objScanner->TryGetObjectInstanceKind(objPtr));
+				ImGui::Text("%s", objScanner->TryGetObjectInstanceKind(currentObj));
 				ImGui::TableNextColumn();
 				ImGui::Text("0x%x", offset);
 				ImGui::TableNextColumn();
-				ImGui::Text("%p", addr);
-
+				ImGui::Text("%p", currentObj);
+				ImGui::PopID();
 			}
 
 			ImGui::EndTable();

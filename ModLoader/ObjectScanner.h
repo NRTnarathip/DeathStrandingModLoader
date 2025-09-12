@@ -24,7 +24,7 @@ public:
 
 	void AddRTTIUnsafe(RTTI* o);
 	bool IsRTTIUnsafe(RTTI* o);
-	bool IsRTTIObjectExist(void* o);
+	bool IsRTTIObjectInstance(void* o);
 	std::set<RTTI*>& GetTypes();
 
 	void AddRTTIObjectInstance(RTTI* rtti, void* o);

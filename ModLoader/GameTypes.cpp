@@ -1,14 +1,13 @@
 #include "GameTypes.h" 
 #include "utils.h"
-
+#include <set>
 
 typedef char* (*My_StringBuild4_t)(MyString* src, uint64_t allocateSize);
-auto My_StringBuild4Addr = GetFuncAddr(0x190d6c0);
-My_StringBuild4_t My_StringBuild4 = (My_StringBuild4_t)My_StringBuild4Addr;
 
 char* MyStringEmptyPtr = (char*)GetAddressFromRva(0x4562cb0);
 void SetNewMyString(MyString* p1_self, const char* p2_newString)
 {
+	My_StringBuild4_t My_StringBuild4 = (My_StringBuild4_t)GetFuncAddr(0x190d6c0);
 	std::string string(p2_newString);
 	uint64_t len = string.size();
 	p1_self->str = MyStringEmptyPtr;
@@ -18,13 +17,24 @@ void SetNewMyString(MyString* p1_self, const char* p2_newString)
 	newStr[len] = '\0';
 	*(int*)(newStr + -8) = (int)len;
 }
+bool IsReadable(void* p) {
+	static std::recursive_mutex pointerValidCacheMtx;
+	static std::set<void*> pointerValidCache;
 
-bool IsReadable(void* p, size_t size) {
 	if (p == nullptr) return false;
+
+	std::lock_guard<std::recursive_mutex> lock(pointerValidCacheMtx);
+	if (pointerValidCache.find(p) != pointerValidCache.end())
+		return true;
+
 	MEMORY_BASIC_INFORMATION mbi{};
 	if (VirtualQuery(p, &mbi, sizeof(mbi)) == 0) return false;
 	if (mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD)) return false;
-	return (mbi.State == MEM_COMMIT);
+	bool valid = (mbi.State == MEM_COMMIT);
+	if (valid) {
+		pointerValidCache.insert(p);
+	}
+	return valid;
 }
 const RTTIClass* SafeGetRTTI(RTTIObject* obj) {
 	__try {
@@ -218,6 +228,8 @@ int AIManagerGame::GetEntityCount()
 
 uint32_t(*g_GetRTTITypeSize)(const RTTI* type) = 0;
 uint32_t GetRTTITypeSize(const RTTI* type) {
+	if (type == nullptr) return 0;
+
 	if (g_GetRTTITypeSize == 0)
 		g_GetRTTITypeSize = (uint32_t(*)(const RTTI*))GetFuncAddr(0x19f43b0);
 	return g_GetRTTITypeSize(type);
