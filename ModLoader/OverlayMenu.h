@@ -14,16 +14,18 @@ public:
 	}
 
 	bool isShow = true;
+	std::string selectedEntityUUIDString;
 
 	OverlayMenu();
 	void Initialize();
-	std::string selectedEntityUUIDString;
-	void* dumpStructPtr;
+	void SetDumpStructPtr(void* p, int size = -1);
 
 private:
 	RendererHook* renderer;
 	ObjectScanner* objScanner;
 	EntityList* entityList = nullptr;
+	void* dumpStructPtr = nullptr;
+	int dumpStructSizeCurrent = 0x100;
 	void UpdateOverlayToggle();
 	void OnPresent(unsigned int sync, unsigned int flags);
 	void DrawImGuiData();

@@ -61,6 +61,7 @@ void OverlayMenu::Initialize()
 	log("OverlayMenu init successfully");
 }
 
+
 std::vector<ID3D12CommandAllocator*> CommandAllocators;
 ID3D12GraphicsCommandList* CommandList;
 ID3D12DescriptorHeap* SrvDescriptorHeap;
@@ -391,6 +392,7 @@ void DrawEntityNodeLoop(Entity* ent) {
 	if (ent == nullptr)
 		return;
 
+	auto type = ((RTTIObject*)ent)->GetRTTI();
 	auto typeName = ent->TypeName();
 	if (!entityListFilter.empty()
 		&& !IsContains(typeName, entityListFilter))
@@ -419,7 +421,7 @@ void DrawEntityNodeLoop(Entity* ent) {
 
 	if (ImGui::IsItemClicked()) {
 		g_overlay->selectedEntityUUIDString = uuid;
-		g_overlay->dumpStructPtr = ent;
+		g_overlay->SetDumpStructPtr(ent, 0x100);
 	}
 
 };
@@ -453,7 +455,7 @@ void OverlayMenu::DrawTypeListViewer()
 		dumpStructPtr = *types.begin();
 
 	ImGui::Text("Total Types: %zu", typeTotal);
-	std::string typeSearch;
+	static std::string typeSearch;
 	ImGui::InputText("Type Search", &typeSearch);
 
 	ImGui::BeginChild("TypeListTableChild", ImVec2(0, 0), true);
@@ -478,10 +480,11 @@ void OverlayMenu::DrawTypeListViewer()
 
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
-			static void* selectedType = nullptr;
-			if (ImGui::Selectable(typeName, selectedType == type,
+			static RTTI* selectedType;
+			if (ImGui::Selectable(typeName, type == selectedType,
 				ImGuiSelectableFlags_SpanAllColumns)) {
-				dumpStructPtr = type;
+				selectedType = type;
+				SetDumpStructPtr(type, GetRTTITypeSize(type));
 			}
 			ImGui::TableNextColumn();
 			ImGui::Text("0x%x", GetRTTITypeSize(type));
@@ -544,6 +547,14 @@ void InputIntHex(const char* label, int& value) {
 	ImGui::Text(label);
 }
 
+void OverlayMenu::SetDumpStructPtr(void* p, int size)
+{
+	dumpStructPtr = p;
+	if (size > 0) {
+		dumpStructSizeCurrent = size;
+	}
+}
+
 void OverlayMenu::DrawDumpStructMenu()
 {
 	Begin("Dump Struct");
@@ -564,10 +575,11 @@ void OverlayMenu::DrawDumpStructMenu()
 	}
 
 	if (dumpStructPtr) {
-		static int structSize = 0x20;
-		const int minStructSize = 0x8;
-		InputIntHex("Struct Size", structSize);
-		if (structSize < minStructSize) structSize = minStructSize;
+		const int k_DumpStructSizeMin = 0x8;
+		InputIntHex("Struct Size", dumpStructSizeCurrent);
+		if (dumpStructSizeCurrent < k_DumpStructSizeMin)
+			dumpStructSizeCurrent = k_DumpStructSizeMin;
+
 		std::vector<std::string> columeNames = { "Type", "Instance Kind","Offset", "Address" };
 		if (ImGui::BeginTable("DumpStructTable",
 			columeNames.size(),
@@ -583,7 +595,7 @@ void OverlayMenu::DrawDumpStructMenu()
 				ImGui::TableSetupColumn(name.c_str());
 
 			ImGui::TableHeadersRow();
-			for (int offset = 0; offset < structSize; offset++) {
+			for (int offset = 0; offset < dumpStructSizeCurrent; offset++) {
 				void* addr = (byte*)dumpStructPtr + offset;
 
 				if (!IsReadable(addr)) continue;

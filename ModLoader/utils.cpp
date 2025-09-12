@@ -19,6 +19,14 @@
 #include "MinHook.h"
 #include "GameTypes.h" 
 #include "Logger.h"
+#include <set>
+
+uintptr_t GetImageBase() {
+	static uintptr_t g_imageBase = (uintptr_t)GetModuleHandleA(NULL);
+	if (g_imageBase == NULL)
+		g_imageBase = (uintptr_t)GetModuleHandleA(NULL);
+	return g_imageBase;
+}
 
 bool DisableHook(LPVOID targetFunc) {
 	if (MH_DisableHook(targetFunc) != MH_OK)
@@ -29,8 +37,31 @@ bool DisableHook(LPVOID targetFunc) {
 	return true;
 }
 
-bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
-	if (MH_CreateHook(targetFunc, detour, originalBackup) != MH_OK) {
+// 
+struct HookInfo {
+	void* target;
+	void* detour;
+	void* backup;
+};
+std::unordered_map<void*, HookInfo*> g_hookMap;
+bool HookFuncAddr(void* targetFunc, void* detour, void* ppBackupFunc) {
+	auto it = g_hookMap.find(targetFunc);
+	// already hooked at target func
+	if (it != g_hookMap.end()) {
+		auto hook = it->second;
+		if (detour != hook->detour) {
+			MessageBoxA(NULL, "Failed to hook. different detour at same target func", "Error", MB_OK | MB_ICONERROR);
+			return false;
+		}
+
+		*(void**)ppBackupFunc = hook->backup;
+		//log("already hook: %p", targetFunc);
+		//log("detour: %p", hook->detour);
+		//log("backup: %p", hook->backup);
+		return true;
+	}
+
+	if (MH_CreateHook(targetFunc, detour, (void**)ppBackupFunc) != MH_OK) {
 		MessageBoxA(NULL, "Failed to create hook", "Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
@@ -40,17 +71,25 @@ bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup) {
 		MessageBoxA(NULL, "Failed to enable hook", "Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
-	log("hooked func rva: 0x%llx", (uintptr_t)AddrToRva(targetFunc));
+	auto hook = new HookInfo();
+	hook->target = targetFunc;
+	hook->backup = *(void**)ppBackupFunc;
+	hook->detour = detour;
+	g_hookMap[targetFunc] = hook;
+	//log("hooked func rva: 0x%llx", (uintptr_t)AddrToRva(targetFunc));
+	//log("  detour: %p", hook->detour);
+	//log("  backup: %p", hook->backup);
 	return true;
 }
-
-bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, void* originalBackup) {
-	return HookFuncAddr(targetFunc, detour, reinterpret_cast<LPVOID*>(originalBackup));
+void* GetAddressFromRva(int rva) {
+	return (void*)(GetImageBase() + rva);
 }
-
-uintptr_t GetImageBase() {
-	static uintptr_t g_imageBase = (uintptr_t)GetModuleHandleA(NULL);
-	return g_imageBase;
+bool HookFuncRva(uintptr_t funcRva, void* detour, void* ppBackup) {
+	return HookFuncAddr(GetAddressFromRva(funcRva), detour, ppBackup);
+}
+bool HookFuncVTable(void* obj, int index, LPVOID detour, void* ppBackup) {
+	void** vtable = *(void***)obj;
+	return HookFuncAddr(vtable[index], detour, ppBackup);
 }
 
 void* GetFuncAddr(uintptr_t rva) {
@@ -73,17 +112,6 @@ void* GetFuncRva(uintptr_t rva)
 	return (void*)(GetImageBase() + rva);
 }
 
-void* GetAddressFromRva(int rva) {
-	return (void*)(GetImageBase() + rva);
-}
-bool HookFuncRva(uintptr_t funcRva, void* detour, void* backup) {
-	return HookFuncAddr(GetFuncAddr(funcRva), detour, reinterpret_cast<LPVOID*>(backup));
-}
-
-bool HookFuncVTable(void* obj, int index, LPVOID detour, void* originalBackup) {
-	void** vtable = *(void***)obj;
-	return HookFuncAddr(vtable[index], detour, originalBackup);
-}
 
 bool HookFuncModule(const char* moduleName, uintptr_t funvRva, LPVOID detour, void* backup) {
 	auto hModule = GetModuleHandleA(moduleName);

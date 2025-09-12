@@ -37,22 +37,22 @@ struct EntitySpawnerInfo {
 };
 
 
-typedef void* (*FuncRTTIClassObjCtorDtor_t)(void* p1, void* p2);
-struct HookRTTICtorDtorInfo {
+typedef void* (*ObjectCtorDtor_t)(void* p1, void* p2);
+struct HookRTTIClassInfo {
 	RTTI* rtti;
-	FuncRTTIClassObjCtorDtor_t originalCtor;
-	FuncRTTIClassObjCtorDtor_t originalDtor;
+	ObjectCtorDtor_t originalCtor;
+	ObjectCtorDtor_t originalDtor;
 };
-std::unordered_map<RTTI*, HookRTTICtorDtorInfo*> g_hookRTTICtorDtorMap;
+std::unordered_map<RTTIClass*, HookRTTIClassInfo*> g_hookRTTIClassMap;
 
-void* HK_FuncRTTIClassObjCtor(RTTI* rtti, void* p2) {
+void* HK_FuncRTTIClassObjCtor(RTTIClass* rtti, void* p2) {
 	//std::string typeName = rtti->GetName().c_str();
 	//log("Begin HK_FuncRTTIClassObjCtor, p1: %p, p1_rttiType: %s, p2: %p",
 	//	p1, typeName.c_str(), p2);
 
 	auto instance = ObjectScanner::Instance();
 	auto lock = instance->GetLock();
-	auto hook = g_hookRTTICtorDtorMap[rtti];
+	auto hook = g_hookRTTIClassMap[rtti];
 	auto result = hook->originalCtor(rtti, p2);
 	//log("result: %p", result);
 
@@ -63,45 +63,138 @@ void* HK_FuncRTTIClassObjCtor(RTTI* rtti, void* p2) {
 	return result;
 }
 
-void* HK_FuncRTTIClassObjDtor(RTTI* rtti, void* p2) {
+void* HK_FuncRTTIClassObjDtor(RTTIClass* rtti, void* p2) {
 	auto instance = ObjectScanner::Instance();
 	auto lock = instance->GetLock();
-	auto hook = g_hookRTTICtorDtorMap[rtti];
+	auto hook = g_hookRTTIClassMap[rtti];
 	instance->RemoveRTTIObjectInstance(rtti, p2);
 	hook->originalDtor(rtti, p2);
 	return p2;
 }
 
-HookRTTICtorDtorInfo* AddHookRTTIObjectCtorDtorUnsafe(RTTI* rtti) {
-	auto instance = ObjectScanner::Instance();
+struct HookRTTIContainerInfo {
+	RTTIContainer* rtti;
+	ObjectCtorDtor_t mConstructor;
+	ObjectCtorDtor_t mDestructor;
+	ObjectCtorDtor_t originalCtor;
+	ObjectCtorDtor_t originalDtor;
+};
+std::unordered_map<std::string, HookRTTIContainerInfo*> g_hookRTTIContainerMap;
+void HK_RTTIContainerCtor(RTTIContainer* type, void* inObject) {
+	//log("Begin HK_RTTIContainerCtor");
+	//log("type: %s", type->GetName().c_str());
 
+	auto instance = ObjectScanner::Instance();
+	auto lock = instance->GetLock();
+	auto info = type->mContainerInfo;
+	void* result = nullptr;
+	std::string itemType = type->mItemType->GetName().c_str();
+	auto it = g_hookRTTIContainerMap.find(itemType);
+	if (it != g_hookRTTIContainerMap.end()) {
+		result = it->second->originalCtor(type, inObject);
+	}
+	else {
+		ObjectCtorDtor_t ctor = nullptr;
+		for (auto& h : g_hookRTTIContainerMap) {
+			if (h.second->mConstructor == info->mConstructor) {
+				ctor = h.second->originalCtor;
+				break;
+			}
+		}
+
+		if (ctor == nullptr) {
+			log("error not RTTIContainer ctor");
+			return;
+		}
+
+		result = ctor(type, inObject);
+	}
+
+	instance->AddRTTIObjectInstance(type, result);
+	//log("result: %p", result);
+	//log("End HK_RTTIContainerCtor");
+}
+void HK_RTTIContainerDtor(RTTIContainer* type, void* inObject) {
+	auto instance = ObjectScanner::Instance();
+	auto lock = instance->GetLock();
+	auto info = type->mContainerInfo;
+	void* result = nullptr;
+	std::string itemType = type->mItemType->GetName().c_str();
+	auto it = g_hookRTTIContainerMap.find(itemType);
+	if (it != g_hookRTTIContainerMap.end()) {
+		result = it->second->originalDtor(type, inObject);
+	}
+	else {
+		ObjectCtorDtor_t dtor = nullptr;
+		for (auto& h : g_hookRTTIContainerMap) {
+			if (h.second->mDestructor == info->mDestructor) {
+				dtor = h.second->originalDtor;
+				break;
+			}
+		}
+
+		if (dtor == nullptr) {
+			log("error not found RTTIContainer dtor");
+			return;
+		}
+
+		result = dtor(type, inObject);
+	}
+
+	instance->RemoveRTTIObjectInstance(type, result);
+}
+
+
+void AddHookRTTIUnsafe(RTTI* rtti) {
+	auto instance = ObjectScanner::Instance();
 	// already hook
-	if (g_hookRTTICtorDtorMap.find(rtti) != g_hookRTTICtorDtorMap.end())
-		return nullptr;
 
 	if (rtti->mKind == RTTIKind::Compound) {
-		HookRTTICtorDtorInfo* hook = new HookRTTICtorDtorInfo();
 		auto rttiClass = (RTTIClass*)rtti;
+		if (g_hookRTTIClassMap.find(rttiClass) != g_hookRTTIClassMap.end())
+			return;
+
+		HookRTTIClassInfo* hook = new HookRTTIClassInfo();
 		bool canHook = rttiClass->mConstructor && rttiClass->mDestructor;
 		if (!canHook)
-			return nullptr;
+			return;
 
 		hook->rtti = rtti;
-		hook->originalCtor = (FuncRTTIClassObjCtorDtor_t)rttiClass->mConstructor;
-		hook->originalDtor = (FuncRTTIClassObjCtorDtor_t)rttiClass->mDestructor;
-		g_hookRTTICtorDtorMap[rtti] = hook;
+		hook->originalCtor = (ObjectCtorDtor_t)rttiClass->mConstructor;
+		hook->originalDtor = (ObjectCtorDtor_t)rttiClass->mDestructor;
+		g_hookRTTIClassMap[rttiClass] = hook;
 
 		// change ctor & dtor
 		rttiClass->mConstructor = (const void*)HK_FuncRTTIClassObjCtor;
 		rttiClass->mDestructor = (const void*)HK_FuncRTTIClassObjDtor;
-		log("Hooked RTTI: %s, ctor: %p, dtor: %p",
+		log("Hooked RTTIClass: %s, ctor: 0x%llx, dtor: 0x%llx",
 			rtti->GetName().c_str(),
-			hook->originalCtor,
-			hook->originalDtor);
-		return hook;
+			AddrToRva(hook->originalCtor),
+			AddrToRva(hook->originalDtor));
 	}
+	else if (rtti->mKind == RTTIKind::Container) {
+		// fixme: crash some case
+		return;
+		auto type = (RTTIContainer*)rtti;
+		RTTIContainerInfo* info = (RTTIContainerInfo*)type->mContainerInfo;
+		auto hook = new HookRTTIContainerInfo();
+		hook->rtti = type;
+		hook->mConstructor = (ObjectCtorDtor_t)info->mConstructor;
+		hook->mDestructor = (ObjectCtorDtor_t)info->mDestructor;
+		log("try hook RTTIContainer: %s", type->GetName().c_str());
+		//log("mItemType: %s", type->mItemType->GetName().c_str());
+		std::string itemType = type->mItemType->GetName().c_str();
+		g_hookRTTIContainerMap[itemType] = hook;
 
-	return nullptr;
+		// hook
+		HookFuncAddr((void*)info->mConstructor, HK_RTTIContainerCtor, &hook->originalCtor);
+		HookFuncAddr((void*)info->mDestructor, HK_RTTIContainerDtor, &hook->originalDtor);
+
+		log("Hooked RTTIContainer: %s hookCtor: %p, origialCtor: %p",
+			rtti->GetName().c_str(),
+			info->mConstructor,
+			hook->originalCtor);
+	}
 }
 
 uint32_t(*backupGetRTTISize)(RTTI* p1);
@@ -118,7 +211,7 @@ uint32_t HK_GetRTTISize(RTTI* p1) {
 	// hook class ctor & dtor
 	std::string typeName = p1->GetName().c_str();
 	if (!typeName.empty()) {
-		AddHookRTTIObjectCtorDtorUnsafe(p1);
+		AddHookRTTIUnsafe(p1);
 	}
 
 	auto result = backupGetRTTISize(p1);

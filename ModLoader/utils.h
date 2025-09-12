@@ -12,11 +12,9 @@
 struct ResourceReaderHandle;
 
 bool DisableHook(LPVOID targetFunc);
-
-bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, LPVOID* originalBackup);
-bool HookFuncAddr(LPVOID targetFunc, LPVOID detour, void* originalBackup);
-bool HookFuncRva(uintptr_t funcRva, void* detour, void* originalBackup);
-bool HookFuncVTable(void* obj, int index, LPVOID detour, void* originalBackup);
+bool HookFuncAddr(void* targetFunc, void* detour, void* ppBackupFunc);
+bool HookFuncRva(uintptr_t funcRva, void* detour, void* ppBackupFunc);
+bool HookFuncVTable(void* obj, int index, void* detour, void* ppBackupFunc);
 bool HookFuncModule(const char* moduleName, uintptr_t funvRva, LPVOID detour, void* backup);
 
 bool HookFuncModule(const char* moduleName, const char* funcName, LPVOID detour, void* backup);

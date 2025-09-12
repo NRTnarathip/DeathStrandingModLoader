@@ -179,7 +179,7 @@ struct FieldInfo {
 
 std::vector<FieldInfo> GetFields(void* o);
 
-uint32_t GetRTTITypeSize(RTTI* type);
+uint32_t GetRTTITypeSize(const RTTI* type);
 void SetFuncRTTITypeSize(void* funcPtr);
 
 struct EntityResource {};

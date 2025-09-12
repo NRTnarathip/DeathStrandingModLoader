@@ -216,13 +216,13 @@ int AIManagerGame::GetEntityCount()
 	return *(int*)((byte*)this + 0xc98d0);
 }
 
-uint32_t(*g_GetRTTITypeSize)(RTTI* type) = 0;
-uint32_t GetRTTITypeSize(RTTI* type) {
+uint32_t(*g_GetRTTITypeSize)(const RTTI* type) = 0;
+uint32_t GetRTTITypeSize(const RTTI* type) {
 	if (g_GetRTTITypeSize == 0)
-		g_GetRTTITypeSize = (uint32_t(*)(RTTI*))GetFuncAddr(0x19f43b0);
+		g_GetRTTITypeSize = (uint32_t(*)(const RTTI*))GetFuncAddr(0x19f43b0);
 	return g_GetRTTITypeSize(type);
 }
 void SetFuncRTTITypeSize(void* funcPtr)
 {
-	g_GetRTTITypeSize = (uint32_t(*)(RTTI*))funcPtr;
+	g_GetRTTITypeSize = (uint32_t(*)(const RTTI*))funcPtr;
 }
