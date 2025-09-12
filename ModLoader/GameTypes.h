@@ -179,11 +179,14 @@ struct FieldInfo {
 
 std::vector<FieldInfo> GetFields(void* o);
 
+uint32_t GetRTTITypeSize(RTTI* type);
+void SetFuncRTTITypeSize(void* funcPtr);
+
 struct EntityResource {};
 struct EntityComponent : public RTTIObject {
 };
 struct EntityComponentContainer {
-	fn<const EntityComponent*> Components;
+	Array<const EntityComponent*> Components;
 };
 
 struct MyUUID {
@@ -308,7 +311,7 @@ struct Entity {
 	MyVec4Float GetVelocity();
 	MyVec3Float GetAngularVelocity();
 	float GetLinearSpeed();
-	fn<const EntityComponent*>* GetAllComponent();
+	Array<const EntityComponent*>* GetAllComponent();
 	Entity* GetParent();
 	int GetChildCount();
 	Entity* GetChild(int index);
@@ -347,6 +350,5 @@ public:
 	int GetEntityCount();
 };
 
-const RTTIClass* TryGetRTTI(void* o);
 
 

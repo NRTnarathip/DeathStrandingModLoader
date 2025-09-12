@@ -194,6 +194,7 @@ ObjectScanner::ObjectScanner()
 	HookFuncRva(0x2345a10, &HK_MyEntityNewObject, &backupMyEntityNewObject);
 	HookFuncRva(0x23466b0, &HK_MyEntityFreeObject, &MyEntityFreeObject);
 	HookFuncRva(0x19f43b0, &HK_GetRTTISize, &backupGetRTTISize);
+	SetFuncRTTITypeSize(backupGetRTTISize);
 
 
 	// debug
@@ -211,6 +212,11 @@ inline bool ObjectScanner::IsRTTIUnsafe(RTTI* o) {
 inline bool ObjectScanner::IsRTTIObjectExist(void* o) {
 	std::lock_guard<std::recursive_mutex> lock(mtx);
 	return objInstanceSet.find(o) != objInstanceSet.end();
+}
+
+std::set<RTTI*>& ObjectScanner::GetTypes()
+{
+	return rttiSet;
 }
 
 void ObjectScanner::AddRTTIUnsafe(RTTI* o)
@@ -249,7 +255,7 @@ void ObjectScanner::RemoveEntity(Entity* e)
 	entityList.remove(e);
 }
 
-inline const char* ObjectScanner::TryGetObjectTypeName(void* o)
+const char* ObjectScanner::TryGetObjectTypeName(void* o)
 {
 	if (!IsReadable(o))
 		return nullptr;
@@ -261,10 +267,23 @@ inline const char* ObjectScanner::TryGetObjectTypeName(void* o)
 	return nullptr;
 }
 
-inline RTTI* ObjectScanner::TryGetObjectType(void* o)
+RTTI* ObjectScanner::TryGetObjectType(void* o)
 {
 	std::lock_guard<std::recursive_mutex> lock(mtx);
 	return TryGetObjectTypeUnsafe(o);
+}
+
+const char* ObjectScanner::TryGetObjectInstanceKind(void* o)
+{
+	std::lock_guard<std::recursive_mutex> lock(mtx);
+	if (IsRTTIObjectInstanceUnsafe(o)) {
+		auto type = rttiLookupByObject[o];
+		return "Object Instance";
+	}
+	else if (IsRTTIUnsafe((RTTI*)o)) {
+		return "Type Instance";
+	}
+	return "Unknow";
 }
 
 RTTI* ObjectScanner::TryGetObjectTypeUnsafe(void* o)

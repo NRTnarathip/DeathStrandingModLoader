@@ -47,17 +47,6 @@ std::vector<FieldInfo> GetFields(void* obj)
 	return fields;
 }
 
-const RTTIClass* TryGetRTTI(void* o) {
-	if (o == nullptr || !IsReadable(o))
-		return nullptr;
-
-	auto vtable = *(void**)o;
-	if (!IsReadable(vtable))
-		return nullptr;
-
-	return SafeGetRTTI((RTTIObject*)o);
-}
-
 std::string MyUUID::ToString() {
 	std::ostringstream oss;
 	oss << std::hex << std::setfill('0');
@@ -189,7 +178,7 @@ float Entity::GetMaxHealth()
 	return fn(this);
 }
 
-fn<const EntityComponent*>* Entity::GetAllComponent()
+Array<const EntityComponent*>* Entity::GetAllComponent()
 {
 	auto componentContainer = (EntityComponentContainer*)((byte*)this + 144);
 	return &componentContainer->Components;
@@ -227,3 +216,13 @@ int AIManagerGame::GetEntityCount()
 	return *(int*)((byte*)this + 0xc98d0);
 }
 
+uint32_t(*g_GetRTTITypeSize)(RTTI* type) = 0;
+uint32_t GetRTTITypeSize(RTTI* type) {
+	if (g_GetRTTITypeSize == 0)
+		g_GetRTTITypeSize = (uint32_t(*)(RTTI*))GetFuncAddr(0x19f43b0);
+	return g_GetRTTITypeSize(type);
+}
+void SetFuncRTTITypeSize(void* funcPtr)
+{
+	g_GetRTTITypeSize = (uint32_t(*)(RTTI*))funcPtr;
+}

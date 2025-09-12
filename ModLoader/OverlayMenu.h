@@ -1,9 +1,10 @@
 #pragma once
 #include "ObjectScanner.h"
+#include "ImGuiOverlayBase.h"
 
 class RendererHook;
 
-class OverlayMenu
+class OverlayMenu : ImGuiOverlayBase
 {
 public:
 	static OverlayMenu* Instance()
@@ -17,6 +18,7 @@ public:
 	OverlayMenu();
 	void Initialize();
 	std::string selectedEntityUUIDString;
+	void* dumpStructPtr;
 
 private:
 	RendererHook* renderer;
@@ -26,7 +28,10 @@ private:
 	void OnPresent(unsigned int sync, unsigned int flags);
 	void DrawImGuiData();
 	void InitializeBeforePresent();
-	void DrawEntityInspectorMenu();
+	void DrawEntityInspector();
 	void DrawEntityListViewer();
+	void DrawTypeListViewer();
+	void DrawSymbolInspector();
+	void DrawDumpStructMenu();
 };
 

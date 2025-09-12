@@ -25,13 +25,16 @@ public:
 	void AddRTTIUnsafe(RTTI* o);
 	bool IsRTTIUnsafe(RTTI* o);
 	bool IsRTTIObjectExist(void* o);
+	std::set<RTTI*>& GetTypes();
+
 	void AddRTTIObjectInstance(RTTI* rtti, void* o);
 	void RemoveRTTIObjectInstance(RTTI* rtti, void* o);
 	void AddEntity(Entity* e);
 	void RemoveEntity(Entity* e);
 	RTTI* TryGetObjectTypeUnsafe(void* o);
-	inline RTTI* TryGetObjectType(void* o);
-	inline const char* TryGetObjectTypeName(void* o);
+	RTTI* TryGetObjectType(void* o);
+	const char* TryGetObjectInstanceKind(void* o);
+	const char* TryGetObjectTypeName(void* o);
 	inline bool IsRTTIObjectInstanceUnsafe(void* o) {
 		return objInstanceSet.find(o) != objInstanceSet.end();
 	}

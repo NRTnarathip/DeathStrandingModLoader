@@ -16,6 +16,7 @@
 #include "MoverComponent.h"
 
 using Microsoft::WRL::ComPtr;
+#define gui ImGui::
 
 OverlayMenu* g_overlay;
 
@@ -216,7 +217,7 @@ void CopyToClipboard(const void* ptr) {
 	auto str = std::format("0x{:X}", (uintptr_t)ptr);
 	ImGui::SetClipboardText(str.c_str());
 }
-void OverlayMenu::DrawEntityInspectorMenu() {
+void OverlayMenu::DrawEntityInspector() {
 	ImGui::Begin("Entity Inspector");
 
 	auto entity = entityList->get(selectedEntityUUIDString);
@@ -416,8 +417,10 @@ void DrawEntityNodeLoop(Entity* ent) {
 			ImGui::TreePop();
 	}
 
-	if (ImGui::IsItemClicked())
+	if (ImGui::IsItemClicked()) {
 		g_overlay->selectedEntityUUIDString = uuid;
+		g_overlay->dumpStructPtr = ent;
+	}
 
 };
 
@@ -437,6 +440,181 @@ void OverlayMenu::DrawEntityListViewer() {
 
 	ImGui::EndChild();
 	ImGui::End();
+}
+
+void OverlayMenu::DrawTypeListViewer()
+{
+	Begin("Type List");
+
+	auto& types = objScanner->GetTypes();
+	auto typeTotal = types.size();
+	//options
+	if (dumpStructPtr == nullptr && typeTotal != 0)
+		dumpStructPtr = *types.begin();
+
+	ImGui::Text("Total Types: %zu", typeTotal);
+	std::string typeSearch;
+	ImGui::InputText("Type Search", &typeSearch);
+
+	ImGui::BeginChild("TypeListTableChild", ImVec2(0, 0), true);
+	std::vector<std::string> columeNames = { "Type", "Size" };
+	if (ImGui::BeginTable("TypeListTable", columeNames.size(),
+		ImGuiTableFlags_ScrollY
+		| ImGuiTableFlags_Borders
+		| ImGuiTableFlags_RowBg
+		| ImGuiTableFlags_Hideable
+		| ImGuiTableFlags_Resizable
+		| ImGuiTableFlags_Reorderable)) {
+
+		ImGui::TableSetupScrollFreeze(0, 1);
+		for (auto& name : columeNames)
+			ImGui::TableSetupColumn(name.c_str());
+
+		ImGui::TableHeadersRow();
+		for (auto& type : types) {
+			auto typeName = type->GetName().c_str();
+			if (typeSearch.size() != 0 && !IsContains(typeName, typeSearch))
+				continue;
+
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			static void* selectedType = nullptr;
+			if (ImGui::Selectable(typeName, selectedType == type,
+				ImGuiSelectableFlags_SpanAllColumns)) {
+				dumpStructPtr = type;
+			}
+			ImGui::TableNextColumn();
+			ImGui::Text("0x%x", GetRTTITypeSize(type));
+		}
+
+		ImGui::EndTable();
+	}
+	ImGui::EndChild();
+
+	End();
+}
+
+void OverlayMenu::DrawSymbolInspector()
+{
+	Begin("Symbol Inspector");
+	End();
+}
+
+std::string PtrToStrHex(void* ptr) {
+	if (ptr == nullptr) return "0x0";
+	return std::format("0x{:X}", (uintptr_t)ptr);
+}
+
+void* PtrStrHexToPtr(const std::string str) {
+	if (str.empty() || str == "0x0") return nullptr;
+	return (void*)(strtoull(str.c_str(), nullptr, 16));
+}
+
+void InputIntHex(const char* label, int& value) {
+	if (value < 0)
+		value = 0;
+
+	auto hexString = std::format("0x{:X}", value);
+	ImGui::InputText("", &hexString);
+	value = std::stoi(hexString, nullptr, 16);
+
+
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui::SameLine();
+	int addValue = 0;
+	float h = ImGui::GetFrameHeight();
+	if (ImGui::Button("-", ImVec2(h, h)))
+		addValue = -1;
+
+	ImGui::SameLine();
+	if (ImGui::Button("+", ImVec2(h, h)))
+		addValue = 1;;
+
+	if (io.KeyShift)
+		addValue *= 0x10;
+	else if (io.KeyCtrl)
+		addValue *= 0x100;
+
+	value += addValue;
+
+	if (value < 0)
+		value = 0;
+
+	ImGui::SameLine();
+	ImGui::Text(label);
+}
+
+void OverlayMenu::DrawDumpStructMenu()
+{
+	Begin("Dump Struct");
+
+	std::string dumpStructPtrString = PtrToStrHex(dumpStructPtr);
+	ImGui::InputText("Pointer (Hex)", &dumpStructPtrString);
+	{
+		auto type = objScanner->TryGetObjectType(dumpStructPtr);
+		ImGui::Text("Object Type: %s", objScanner->TryGetObjectTypeName(dumpStructPtr));
+		ImGui::Text("Instance Kind: %s", objScanner->TryGetObjectInstanceKind(dumpStructPtr));
+		ImGui::Text("RTTI Type Size: 0x%x", GetRTTITypeSize(type));
+	}
+
+	dumpStructPtr = PtrStrHexToPtr(dumpStructPtrString);
+
+	if (!IsReadable(dumpStructPtr)) {
+		ImGui::Text("Pointer can't read");
+	}
+
+	if (dumpStructPtr) {
+		static int structSize = 0x20;
+		const int minStructSize = 0x8;
+		InputIntHex("Struct Size", structSize);
+		if (structSize < minStructSize) structSize = minStructSize;
+		std::vector<std::string> columeNames = { "Type", "Instance Kind","Offset", "Address" };
+		if (ImGui::BeginTable("DumpStructTable",
+			columeNames.size(),
+			ImGuiTableFlags_ScrollY
+			| ImGuiTableFlags_Borders
+			| ImGuiTableFlags_RowBg
+			| ImGuiTableFlags_Hideable
+			| ImGuiTableFlags_Resizable
+			| ImGuiTableFlags_Reorderable))
+		{
+			ImGui::TableSetupScrollFreeze(0, 1);
+			for (auto& name : columeNames)
+				ImGui::TableSetupColumn(name.c_str());
+
+			ImGui::TableHeadersRow();
+			for (int offset = 0; offset < structSize; offset++) {
+				void* addr = (byte*)dumpStructPtr + offset;
+
+				if (!IsReadable(addr)) continue;
+				void* objPtr = *(void**)addr;
+				auto type = objScanner->TryGetObjectTypeUnsafe(objPtr);
+				if (!type) continue;
+
+				auto typeName = type->GetName().c_str();
+
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				if (ImGui::Selectable(typeName, dumpStructPtr == objPtr,
+					ImGuiSelectableFlags_SpanAllColumns))
+				{
+					CopyToClipboard(objPtr);
+					dumpStructPtr = objPtr;
+				}
+				ImGui::TableNextColumn();
+				ImGui::Text("%s", objScanner->TryGetObjectInstanceKind(objPtr));
+				ImGui::TableNextColumn();
+				ImGui::Text("0x%x", offset);
+				ImGui::TableNextColumn();
+				ImGui::Text("%p", addr);
+
+			}
+
+			ImGui::EndTable();
+		}
+	}
+
+	End();
 }
 
 void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
@@ -460,7 +638,10 @@ void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
 	// ready to draw
 	// Entity Inspector
 	DrawEntityListViewer();
-	DrawEntityInspectorMenu();
+	DrawEntityInspector();
+	DrawTypeListViewer();
+	DrawSymbolInspector();
+	DrawDumpStructMenu();
 
 	// final
 	ImGui::Render();

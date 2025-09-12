@@ -48,7 +48,7 @@ private:
 };
 
 template<typename T>
-class fn {
+class Array {
 public:
 	using value_type = T;
 	using difference_type = std::ptrdiff_t;
@@ -58,13 +58,13 @@ public:
 	using iterator = ArrayIterator<T, false>;
 	using const_iterator = ArrayIterator<T, true>;
 
-	fn() = default;
+	Array() = default;
 
-	fn(const fn&) = delete;
+	Array(const Array&) = delete;
 
-	fn(fn&&) = default;
+	Array(Array&&) = default;
 
-	~fn() {
+	~Array() {
 		for (auto& item : *this)
 			item.~T();
 		Offsets::CallID<"gMemFree", void(*)(void*)>(mEntries);

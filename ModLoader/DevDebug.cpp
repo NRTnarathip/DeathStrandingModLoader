@@ -98,15 +98,6 @@ int* MultiSpawnpoint_ExportedGetEntities(int* param_1, void* param_2)
 	return result;
 }
 
-void LogObjectType(const char* label, void* o) {
-	auto type = TryGetRTTI(o);
-	if (type) {
-		log("[%s] object ptr: %p type: %s", label, o, type->GetName().c_str());
-	}
-	else {
-		log("[%s] object ptr: %p type: <error>", label, o);
-	}
-}
 void LogVec3(const char* label, void* o) {
 	auto vec = (MyVec3*)o;
 	log("[%s] x: %.2f, y: %.2f, z: %.2f", label, vec->x, vec->y, vec->z);
