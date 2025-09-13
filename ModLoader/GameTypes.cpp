@@ -238,3 +238,9 @@ void SetFuncRTTITypeSize(void* funcPtr)
 {
 	g_GetRTTITypeSize = (uint32_t(*)(const RTTI*))funcPtr;
 }
+
+MyVector* GetExportedSymbolList()
+{
+	static MyVector* ptr = (MyVector*)GetAddressFromRva(0x4f66a70);
+	return ptr;
+}

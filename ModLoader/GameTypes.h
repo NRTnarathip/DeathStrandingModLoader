@@ -352,7 +352,7 @@ public:
 
 
 struct ExportedSymbolMember {
-	enum class MemberType : uint32_t
+	enum class MemberKind : uint32_t
 	{
 		Simple = 0,
 		Enum = 1,
@@ -370,15 +370,32 @@ struct ExportedSymbolMember {
 	};
 	assert_size(LanguageInfo, 0x40);
 
-	MemberType mType;
-	const RTTI* mTypeInfo;
+	MemberKind mKind;
+	const RTTI* mRTTI;
 	const char* mSymbolNamespace;
 	const char* mSymbolName;
 	char _pad1[0x8];
 	LanguageInfo mInfos[3];
+	bool IsExportFunction() { return mKind == MemberKind::Function; }
+	bool IsExportVariable() { return mKind == MemberKind::Variable; }
+	bool IsExportContainer() { return mKind == MemberKind::Container; }
+	const char* GetKindName() {
+		switch (mKind) {
+		case MemberKind::Simple: return "Simple";
+		case MemberKind::Enum: return "Enum";
+		case MemberKind::Class: return "Class";
+		case MemberKind::Struct: return "Struct";
+		case MemberKind::Typedef: return "Typedef";
+		case MemberKind::Function: return "Function";
+		case MemberKind::Variable: return "Variable";
+		case MemberKind::Container: return "Container";
+		case MemberKind::SourceFile: return "SourceFile";
+		default: return "Unknown";
+		}
+	}
 };
-assert_offset(ExportedSymbolMember, mType, 0x0);
-assert_offset(ExportedSymbolMember, mTypeInfo, 0x8);
+assert_offset(ExportedSymbolMember, mKind, 0x0);
+assert_offset(ExportedSymbolMember, mRTTI, 0x8);
 assert_offset(ExportedSymbolMember, mSymbolNamespace, 0x10);
 assert_offset(ExportedSymbolMember, mSymbolName, 0x18);
 assert_offset(ExportedSymbolMember, mInfos, 0x28);
@@ -395,3 +412,5 @@ assert_offset(ExportedSymbolGroup, mNamespace, 0x10);
 assert_offset(ExportedSymbolGroup, mMembers, 0x18);
 assert_offset(ExportedSymbolGroup, mDependencies, 0x28);
 assert_size(ExportedSymbolGroup, 0x38);
+
+MyVector* GetExportedSymbolList();

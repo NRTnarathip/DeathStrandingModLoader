@@ -471,18 +471,24 @@ void OverlayMenu::DrawTypeListViewer()
 }
 
 const char* BoolToStr(bool v) { return v ? "true" : "false"; }
+std::set<ExportedSymbolGroup*> g_exportedSymbolGroupSet;
+bool IsExportedSymbolGroup(void* ptr) {
+	return g_exportedSymbolGroupSet.contains((ExportedSymbolGroup*)ptr);
+}
 void OverlayMenu::DrawSymbolInspector()
 {
 	Begin("Symbol Inspector");
 	auto type = objScanner->TryGetObjectType(dumpObjPtr);
 	ImGui::Text("Ptr: %p", dumpObjPtr);
 	ImGui::Text("Type: %s", objScanner->TryGetObjectTypeName(dumpObjPtr));
-	static MyVector* symbolList = (MyVector*)GetAddrFromRva(0x4f66a70);
 	static bool isAddedSymbolToObjScanner = false;
 	if (isAddedSymbolToObjScanner == false) {
 		isAddedSymbolToObjScanner = true;
+		auto symbolList = GetExportedSymbolList();
 		for (int i = 0; i < symbolList->count; i++) {
 			auto s = (ExportedSymbolGroup*)symbolList->items[i];
+			g_exportedSymbolGroupSet.insert(s);
+			//log("added symbol to objScanner: %s", s->mNamespace);
 			auto type = ((RTTIObject*)s)->GetRTTI();
 			objScanner->AddRTTIObjectInstanceUnsafe(type, s);
 		}
@@ -492,15 +498,32 @@ void OverlayMenu::DrawSymbolInspector()
 		"Symbol",
 		"Export"
 	};
-	if (type
-		&& IsContains(type->GetName().c_str(), k_symbolTypeNames)
-		&& GetRTTITypeSize(type) == 0x38) {
+	if (IsExportedSymbolGroup(dumpObjPtr)) {
 		ExportedSymbolGroup* symbol = (ExportedSymbolGroup*)dumpObjPtr;
 		ImGui::Text("Always Export: %s", BoolToStr(symbol->mAlwaysExport));
 		ImGui::Text("Namespace: %s", symbol->mNamespace ? symbol->mNamespace : "null");
 		ImGui::Text("Members: %zu", symbol->mMembers.size());
 		ImGui::Text("Dependencies: %zu", symbol->mDependencies.size());
+		std::vector<const char*> columeNames = { "Kind", "Name" };
+		if (BeginTable("exportedMemberTable", columeNames)) {
+			for (int i = 0; i < symbol->mMembers.size(); i++) {
+				auto& member = symbol->mMembers[i];
+				ImGui::PushID(i);
+				auto memberTypeInt = (uint32_t)member.mKind;
+				if (BeginFirstRow(member.GetKindName(), false)) {
+					switch (member.mKind) {
+					case ExportedSymbolMember::MemberKind::Function:
+						break;
+					default:
+						break;
+					}
+				}
 
+				NextTextColumn(member.mSymbolName);
+				ImGui::PopID();
+			}
+			EndTable();
+		}
 	}
 	else {
 		ImGui::Text("This object is not ExportedSymbolGroup");
