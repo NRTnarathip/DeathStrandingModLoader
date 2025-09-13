@@ -14,6 +14,7 @@
 #include <numbers> // std::numbers
 #include <algorithm>
 #include "MoverComponent.h"
+#include "DecimaNative.h"
 
 using Microsoft::WRL::ComPtr;
 #define gui ImGui
@@ -432,7 +433,7 @@ void OverlayMenu::DrawTypeListViewer()
 	ImGui::InputText("Type Search", &typeSearch);
 
 	ImGui::BeginChild("TypeListTableChild", ImVec2(0, 0), true);
-	std::vector<std::string> columeNames = { "Type", "Size" };
+	std::vector<std::string> columeNames = { "Type", "ID","Size" };
 	if (ImGui::BeginTable("TypeListTable", columeNames.size(),
 		ImGuiTableFlags_ScrollY
 		| ImGuiTableFlags_Borders
@@ -460,6 +461,8 @@ void OverlayMenu::DrawTypeListViewer()
 				SetDumpStructPtr((void*)type, GetRTTITypeSize(type));
 			}
 			ImGui::TableNextColumn();
+			ImGui::Text("%d", type->mId);
+			ImGui::TableNextColumn();
 			ImGui::Text("0x%x", GetRTTITypeSize(type));
 		}
 
@@ -470,56 +473,41 @@ void OverlayMenu::DrawTypeListViewer()
 	End();
 }
 
-const char* BoolToStr(bool v) { return v ? "true" : "false"; }
-std::set<ExportedSymbolGroup*> g_exportedSymbolGroupSet;
-bool IsExportedSymbolGroup(void* ptr) {
-	return g_exportedSymbolGroupSet.contains((ExportedSymbolGroup*)ptr);
-}
+
 void OverlayMenu::DrawSymbolInspector()
 {
 	Begin("Symbol Inspector");
 	auto type = objScanner->TryGetObjectType(dumpObjPtr);
 	ImGui::Text("Ptr: %p", dumpObjPtr);
 	ImGui::Text("Type: %s", objScanner->TryGetObjectTypeName(dumpObjPtr));
-	static bool isAddedSymbolToObjScanner = false;
-	if (isAddedSymbolToObjScanner == false) {
-		isAddedSymbolToObjScanner = true;
-		auto symbolList = GetExportedSymbolList();
-		for (int i = 0; i < symbolList->count; i++) {
-			auto s = (ExportedSymbolGroup*)symbolList->items[i];
-			g_exportedSymbolGroupSet.insert(s);
-			//log("added symbol to objScanner: %s", s->mNamespace);
-			auto type = ((RTTIObject*)s)->GetRTTI();
-			objScanner->AddRTTIObjectInstanceUnsafe(type, s);
-		}
-	}
 
 	static std::vector<const char*> k_symbolTypeNames = {
 		"Symbol",
 		"Export"
 	};
-	if (IsExportedSymbolGroup(dumpObjPtr)) {
+	if (DecimaNative::IsExportedSymbolGroup(dumpObjPtr)) {
 		ExportedSymbolGroup* symbol = (ExportedSymbolGroup*)dumpObjPtr;
 		ImGui::Text("Always Export: %s", BoolToStr(symbol->mAlwaysExport));
 		ImGui::Text("Namespace: %s", symbol->mNamespace ? symbol->mNamespace : "null");
 		ImGui::Text("Members: %zu", symbol->mMembers.size());
 		ImGui::Text("Dependencies: %zu", symbol->mDependencies.size());
-		std::vector<const char*> columeNames = { "Kind", "Name" };
+		std::vector<const char*> columeNames = { "Kind", "Name", "Address" };
 		if (BeginTable("exportedMemberTable", columeNames)) {
 			for (int i = 0; i < symbol->mMembers.size(); i++) {
 				auto& member = symbol->mMembers[i];
+				ExportedSymbolMember* memberPtr = &symbol->mMembers[i];
 				ImGui::PushID(i);
 				auto memberTypeInt = (uint32_t)member.mKind;
 				if (BeginFirstRow(member.GetKindName(), false)) {
-					switch (member.mKind) {
-					case ExportedSymbolMember::MemberKind::Function:
-						break;
-					default:
-						break;
-					}
+					CopyToClipboard(memberPtr);
+					log("selected symbol member name: %s", member.mSymbolName);
+					auto type = member.mRTTI;
+					auto typeName = type ? type->GetName().c_str() : "null";
+					log("type name: %s", typeName);
 				}
 
 				NextTextColumn(member.mSymbolName);
+				NextTextColumn("%p", memberPtr);
 				ImGui::PopID();
 			}
 			EndTable();

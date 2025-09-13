@@ -101,9 +101,52 @@ void HK_DSPlayerEntitySymbols(void* p1_exportedSymbolGroup) {
 	log("end DSPlayerEntitySymbols");
 }
 
+
+int (*backupMySymbolLanguageInfoSetReturnTypeName)(void*, void*);
+int HK_MySymbolLanguageInfoSetReturnTypeName(MyVector* p1, void* p2_returnTypeName) {
+	log("begin HK_MySymbolLanguageInfoSetReturnTypeName");
+	auto scanner = ObjectScanner::Instance();
+	auto lock = scanner->GetLock();
+	log("p1 count: %d", p1->count);
+	struct P2Unk {
+		MyString string0; //0x0
+		MyString string0x8; //0x8
+		struct Unk {
+			void* unk0x0;
+			const char* typeName;
+			void* unk0x10;
+		} unk0x10;
+		MyString string0x18;
+		void* unk0x20;
+	};
+	auto p2 = (P2Unk*)p2_returnTypeName;
+	log("p2 0: %s", p2->string0.str);
+
+	log("calling original func");
+	auto result = backupMySymbolLanguageInfoSetReturnTypeName(p1, p2_returnTypeName);
+	log("called result: %d", result);
+	log("p1 recheck count: %d", p1->count);
+	log("p2 0x10->typeName: %s", p2->unk0x10.typeName);
+	auto item = (ExportedSymbolMember::Signature*)p1->items[p1->count - 1];
+	log("item name: %s", item->mName);
+	log("end HK_MySymbolLanguageInfoSetReturnTypeName");
+	return result;
+}
+
+MyString* (*backupRTTIGetName)(RTTI* p1_rtti, MyString* param_2);
+MyString* MyRTTIGetName(RTTI* p1_rtti, MyString* p2_nameOut) {
+	log("begin MyRTTIUnkStringFormat, rtti: %p", p1_rtti);
+	auto result = backupRTTIGetName(p1_rtti, p2_nameOut);
+	log("formatted string: %s", p2_nameOut->str);
+	log("result: %s", result->str);
+	log("end MyRTTIUnkStringFormat");
+	return result;
+}
+
 void SetupDevDebug()
 {
-	//return;
+	//HookFuncRva(0x1903500, HK_MySymbolLanguageInfoSetReturnTypeName, &backupMySymbolLanguageInfoSetReturnTypeName);
+	//HookFuncRva(0x19f3760, MyRTTIGetName, &backupRTTIGetName);
 	//HookFuncRva(0x278b160, &MyAddWeapon2, &backupMyAddWeapon2);
 	//HookFuncRva(0x2758c80, &DSNodePlayerGetParamFloat, &backupDSNodePlayerGetParamFloat);
 	//HookFuncRva(0x23c60b0, &My_GetDSPlayerByID, &backupMyGetPlayerEntityByID);

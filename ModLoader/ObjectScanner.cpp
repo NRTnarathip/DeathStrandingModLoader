@@ -167,10 +167,10 @@ void AddHookRTTIUnsafe(RTTI* rtti) {
 		// change ctor & dtor
 		rttiClass->mConstructor = (const void*)HK_FuncRTTIClassObjCtor;
 		rttiClass->mDestructor = (const void*)HK_FuncRTTIClassObjDtor;
-		log("Hooked RTTIClass: %s, ctor: 0x%llx, dtor: 0x%llx",
-			rtti->GetName().c_str(),
-			AddrToRva(hook->originalCtor),
-			AddrToRva(hook->originalDtor));
+		//log("Hooked RTTIClass: %s, ctor: 0x%llx, dtor: 0x%llx",
+		//	rtti->GetName().c_str(),
+		//	AddrToRva(hook->originalCtor),
+		//	AddrToRva(hook->originalDtor));
 
 		//debug
 	}
@@ -276,7 +276,7 @@ ObjectScanner::ObjectScanner()
 	HookFuncRva(0x2345a10, &HK_MyEntityNewObject, &backupMyEntityNewObject);
 	HookFuncRva(0x23466b0, &HK_MyEntityFreeObject, &MyEntityFreeObject);
 	HookFuncRva(0x19f43b0, &HK_GetRTTISize, &backupGetRTTISize);
-	//SetFuncRTTITypeSize(backupGetRTTISize);
+	SetFuncRTTITypeSize(backupGetRTTISize);
 	HookFuncRva(0x19f4830, &MyCreateObjectByRTTI, &backupMyCreateObjectByRTTI);
 
 	// debug
@@ -356,6 +356,8 @@ const char* ObjectScanner::TryGetObjectTypeName(void* o)
 
 	return "unknow";
 }
+
+#include "DecimaNative.h"
 
 const RTTI* ObjectScanner::TryGetObjectType(void* o)
 {

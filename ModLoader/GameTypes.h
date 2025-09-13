@@ -182,6 +182,8 @@ std::vector<FieldInfo> GetFields(void* o);
 uint32_t GetRTTITypeSize(const RTTI* type);
 void SetFuncRTTITypeSize(void* funcPtr);
 
+const char* BoolToStr(bool v);
+
 struct EntityResource {};
 struct EntityComponent : public RTTIObject {
 };
@@ -364,41 +366,42 @@ struct ExportedSymbolMember {
 		Container = 7,
 		SourceFile = 8,
 	};
+	struct Signature {
+		const char* mName; //0x0
+		const char* mModifiers; //0x8
+		const RTTI* mType; //0x10
+		void* mUnk18; //0x18
+		uint8_t mUnk20; //0x20
+	};
+	assert_size(Signature, 0x28);
 
-	class LanguageInfo {
-		byte  unk[0x40];
+	struct LanguageInfo {
+		void* address;
+		const char* name;
+		const char* includeName;
+		void* unk0x18;
+		Array<Signature> signatureArray;
+		void* unk0x30;
+		void* unk0x38;
 	};
 	assert_size(LanguageInfo, 0x40);
 
 	MemberKind mKind;
-	const RTTI* mRTTI;
-	const char* mSymbolNamespace;
-	const char* mSymbolName;
-	char _pad1[0x8];
-	LanguageInfo mInfos[3];
+	const RTTI* mRTTI; //0x8
+	const char* mSymbolNamespace; //0x10
+	const char* mSymbolName; //x18
+	char _pad1[0x8]; //0x20
+	LanguageInfo mLanguages[3]; //0x28
 	bool IsExportFunction() { return mKind == MemberKind::Function; }
 	bool IsExportVariable() { return mKind == MemberKind::Variable; }
 	bool IsExportContainer() { return mKind == MemberKind::Container; }
-	const char* GetKindName() {
-		switch (mKind) {
-		case MemberKind::Simple: return "Simple";
-		case MemberKind::Enum: return "Enum";
-		case MemberKind::Class: return "Class";
-		case MemberKind::Struct: return "Struct";
-		case MemberKind::Typedef: return "Typedef";
-		case MemberKind::Function: return "Function";
-		case MemberKind::Variable: return "Variable";
-		case MemberKind::Container: return "Container";
-		case MemberKind::SourceFile: return "SourceFile";
-		default: return "Unknown";
-		}
-	}
+	const char* GetKindName();
 };
 assert_offset(ExportedSymbolMember, mKind, 0x0);
 assert_offset(ExportedSymbolMember, mRTTI, 0x8);
 assert_offset(ExportedSymbolMember, mSymbolNamespace, 0x10);
 assert_offset(ExportedSymbolMember, mSymbolName, 0x18);
-assert_offset(ExportedSymbolMember, mInfos, 0x28);
+assert_offset(ExportedSymbolMember, mLanguages, 0x28);
 assert_size(ExportedSymbolMember, 0xE8);
 
 struct ExportedSymbolGroup : RTTIObject {
@@ -413,4 +416,4 @@ assert_offset(ExportedSymbolGroup, mMembers, 0x18);
 assert_offset(ExportedSymbolGroup, mDependencies, 0x28);
 assert_size(ExportedSymbolGroup, 0x38);
 
-MyVector* GetExportedSymbolList();
+

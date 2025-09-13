@@ -239,8 +239,19 @@ void SetFuncRTTITypeSize(void* funcPtr)
 	g_GetRTTITypeSize = (uint32_t(*)(const RTTI*))funcPtr;
 }
 
-MyVector* GetExportedSymbolList()
-{
-	static MyVector* ptr = (MyVector*)GetAddressFromRva(0x4f66a70);
-	return ptr;
+const char* BoolToStr(bool v) { return v ? "true" : "false"; }
+
+const char* ExportedSymbolMember::GetKindName() {
+	switch (mKind) {
+	case MemberKind::Simple: return "Simple";
+	case MemberKind::Enum: return "Enum";
+	case MemberKind::Class: return "Class";
+	case MemberKind::Struct: return "Struct";
+	case MemberKind::Typedef: return "Typedef";
+	case MemberKind::Function: return "Function";
+	case MemberKind::Variable: return "Variable";
+	case MemberKind::Container: return "Container";
+	case MemberKind::SourceFile: return "SourceFile";
+	default: return "Unknown";
+	}
 }
