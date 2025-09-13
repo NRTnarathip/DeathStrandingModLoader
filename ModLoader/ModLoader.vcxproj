@@ -374,6 +374,7 @@ exit /b 0</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="archive_reader.h" />
+    <ClInclude Include="DecimaNative.h" />
     <ClInclude Include="DevDebug.h" />
     <ClInclude Include="EntityList.hpp" />
     <ClInclude Include="extern\decima-native\source\Core\RTTI.h" />
@@ -416,6 +417,7 @@ exit /b 0</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="archive_reader.cpp" />
+    <ClCompile Include="DecimaNative.cpp" />
     <ClCompile Include="DevDebug.cpp" />
     <ClCompile Include="extern\decima-native\source\Core\RTTI.cpp" />
     <ClCompile Include="extern\decima-native\source\Offsets.cpp" />

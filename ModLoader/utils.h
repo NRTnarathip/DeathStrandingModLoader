@@ -82,7 +82,7 @@ std::string GetPakFileHashFromName(const std::string& name);
 void AddStringToArray(void* arrayPtr, const char* newStr);
 
 extern void* GetAddressFromRva(int fileOffset);
-extern void* GetFuncAddr(uintptr_t rva);
+extern void* GetAddrFromRva(uintptr_t rva);
 
 typedef ULONGLONG* (*MurmurHash3_t)(void* hash, void* data, ULONGLONG length);
 extern MurmurHash3_t fpMurmurHash3;

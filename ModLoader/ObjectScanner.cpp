@@ -171,6 +171,8 @@ void AddHookRTTIUnsafe(RTTI* rtti) {
 			rtti->GetName().c_str(),
 			AddrToRva(hook->originalCtor),
 			AddrToRva(hook->originalDtor));
+
+		//debug
 	}
 	else if (rtti->mKind == RTTIKind::Container) {
 		// fixme: crash some case
@@ -224,32 +226,19 @@ uint32_t GetRTTISize(void* p1) {
 		return backupGetRTTISize((RTTI*)p1);
 
 	typedef UINT32(*GetRTTISize_t)(void* p1);
-	static GetRTTISize_t fn = (GetRTTISize_t)GetFuncAddr(0x19f43b0);
+	static GetRTTISize_t fn = (GetRTTISize_t)GetAddrFromRva(0x19f43b0);
 	return fn(p1);
 }
 
 void* (*backupMyCreateObjectByRTTI)(RTTI* p1_unk);
 void* MyCreateObjectByRTTI(RTTI* rtti) {
+	void* result = (void*)backupMyCreateObjectByRTTI(rtti);
 
-	//log("Begin MyCreateObjectByRTTI, p1: %p", rtti);
-	RTTIObject* result = (RTTIObject*)backupMyCreateObjectByRTTI(rtti);
+	auto instance = ObjectScanner::Instance();
+	auto lock = instance->GetLock();
+	instance->AddRTTIObjectInstance(rtti, result);
 
-	//auto instance = ObjectScanner::Instance();
-	//instance->AddRTTIToSet(rtti);
-	//instance->AddRTTIObjectToSet(result);
-
-	//log("MyCreateObjectByRTTI result: %p", result);
-	//log("rtti name: %s", rtti->GetName().c_str());
-	//log("rtti kind: %s", rtti->GetKindName());
-	//auto allocateSize = GetRTTISize(rtti);
-	//log("rtti size: 0x%x", allocateSize);
-
-
-	// crash some time when get result type name
-	// RGBAColorRev
-	//log("result type name: %s", ((RTTIObject*)result)->GetTypeName());
-	//log("result size: %d", GetRTTISize(result));
-	//log("End MyCreateObjectByRTTI");
+	AddHookRTTIUnsafe(rtti);
 
 	return result;
 }
@@ -287,18 +276,17 @@ ObjectScanner::ObjectScanner()
 	HookFuncRva(0x2345a10, &HK_MyEntityNewObject, &backupMyEntityNewObject);
 	HookFuncRva(0x23466b0, &HK_MyEntityFreeObject, &MyEntityFreeObject);
 	HookFuncRva(0x19f43b0, &HK_GetRTTISize, &backupGetRTTISize);
-	SetFuncRTTITypeSize(backupGetRTTISize);
-
+	//SetFuncRTTITypeSize(backupGetRTTISize);
+	HookFuncRva(0x19f4830, &MyCreateObjectByRTTI, &backupMyCreateObjectByRTTI);
 
 	// debug
-	//HookFuncRva(0x19f4830, &MyCreateObjectByRTTI, &backupMyCreateObjectByRTTI);
 	//HookFuncRva(0x19f41b0, &MyLikeGetClassTypeFromString, &backupMyLikeGetClassTypeFromString);
 	//HookFuncRva(0x2373940, &MyLikeEntitySpawner3, &backupMyLikeEntitySpawner3);
 	//HookFuncRva(0x1dde990, &MyEntityResourceUnk, &backupMyEntityResourceUnk);
 	log("ObjectScanner init successfully");
 }
 
-inline bool ObjectScanner::IsRTTIUnsafe(RTTI* o) {
+inline bool ObjectScanner::IsRTTIUnsafe(const RTTI* o) {
 	return rttiSet.find(o) != rttiSet.end();
 }
 
@@ -307,24 +295,33 @@ inline bool ObjectScanner::IsRTTIObjectInstance(void* o) {
 	return objInstanceSet.find(o) != objInstanceSet.end();
 }
 
-std::set<RTTI*>& ObjectScanner::GetTypes()
+std::set<const RTTI*>& ObjectScanner::GetTypes()
 {
 	return rttiSet;
 }
 
-void ObjectScanner::AddRTTIUnsafe(RTTI* o)
+void ObjectScanner::AddRTTIUnsafe(const RTTI* o)
 {
 	rttiSet.insert(o);
 }
-
-void ObjectScanner::AddRTTIObjectInstance(RTTI* rtti, void* o)
+void ObjectScanner::AddRTTIObjectInstance(const RTTI* rtti, void* o)
 {
+	if (!IsReadable(o)) {
+		//log("error: try add null obj instance: %p, type: %s", o, rtti->GetName().c_str());
+		return;
+	}
+
 	std::lock_guard<std::recursive_mutex> lock(mtx);
+	AddRTTIObjectInstanceUnsafe(rtti, o);
+}
+
+void ObjectScanner::AddRTTIObjectInstanceUnsafe(const RTTI* rtti, void* o)
+{
 	objInstanceSet.insert(o);
 	rttiLookupByObject[o] = rtti;
 }
 
-inline void ObjectScanner::RemoveRTTIObjectInstance(RTTI* rtti, void* o) {
+inline void ObjectScanner::RemoveRTTIObjectInstance(const RTTI* rtti, void* o) {
 	std::lock_guard<std::recursive_mutex> lock(mtx);
 	if (IsRTTIObjectInstanceUnsafe(o)) {
 		objInstanceSet.erase(o);
@@ -360,7 +357,7 @@ const char* ObjectScanner::TryGetObjectTypeName(void* o)
 	return "unknow";
 }
 
-RTTI* ObjectScanner::TryGetObjectType(void* o)
+const RTTI* ObjectScanner::TryGetObjectType(void* o)
 {
 	std::lock_guard<std::recursive_mutex> lock(mtx);
 	return TryGetObjectTypeUnsafe(o);
@@ -378,7 +375,7 @@ const char* ObjectScanner::TryGetObjectInstanceKind(void* o)
 	return "Unknow";
 }
 
-RTTI* ObjectScanner::TryGetObjectTypeUnsafe(void* o)
+const RTTI* ObjectScanner::TryGetObjectTypeUnsafe(void* o)
 {
 	if (!IsReadable(o))
 		return nullptr;

@@ -114,7 +114,7 @@ UINT64 g_fenceValue = 0;
 HANDLE g_fenceEvent = nullptr;
 
 uint8_t* GetRenderContext() {
-	return *(uint8_t**)GetFuncAddr(0x4f6d430);
+	return *(uint8_t**)GetAddrFromRva(0x4f6d430);
 }
 
 uint8_t* GetRingBufferUpload() {

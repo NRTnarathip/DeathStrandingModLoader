@@ -67,7 +67,8 @@ public:
 	~Array() {
 		for (auto& item : *this)
 			item.~T();
-		Offsets::CallID<"gMemFree", void(*)(void*)>(mEntries);
+		//Offsets::CallID<"gMemFree", void(*)(void*)>(mEntries);
+		delete(mEntries);
 		mCount = 0;
 		mCapacity = 0;
 		mEntries = nullptr;

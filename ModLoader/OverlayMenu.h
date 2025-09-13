@@ -24,7 +24,7 @@ private:
 	RendererHook* renderer;
 	ObjectScanner* objScanner;
 	EntityList* entityList = nullptr;
-	void* dumpStructPtr = nullptr;
+	void* dumpObjPtr = nullptr;
 	int dumpStructSizeCurrent = 0x100;
 	void UpdateOverlayToggle();
 	void OnPresent(unsigned int sync, unsigned int flags);
@@ -35,5 +35,6 @@ private:
 	void DrawTypeListViewer();
 	void DrawSymbolInspector();
 	void DrawDumpStructMenu();
+	void DrawObjectInstanceListViewer();
 };
 

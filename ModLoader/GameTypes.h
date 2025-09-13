@@ -14,7 +14,7 @@
 #include "extern/decima-native/source/Core/RTTIObject.h"
 #include "extern/decima-native/source/PCore/Array.h"
 
-#define ASSERT_OFFSET(struct_type, member, expected_offset) \
+#define assert_offset(struct_type, member, expected_offset) \
     static_assert(offsetof(struct_type, member) == expected_offset, \
                   #member " offset mismatch")
 
@@ -149,11 +149,11 @@ struct ResourceReaderHandle {
 	bool someBool1; // 0x58
 };
 
-ASSERT_OFFSET(ResourceReaderHandle, status, 0x10);
-ASSERT_OFFSET(ResourceReaderHandle, entryPath, 0x20);
-ASSERT_OFFSET(ResourceReaderHandle, fullPath, 0x28);
-ASSERT_OFFSET(ResourceReaderHandle, errorString, 0x50);
-ASSERT_OFFSET(ResourceReaderHandle, someBool1, 0x58);
+assert_offset(ResourceReaderHandle, status, 0x10);
+assert_offset(ResourceReaderHandle, entryPath, 0x20);
+assert_offset(ResourceReaderHandle, fullPath, 0x28);
+assert_offset(ResourceReaderHandle, errorString, 0x50);
+assert_offset(ResourceReaderHandle, someBool1, 0x58);
 
 
 enum EPackFileCategory : int {
@@ -351,4 +351,47 @@ public:
 };
 
 
+struct ExportedSymbolMember {
+	enum class MemberType : uint32_t
+	{
+		Simple = 0,
+		Enum = 1,
+		Class = 2,
+		Struct = 3,
+		Typedef = 4,
+		Function = 5,
+		Variable = 6,
+		Container = 7,
+		SourceFile = 8,
+	};
 
+	class LanguageInfo {
+		byte  unk[0x40];
+	};
+	assert_size(LanguageInfo, 0x40);
+
+	MemberType mType;
+	const RTTI* mTypeInfo;
+	const char* mSymbolNamespace;
+	const char* mSymbolName;
+	char _pad1[0x8];
+	LanguageInfo mInfos[3];
+};
+assert_offset(ExportedSymbolMember, mType, 0x0);
+assert_offset(ExportedSymbolMember, mTypeInfo, 0x8);
+assert_offset(ExportedSymbolMember, mSymbolNamespace, 0x10);
+assert_offset(ExportedSymbolMember, mSymbolName, 0x18);
+assert_offset(ExportedSymbolMember, mInfos, 0x28);
+assert_size(ExportedSymbolMember, 0xE8);
+
+struct ExportedSymbolGroup : RTTIObject {
+	bool mAlwaysExport; //0x8
+	const char* mNamespace; //0x10
+	Array<ExportedSymbolMember> mMembers; //0x18
+	Array<RTTI*> mDependencies; //0x28
+};
+assert_offset(ExportedSymbolGroup, mAlwaysExport, 0x8);
+assert_offset(ExportedSymbolGroup, mNamespace, 0x10);
+assert_offset(ExportedSymbolGroup, mMembers, 0x18);
+assert_offset(ExportedSymbolGroup, mDependencies, 0x28);
+assert_size(ExportedSymbolGroup, 0x38);

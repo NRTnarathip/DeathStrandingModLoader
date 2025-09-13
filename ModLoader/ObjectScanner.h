@@ -7,9 +7,9 @@ class ObjectScanner
 {
 private:
 	std::recursive_mutex mtx;
-	std::set<RTTI*> rttiSet;
+	std::set<const RTTI*> rttiSet;
 	std::set<void*> objInstanceSet;
-	std::unordered_map<void*, RTTI*> rttiLookupByObject;
+	std::unordered_map<void*, const RTTI*> rttiLookupByObject;
 
 
 public:
@@ -22,17 +22,19 @@ public:
 	auto GetLock() { return std::unique_lock<std::recursive_mutex>(mtx); }
 	EntityList entityList;
 
-	void AddRTTIUnsafe(RTTI* o);
-	bool IsRTTIUnsafe(RTTI* o);
+	void AddRTTIUnsafe(const RTTI* o);
+	bool IsRTTIUnsafe(const RTTI* o);
 	bool IsRTTIObjectInstance(void* o);
-	std::set<RTTI*>& GetTypes();
+	std::set<const RTTI*>& GetTypes();
 
-	void AddRTTIObjectInstance(RTTI* rtti, void* o);
-	void RemoveRTTIObjectInstance(RTTI* rtti, void* o);
+	std::set<void*>& GetObjectInstances() { return objInstanceSet; }
+	void AddRTTIObjectInstance(const RTTI* rtti, void* o);
+	void AddRTTIObjectInstanceUnsafe(const RTTI* rtti, void* o);
+	void RemoveRTTIObjectInstance(const RTTI* rtti, void* o);
 	void AddEntity(Entity* e);
 	void RemoveEntity(Entity* e);
-	RTTI* TryGetObjectTypeUnsafe(void* o);
-	RTTI* TryGetObjectType(void* o);
+	const RTTI* TryGetObjectTypeUnsafe(void* o);
+	const RTTI* TryGetObjectType(void* o);
 	const char* TryGetObjectInstanceKind(void* o);
 	const char* TryGetObjectTypeName(void* o);
 	inline bool IsRTTIObjectInstanceUnsafe(void* o) {

@@ -16,7 +16,28 @@
 #include "MoverComponent.h"
 
 using Microsoft::WRL::ComPtr;
-#define gui ImGui::
+#define gui ImGui
+
+bool IsContains(const std::string& src, const std::string& word) {
+	std::string srcLowerCase = src;
+	std::string wordLowerCase = word;
+	std::transform(srcLowerCase.begin(), srcLowerCase.end(), srcLowerCase.begin(), ::tolower);
+	std::transform(wordLowerCase.begin(), wordLowerCase.end(), wordLowerCase.begin(), ::tolower);
+	return srcLowerCase.find(wordLowerCase) != std::string::npos;
+}
+bool IsContains(const std::string& src, const std::vector<const char*> words) {
+	for (auto word : words) {
+		if (IsContains(src, word))
+			return true;
+	}
+	return false;
+}
+
+bool IsSearchFilter(std::string src, std::string word) {
+	if (word.empty())
+		return false;
+	return !IsContains(src, word);
+}
 
 OverlayMenu* g_overlay;
 
@@ -156,13 +177,6 @@ void OverlayMenu::InitializeBeforePresent()
 	WndProc = (WNDPROC)(SetWindowLongPtrW(window, GWLP_WNDPROC, (LONG_PTR)WndProc_Hook));
 }
 
-bool IsContains(const std::string& src, const std::string& word) {
-	std::string srcLowerCase = src;
-	std::string wordLowerCase = word;
-	std::transform(srcLowerCase.begin(), srcLowerCase.end(), srcLowerCase.begin(), ::tolower);
-	std::transform(wordLowerCase.begin(), wordLowerCase.end(), wordLowerCase.begin(), ::tolower);
-	return srcLowerCase.find(wordLowerCase) != std::string::npos;
-}
 
 MyVec3 RotationMatrixToEuler(MyRotMatrix& rotMatrix)
 {
@@ -412,9 +426,6 @@ void OverlayMenu::DrawTypeListViewer()
 
 	auto& types = objScanner->GetTypes();
 	auto typeTotal = types.size();
-	//options
-	if (dumpStructPtr == nullptr && typeTotal != 0)
-		dumpStructPtr = *types.begin();
 
 	ImGui::Text("Total Types: %zu", typeTotal);
 	static std::string typeSearch;
@@ -442,11 +453,11 @@ void OverlayMenu::DrawTypeListViewer()
 
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
-			static RTTI* selectedType;
+			static const RTTI* selectedType;
 			if (ImGui::Selectable(typeName, type == selectedType,
 				ImGuiSelectableFlags_SpanAllColumns)) {
 				selectedType = type;
-				SetDumpStructPtr(type, GetRTTITypeSize(type));
+				SetDumpStructPtr((void*)type, GetRTTITypeSize(type));
 			}
 			ImGui::TableNextColumn();
 			ImGui::Text("0x%x", GetRTTITypeSize(type));
@@ -459,9 +470,42 @@ void OverlayMenu::DrawTypeListViewer()
 	End();
 }
 
+const char* BoolToStr(bool v) { return v ? "true" : "false"; }
 void OverlayMenu::DrawSymbolInspector()
 {
 	Begin("Symbol Inspector");
+	auto type = objScanner->TryGetObjectType(dumpObjPtr);
+	ImGui::Text("Ptr: %p", dumpObjPtr);
+	ImGui::Text("Type: %s", objScanner->TryGetObjectTypeName(dumpObjPtr));
+	static MyVector* symbolList = (MyVector*)GetAddrFromRva(0x4f66a70);
+	static bool isAddedSymbolToObjScanner = false;
+	if (isAddedSymbolToObjScanner == false) {
+		isAddedSymbolToObjScanner = true;
+		for (int i = 0; i < symbolList->count; i++) {
+			auto s = (ExportedSymbolGroup*)symbolList->items[i];
+			auto type = ((RTTIObject*)s)->GetRTTI();
+			objScanner->AddRTTIObjectInstanceUnsafe(type, s);
+		}
+	}
+
+	static std::vector<const char*> k_symbolTypeNames = {
+		"Symbol",
+		"Export"
+	};
+	if (type
+		&& IsContains(type->GetName().c_str(), k_symbolTypeNames)
+		&& GetRTTITypeSize(type) == 0x38) {
+		ExportedSymbolGroup* symbol = (ExportedSymbolGroup*)dumpObjPtr;
+		ImGui::Text("Always Export: %s", BoolToStr(symbol->mAlwaysExport));
+		ImGui::Text("Namespace: %s", symbol->mNamespace ? symbol->mNamespace : "null");
+		ImGui::Text("Members: %zu", symbol->mMembers.size());
+		ImGui::Text("Dependencies: %zu", symbol->mDependencies.size());
+
+	}
+	else {
+		ImGui::Text("This object is not ExportedSymbolGroup");
+	}
+
 	End();
 }
 
@@ -511,7 +555,7 @@ void InputIntHex(const char* label, int& value) {
 
 void OverlayMenu::SetDumpStructPtr(void* p, int size)
 {
-	dumpStructPtr = p;
+	dumpObjPtr = p;
 	if (size > 0) {
 		dumpStructSizeCurrent = size;
 	}
@@ -521,24 +565,24 @@ void OverlayMenu::DrawDumpStructMenu()
 {
 	Begin("Dump Struct");
 
-	std::string dumpStructPtrString = PtrToStrHex(dumpStructPtr);
+	std::string dumpStructPtrString = PtrToStrHex(dumpObjPtr);
 	ImGui::InputText("Pointer (Hex)", &dumpStructPtrString);
-	if (!IsReadable(dumpStructPtr)) {
+	if (!IsReadable(dumpObjPtr)) {
 		ImGui::Text("Pointer can't read");
 	}
 
 	int maxStructSize = -1;
-	auto currentObjType = objScanner->TryGetObjectType(dumpStructPtr);
+	auto currentObjType = objScanner->TryGetObjectType(dumpObjPtr);
 	if (currentObjType)
 		maxStructSize = GetRTTITypeSize(currentObjType);
 
-	ImGui::Text("Object Type: %s", objScanner->TryGetObjectTypeName(dumpStructPtr));
-	ImGui::Text("Instance Kind: %s", objScanner->TryGetObjectInstanceKind(dumpStructPtr));
+	ImGui::Text("Object Type: %s", objScanner->TryGetObjectTypeName(dumpObjPtr));
+	ImGui::Text("Instance Kind: %s", objScanner->TryGetObjectInstanceKind(dumpObjPtr));
 	ImGui::Text("RTTI Type Size: 0x%x", GetRTTITypeSize(currentObjType));
 
-	dumpStructPtr = PtrStrHexToPtr(dumpStructPtrString);
+	dumpObjPtr = PtrStrHexToPtr(dumpStructPtrString);
 
-	if (dumpStructPtr) {
+	if (dumpObjPtr) {
 		const int k_DumpStructSizeMin = 0x8;
 		InputIntHex("Struct Size", dumpStructSizeCurrent);
 		if (dumpStructSizeCurrent < k_DumpStructSizeMin)
@@ -566,7 +610,7 @@ void OverlayMenu::DrawDumpStructMenu()
 				if (currentObjType == nullptr)
 					break;
 
-				void* currentFieldAddr = (byte*)dumpStructPtr + offset;
+				void* currentFieldAddr = (byte*)dumpObjPtr + offset;
 				if (!IsReadable(currentFieldAddr)) continue;
 				void* currentObj = *(void**)currentFieldAddr;
 				auto type = objScanner->TryGetObjectTypeUnsafe(currentObj);
@@ -577,11 +621,11 @@ void OverlayMenu::DrawDumpStructMenu()
 				ImGui::PushID(offset);
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
-				if (ImGui::Selectable(typeName, dumpStructPtr == currentObj,
+				if (ImGui::Selectable(typeName, dumpObjPtr == currentObj,
 					ImGuiSelectableFlags_SpanAllColumns))
 				{
 					CopyToClipboard(currentObj);
-					dumpStructPtr = currentObj;
+					dumpObjPtr = currentObj;
 				}
 				ImGui::TableNextColumn();
 				ImGui::Text("%s", objScanner->TryGetObjectInstanceKind(currentObj));
@@ -594,6 +638,62 @@ void OverlayMenu::DrawDumpStructMenu()
 
 			ImGui::EndTable();
 		}
+	}
+
+	End();
+}
+
+void OverlayMenu::DrawObjectInstanceListViewer()
+{
+	Begin("Object Instance List");
+
+	const auto& list = objScanner->GetObjectInstances();
+	ImGui::Text("Instances: %zu", list.size());
+	static std::string searchFilter;
+	ImGui::InputText("Instance Search", &searchFilter);
+
+	std::vector<std::string> columeNames = { "Type", "Rva", "Address" };
+	if (ImGui::BeginTable("ObjectInstanceTable",
+		columeNames.size(),
+		ImGuiTableFlags_ScrollY
+		| ImGuiTableFlags_Borders
+		| ImGuiTableFlags_RowBg
+		| ImGuiTableFlags_Hideable
+		| ImGuiTableFlags_Resizable
+		| ImGuiTableFlags_Reorderable))
+	{
+		ImGui::TableSetupScrollFreeze(0, 1);
+		for (auto& name : columeNames)
+			ImGui::TableSetupColumn(name.c_str());
+
+		ImGui::TableHeadersRow();
+		for (void* instancePtr : list) {
+			auto o = (RTTIObject*)instancePtr;
+			auto type = objScanner->TryGetObjectTypeUnsafe(o);
+			const char* typeName = type->GetName().c_str();
+
+			if (IsSearchFilter(typeName, searchFilter)) continue;
+
+			ImGui::PushID(o);
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			static RTTIObject* selectedInstance;
+			if (ImGui::Selectable(typeName, selectedInstance == o,
+				ImGuiSelectableFlags_SpanAllColumns))
+			{
+				selectedInstance = o;
+				CopyToClipboard(o);
+				SetDumpStructPtr(o, GetRTTITypeSize(type));
+			}
+			ImGui::TableNextColumn();
+			ImGui::Text("0x%x", AddrToRva(o));
+			ImGui::TableNextColumn();
+			ImGui::Text("%p", o);
+			ImGui::PopID();
+		}
+
+
+		ImGui::EndTable();
 	}
 
 	End();
@@ -624,6 +724,7 @@ void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
 	DrawTypeListViewer();
 	DrawSymbolInspector();
 	DrawDumpStructMenu();
+	DrawObjectInstanceListViewer();
 
 	// final
 	ImGui::Render();

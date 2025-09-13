@@ -7,7 +7,7 @@ typedef char* (*My_StringBuild4_t)(MyString* src, uint64_t allocateSize);
 char* MyStringEmptyPtr = (char*)GetAddressFromRva(0x4562cb0);
 void SetNewMyString(MyString* p1_self, const char* p2_newString)
 {
-	My_StringBuild4_t My_StringBuild4 = (My_StringBuild4_t)GetFuncAddr(0x190d6c0);
+	My_StringBuild4_t My_StringBuild4 = (My_StringBuild4_t)GetAddrFromRva(0x190d6c0);
 	std::string string(p2_newString);
 	uint64_t len = string.size();
 	p1_self->str = MyStringEmptyPtr;
@@ -231,7 +231,7 @@ uint32_t GetRTTITypeSize(const RTTI* type) {
 	if (type == nullptr) return 0;
 
 	if (g_GetRTTITypeSize == 0)
-		g_GetRTTITypeSize = (uint32_t(*)(const RTTI*))GetFuncAddr(0x19f43b0);
+		g_GetRTTITypeSize = (uint32_t(*)(const RTTI*))GetAddrFromRva(0x19f43b0);
 	return g_GetRTTITypeSize(type);
 }
 void SetFuncRTTITypeSize(void* funcPtr)

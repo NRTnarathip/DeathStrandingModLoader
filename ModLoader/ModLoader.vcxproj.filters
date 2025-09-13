@@ -144,6 +144,9 @@
     <ClInclude Include="ImGuiOverlayBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DecimaNative.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -246,6 +249,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ImGuiOverlayBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DecimaNative.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

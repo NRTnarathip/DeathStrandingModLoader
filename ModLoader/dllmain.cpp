@@ -34,6 +34,8 @@
 #include "DevDebug.h"
 #include "OverlayMenu.h"
 #include "Logger.h"
+#include "DecimaNative.h"
+
 Logger* logger;
 
 void DisableSaveCorruptionCheck() {
@@ -69,7 +71,10 @@ bool Start() {
 		return false;
 	}
 
-	//setup overlay menu
+	// setup Decima Native API
+	DecimaNative::Initialize();
+
+	// setup overlay menu
 	OverlayMenu::Instance()->Initialize();
 
 	// setup hooks debug

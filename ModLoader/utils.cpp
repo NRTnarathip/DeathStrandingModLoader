@@ -92,14 +92,14 @@ bool HookFuncVTable(void* obj, int index, LPVOID detour, void* ppBackup) {
 	return HookFuncAddr(vtable[index], detour, ppBackup);
 }
 
-void* GetFuncAddr(uintptr_t rva) {
+void* GetAddrFromRva(uintptr_t rva) {
 	return (void*)(GetImageBase() + rva);
 }
 ResourceManager* g_resourceManager = nullptr;
 ResourceManager* GetResourceManager()
 {
 	if (g_resourceManager == nullptr)
-		g_resourceManager = *(ResourceManager**)GetFuncAddr(0x4f6cf60);
+		g_resourceManager = *(ResourceManager**)GetAddrFromRva(0x4f6cf60);
 	return g_resourceManager;
 }
 
@@ -133,8 +133,8 @@ bool HookFuncModule(const char* moduleName, const char* funcName, LPVOID detour,
 	return HookFuncAddr(funcAddr, detour, reinterpret_cast<LPVOID*>(backup));
 }
 
-MurmurHash3_t  fpMurmurHash3 = (MurmurHash3_t)GetFuncAddr(0x18fe890);
-ResourceReadBuffer_t  backup_ResourceReadBuffer = (ResourceReadBuffer_t)GetFuncAddr(0x1929a50);
+MurmurHash3_t  fpMurmurHash3 = (MurmurHash3_t)GetAddrFromRva(0x18fe890);
+ResourceReadBuffer_t  backup_ResourceReadBuffer = (ResourceReadBuffer_t)GetAddrFromRva(0x1929a50);
 
 bool IsWineEnvironment() {
 	HKEY hKey;
