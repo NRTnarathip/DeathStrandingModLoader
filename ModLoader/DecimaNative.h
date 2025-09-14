@@ -22,16 +22,14 @@ struct GameFunctionAPI {
 		bool hasModifier;
 		std::string toString;
 	};
+
 	SignaturePart returnSignature;
+	bool isNoReturn;
 	std::vector< SignaturePart> paramSignatures;
-	std::string signatureToString;
+	std::string signatureString;
 
 	template<typename Ret, typename... Args>
-	Ret Call(Args... args) {
-		using Fn = Ret(*)(Args...);
-		Fn fn = reinterpret_cast<Fn>(this.address);
-		return fn(args...);
-	}
+	Ret Call(Args... args);
 
 	const char* ToString();
 };

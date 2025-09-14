@@ -699,10 +699,10 @@ HRESULT HK_CreateReservedResource(
 
 HRESULT RendererHook::HK_SetupDx12(char* p1, uint64_t p2, int p3)
 {
-	log("Hook Begin: HK_MySetupDx12");
+	log("Begin HK_MySetupDx12");
 	auto result = backup_MySetupDx12(p1, p2, p3);
-	log("  result: %d", result);
-	log("Hook End: HK_MySetupDx12");
+	//log("  result: %d", result);
+	log("End HK_MySetupDx12");
 
 	// init variable
 	m_device = *(ID3D12Device14**)GetAddressFromRva(0x5558FA0);
@@ -710,8 +710,6 @@ HRESULT RendererHook::HK_SetupDx12(char* p1, uint64_t p2, int p3)
 
 	log("m_pDevice: %p", m_device);
 	log("m_pFactory: %p", m_factory);
-	log("device level: %d", GetHighestID3D12DeviceVersion(m_device));
-
 
 	// ready hooks api
 	// Factory Hooks
@@ -757,20 +755,20 @@ HRESULT RendererHook::HK_CreateSwapChainForHwnd(
 	IDXGIOutput* pRestrictToOutput,
 	IDXGISwapChain1** ppSwapChain)
 {
-	log("Hook Begin HK_CreateSwapChainForHwnd");
+	//log("Hook Begin HK_CreateSwapChainForHwnd");
 	auto res = backup_CreateSwapChainForHwnd(
 		self,
 		pDevice, hWnd, pDesc,
 		pFullscreenDesc, pRestrictToOutput, ppSwapChain);
-	log("Hook End HK_CreateSwapChainForHwnd");
-	log("  result: 0x%x", res);
+	//log("Hook End HK_CreateSwapChainForHwnd");
+	//log("  result: 0x%x", res);
 
 	// init variable
 	ComPtr<ID3D12CommandQueue> commandQueue;
 	pDevice->QueryInterface(IID_PPV_ARGS(&commandQueue));
 	m_commandQueue = commandQueue.Get();
 	m_swapChain = *(IDXGISwapChain3**)ppSwapChain;
-	log("swapChain ptr: %p", m_swapChain);
+	log("swapChain: %p", m_swapChain);
 
 	// Hooks
 	if (m_presentCallbacks.size() != 0)

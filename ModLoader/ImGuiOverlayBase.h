@@ -5,15 +5,19 @@
 class ImGuiOverlayBase
 {
 public:
-	inline void Begin(const char* name) {
+	inline void BeginWindow(const char* name) {
 		ImGui::Begin(name);
 	}
-	inline void End() {
+	inline void EndWindow() {
 		ImGui::End();
 	}
 	bool BeginTable(const char* label_id, std::vector<const char*> columeNames);
-	bool BeginFirstRow(const char* label, bool selected = false);
+	bool BeginTableNewRow(const char* label, bool selected = false);
 	inline void EndTable() { ImGui::EndTable(); }
 	void NextTextColumn(const char* fmt, ...);
+
+	// template table simple
+	void DrawTableTemplate(const char* label_id, std::vector<const char*>& columeNames,
+		std::vector<std::vector<const char*>>& items);
 };
 

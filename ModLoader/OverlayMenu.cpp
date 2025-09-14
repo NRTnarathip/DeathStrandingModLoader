@@ -34,9 +34,8 @@ bool IsContains(const std::string& src, const std::vector<const char*> words) {
 	return false;
 }
 
-bool IsSearchFilter(std::string src, std::string word) {
-	if (word.empty())
-		return false;
+bool IsSearchFilterSkipItem(std::string src, std::string word) {
+	if (word.empty()) return false;
 	return !IsContains(src, word);
 }
 
@@ -85,7 +84,7 @@ void OverlayMenu::Initialize()
 
 
 std::vector<ID3D12CommandAllocator*> CommandAllocators;
-ID3D12GraphicsCommandList* CommandList;
+ID3D12GraphicsCommandList* cmd;
 ID3D12DescriptorHeap* SrvDescriptorHeap;
 ID3D12DescriptorHeap* RtvDescriptorHeap;
 
@@ -149,16 +148,11 @@ void OverlayMenu::InitializeBeforePresent()
 	for (auto& CommandAllocator : CommandAllocators)
 		device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&CommandAllocator));
 
-	device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocators[0], nullptr, IID_PPV_ARGS(&CommandList));
-	CommandList->Close();
-
-
+	device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocators[0], nullptr, IID_PPV_ARGS(&cmd));
+	cmd->Close();
 
 	IMGUI_CHECKVERSION();
 	InitImGuiStyle();
-
-
-
 
 	ImGui_ImplWin32_Init(window);
 	ImGui_ImplDX12_InitInfo info;
@@ -423,7 +417,7 @@ void OverlayMenu::DrawEntityListViewer() {
 
 void OverlayMenu::DrawTypeListViewer()
 {
-	Begin("Type List");
+	BeginWindow("Type List");
 
 	auto& types = objScanner->GetTypes();
 	auto typeTotal = types.size();
@@ -470,13 +464,13 @@ void OverlayMenu::DrawTypeListViewer()
 	}
 	ImGui::EndChild();
 
-	End();
+	EndWindow();
 }
 
 
 void OverlayMenu::DrawSymbolInspector()
 {
-	Begin("Symbol Inspector");
+	BeginWindow("Symbol Inspector");
 	auto type = objScanner->TryGetObjectType(dumpObjPtr);
 	ImGui::Text("Ptr: %p", dumpObjPtr);
 	ImGui::Text("Type: %s", objScanner->TryGetObjectTypeName(dumpObjPtr));
@@ -498,7 +492,7 @@ void OverlayMenu::DrawSymbolInspector()
 				ExportedSymbolMember* memberPtr = &symbol->mMembers[i];
 				ImGui::PushID(i);
 				auto memberTypeInt = (uint32_t)member.mKind;
-				if (BeginFirstRow(member.GetKindName(), false)) {
+				if (BeginTableNewRow(member.GetKindName(), false)) {
 					CopyToClipboard(memberPtr);
 					auto type = member.mRTTI;
 					auto typeName = type ? type->GetName().c_str() : "null";
@@ -521,7 +515,7 @@ void OverlayMenu::DrawSymbolInspector()
 		ImGui::Text("This object is not ExportedSymbolGroup");
 	}
 
-	End();
+	EndWindow();
 }
 
 std::string PtrToStrHex(void* ptr) {
@@ -578,7 +572,7 @@ void OverlayMenu::SetDumpStructPtr(void* p, int size)
 
 void OverlayMenu::DrawDumpStructMenu()
 {
-	Begin("Dump Struct");
+	BeginWindow("Dump Struct");
 
 	std::string dumpStructPtrString = PtrToStrHex(dumpObjPtr);
 	ImGui::InputText("Pointer (Hex)", &dumpStructPtrString);
@@ -655,12 +649,12 @@ void OverlayMenu::DrawDumpStructMenu()
 		}
 	}
 
-	End();
+	EndWindow();
 }
 
 void OverlayMenu::DrawObjectInstanceListViewer()
 {
-	Begin("Object Instance List");
+	BeginWindow("Object Instance List");
 
 	const auto& list = objScanner->GetObjectInstances();
 	ImGui::Text("Instances: %zu", list.size());
@@ -687,7 +681,7 @@ void OverlayMenu::DrawObjectInstanceListViewer()
 			auto type = objScanner->TryGetObjectTypeUnsafe(o);
 			const char* typeName = type->GetName().c_str();
 
-			if (IsSearchFilter(typeName, searchFilter)) continue;
+			if (IsSearchFilterSkipItem(typeName, searchFilter)) continue;
 
 			ImGui::PushID(o);
 			ImGui::TableNextRow();
@@ -711,7 +705,51 @@ void OverlayMenu::DrawObjectInstanceListViewer()
 		ImGui::EndTable();
 	}
 
-	End();
+	EndWindow();
+}
+
+#include "SymbolExporter.h"
+void OverlayMenu::DrawFunctionAPIExporter()
+{
+	BeginWindow("Function API Exporter");
+
+	if (ImGui::Button("Export all function to text file")) {
+		SymbolExporter::ExportAllFuncionAPI();
+	}
+
+	static bool refreshList = false;
+	static std::string searchFuncName;
+	if (gui::InputText("Search", &searchFuncName)) {
+		refreshList = true;
+	}
+
+	static std::vector<const char*> tableColumNames = { "Export Name", "Signature", "Name" };
+	static std::vector<std::vector<const char*>> tableItems;
+
+	if (tableItems.empty())
+		refreshList = true;
+
+	if (refreshList) {
+		refreshList = false;
+		tableItems.clear();
+		auto& functions = DecimaNative::g_gameFunctionAPIMap;
+		for (auto& funcPair : functions) {
+			auto& fn = funcPair.second;
+			if (IsSearchFilterSkipItem(fn.uniqueName, searchFuncName)) {
+				continue;
+			}
+
+			std::vector<const char*> colItems;
+			colItems.push_back(fn.uniqueName);
+			colItems.push_back(fn.signatureString.c_str());
+			colItems.push_back(fn.name);
+			tableItems.push_back(colItems);
+		}
+	}
+
+	DrawTableTemplate("Function API List", tableColumNames, tableItems);
+
+	EndWindow();
 }
 
 void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
@@ -740,53 +778,83 @@ void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
 	DrawSymbolInspector();
 	DrawDumpStructMenu();
 	DrawObjectInstanceListViewer();
+	DrawFunctionAPIExporter();
 
 	// final
-	ImGui::Render();
 	DrawImGuiData();
 }
 void OverlayMenu::DrawImGuiData()
 {
+	ImGui::Render();
 	ImDrawData* drawData = ImGui::GetDrawData();
 	if (!drawData->Valid || drawData->CmdListsCount == 0)
 		return;
 
 	auto swapChain = renderer->m_swapChain;
-	ComPtr<ID3D12Resource> backBuffer;
-	const auto bufferIndex = swapChain->GetCurrentBackBufferIndex();
-	swapChain->GetBuffer(bufferIndex, IID_PPV_ARGS(&backBuffer));
+	const auto currentBufferIndex = swapChain->GetCurrentBackBufferIndex();
+	struct BackBuffer {
+		ComPtr<ID3D12Resource> buffer;
+		CD3DX12_CPU_DESCRIPTOR_HANDLE handle;
+	};
+	static std::vector<BackBuffer*> g_backBuffers;
+	static bool isInitBackBuffers = false;
 
-	// Create a brand new RTV each frame. Tracking this in engine code is too difficult.
-	const auto& rtvHandle = RtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	auto device = renderer->GetDevice();
-	device->CreateRenderTargetView(backBuffer.Get(), nullptr, rtvHandle);
+
+	// create new back buffers
+	if (isInitBackBuffers == false) {
+		isInitBackBuffers = true;
+
+		DXGI_SWAP_CHAIN_DESC swapChainDesc;
+		swapChain->GetDesc(&swapChainDesc);
+		auto bufferCount = swapChainDesc.BufferCount;
+		auto device = renderer->GetDevice();
+		auto rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		for (int i = 0; i < bufferCount; i++) {
+			// new buffer
+			auto backBuffer = new BackBuffer();
+			swapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer->buffer));
+
+			CD3DX12_CPU_DESCRIPTOR_HANDLE handle(
+				RtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+				i, rtvDescriptorSize);
+			device->CreateRenderTargetView(backBuffer->buffer.Get(), nullptr, handle);
+			backBuffer->handle = handle;
+
+			// added
+			g_backBuffers.push_back(backBuffer);
+		}
+	}
+
 
 	// Reset command allocator, command list, then draw
-	auto allocator = CommandAllocators[bufferIndex];
+	auto allocator = CommandAllocators[currentBufferIndex];
 	allocator->Reset();
 
+	// clear color
+	const auto currentBackBuffer = g_backBuffers[currentBufferIndex];
+	auto& rtvHandle = currentBackBuffer->handle;
+
+	cmd->Reset(allocator, nullptr);
 	D3D12_RESOURCE_BARRIER barrier = {
 		.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
 		.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE,
 		.Transition = {
-			.pResource = backBuffer.Get(),
+			.pResource = currentBackBuffer->buffer.Get(),
 			.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
 			.StateBefore = D3D12_RESOURCE_STATE_PRESENT,
 			.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET,
 		},
 	};
+	cmd->ResourceBarrier(1, &barrier);
+	cmd->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
+	cmd->SetDescriptorHeaps(1, &SrvDescriptorHeap);
+	ImGui_ImplDX12_RenderDrawData(drawData, cmd);
 
-	CommandList->Reset(allocator, nullptr);
-	CommandList->ResourceBarrier(1, &barrier);
-
-	CommandList->SetDescriptorHeaps(1, &SrvDescriptorHeap);
-	CommandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
-	ImGui_ImplDX12_RenderDrawData(drawData, CommandList);
 
 	std::swap(barrier.Transition.StateBefore, barrier.Transition.StateAfter);
-	CommandList->ResourceBarrier(1, &barrier);
-	CommandList->Close();
+	cmd->ResourceBarrier(1, &barrier);
+	cmd->Close();
 
-	renderer->m_commandQueue->ExecuteCommandLists(1, reinterpret_cast<ID3D12CommandList* const*>(&CommandList));
+	renderer->m_commandQueue->ExecuteCommandLists(1, reinterpret_cast<ID3D12CommandList* const*>(&cmd));
 }
 

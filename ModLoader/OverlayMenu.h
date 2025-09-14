@@ -36,5 +36,6 @@ private:
 	void DrawSymbolInspector();
 	void DrawDumpStructMenu();
 	void DrawObjectInstanceListViewer();
+	void DrawFunctionAPIExporter();
 };
 

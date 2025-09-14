@@ -44,14 +44,11 @@ void DecimaNative::Initialize()
 void DecimaNative::OnExportedSymbolGroupRegisterAllTypes()
 {
 	// initialize symbols
-	log("DecimaNative::OnExportedSymbolGroupRegisterAllTypes");
 	auto total = g_symbolArray->size();
-	log("total symbol: %zu", total);
 	auto array = (MyVector*)g_symbolArray;
 	for (int i = 0; i < total; i++) {
 		auto symbol = (ExportedSymbolGroup*)array->items[i];
 		g_symbolSet.insert(symbol);
-		log("added symbol: %s", symbol->mNamespace);
 
 		if (symbol->mMembers.size() == 0)
 			continue;
@@ -113,18 +110,18 @@ void DecimaNative::ImportFunctionAPIFromSymbol(ExportedSymbolGroup* symbolGroup,
 
 	// return signature
 	api.returnSignature = funcSignatures[0];
+	api.isNoReturn = api.returnSignature.typeName == "void";
 
-	// param signatures
+	// params signature
 	for (int i = 1; i < funcSignatures.size(); i++)
 		api.paramSignatures.push_back(funcSignatures[i]);
 
-	api.signatureToString = CreateFunctionSignatureString(api);
+	api.signatureString = CreateFunctionSignatureString(api);
 
 	// added
 	g_gameFunctionAPIMap[api.uniqueName] = api;
 
 	// debug
-	log("added func api: %s", api.signatureToString.c_str());
 }
 
 const char* DecimaNative::GetGameFunctionAPIUniqueName(ExportedSymbolMember* member)
@@ -249,7 +246,14 @@ Ret DecimaNative::CallGameAPI(const char* functionName, Args ...args)
 	return result;
 }
 
+template<typename Ret, typename ...Args>
+Ret GameFunctionAPI::Call(Args ...args) {
+	using Fn = Ret(*)(Args...);
+	Fn fn = reinterpret_cast<Fn>(this.address);
+	return fn(args...);
+}
+
 const char* GameFunctionAPI::ToString()
 {
-	return this->signatureToString.c_str();
+	return this->signatureString.c_str();
 }

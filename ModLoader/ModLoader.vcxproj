@@ -408,6 +408,7 @@ exit /b 0</Command>
     <ClInclude Include="PrefetchUpdater.h" />
     <ClInclude Include="RendererHook.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SymbolExporter.h" />
     <ClInclude Include="TexturePatcher.h" />
     <ClInclude Include="GameTypes.h" />
     <ClInclude Include="MurmurHash3.h" />
@@ -445,6 +446,7 @@ exit /b 0</Command>
     <ClCompile Include="OverlayMenu.cpp" />
     <ClCompile Include="PrefetchUpdater.cpp" />
     <ClCompile Include="RendererHook.cpp" />
+    <ClCompile Include="SymbolExporter.cpp" />
     <ClCompile Include="TexturePatcher.cpp" />
     <ClCompile Include="GameTypes.cpp" />
     <ClCompile Include="dllmain.cpp" />
