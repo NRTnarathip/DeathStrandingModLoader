@@ -241,6 +241,11 @@ void SetFuncRTTITypeSize(void* funcPtr)
 
 const char* BoolToStr(bool v) { return v ? "true" : "false"; }
 
+const char* TryGetRTTIName(const RTTI* o) {
+	if (o == nullptr) return "null";
+	return o->GetName().c_str();
+}
+
 const char* ExportedSymbolMember::GetKindName() {
 	switch (mKind) {
 	case MemberKind::Simple: return "Simple";

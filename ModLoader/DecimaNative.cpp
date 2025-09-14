@@ -2,7 +2,10 @@
 #include "extern/decima-native/source/Core/RTTIObject.h"
 #include "utils.h"
 #include "set"
-
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <string>
 
 std::unordered_map<std::string, GameFunctionAPI> DecimaNative::g_gameFunctionAPIMap;
 std::set<ExportedSymbolGroup*> DecimaNative::g_symbolSet;
@@ -55,32 +58,14 @@ void DecimaNative::OnExportedSymbolGroupRegisterAllTypes()
 
 		RTTI* memberClassType = nullptr;
 		for (int memberIndex = 0; memberIndex < symbol->mMembers.size(); memberIndex++) {
-			auto& member = symbol->mMembers[memberIndex];
+			auto* member = &symbol->mMembers[memberIndex];
 
-			if (member.mKind == ExportedSymbolMember::MemberKind::Class) {
-				memberClassType = (RTTI*)member.mRTTI;
+			if (member->mKind == ExportedSymbolMember::MemberKind::Class) {
+				memberClassType = (RTTI*)member->mRTTI;
 				continue;
 			}
-
-			if (member.IsExportFunction()) {
-				GameFunctionAPI api;
-				auto funcInfo = &member.mLanguages[0];
-				api.fullName = member.mSymbolName;
-				api.name = funcInfo->name;
-				api.address = funcInfo->address;
-				api.symbolGroup = symbol;
-				api.symbolMember = &member;
-				//log("api: %s", api.fullName);
-				//log("func addr: %p", funcInfo->address);
-				// check if already exist
-				if (g_gameFunctionAPIMap.contains(api.fullName)) {
-					//log("skip duplicate function api: %s", api.fullName);
-					continue;
-				}
-
-				// added api
-				g_gameFunctionAPIMap[api.fullName] = api;
-				//log("added new api: %s", api.fullName);
+			else if (member->mKind == ExportedSymbolMember::MemberKind::Function) {
+				ImportFunctionAPIFromSymbol(symbol, member);
 			}
 		}
 	}
@@ -103,14 +88,153 @@ bool DecimaNative::IsExportedSymbolGroup(void* o)
 	return set.contains((ExportedSymbolGroup*)o);
 }
 
-GameFunctionAPI* DecimaNative::GetGameFunctionAPI(const char* functionName)
+void DecimaNative::ImportFunctionAPIFromSymbol(ExportedSymbolGroup* symbolGroup, ExportedSymbolMember* member)
 {
-	if (g_gameFunctionAPIMap.contains(functionName))
-		return &g_gameFunctionAPIMap[functionName];
+	if (!member->IsExportFunction())
+		return;
+
+	auto funcInfo = &member->mLanguages[0];
+	auto funcUniqueName = GetGameFunctionAPIUniqueName(member);
+	if (g_gameFunctionAPIMap.contains(funcUniqueName)) {
+		//log("skip duplicate function api: %s", api.fullName);
+		return;
+	}
+
+	GameFunctionAPI api{};
+	api.uniqueName = funcUniqueName;
+	api.name = funcInfo->name;
+	api.address = funcInfo->address;
+	api.rva = AddrToRva(api.address);
+	api.symbolGroup = symbolGroup;
+	api.symbolMember = member;
+
+	// setup signature
+	auto funcSignatures = CreateFunctionSignatureFromSymbolMember(member);
+
+	// return signature
+	api.returnSignature = funcSignatures[0];
+
+	// param signatures
+	for (int i = 1; i < funcSignatures.size(); i++)
+		api.paramSignatures.push_back(funcSignatures[i]);
+
+	api.signatureToString = CreateFunctionSignatureString(api);
+
+	// added
+	g_gameFunctionAPIMap[api.uniqueName] = api;
+
+	// debug
+	log("added func api: %s", api.signatureToString.c_str());
+}
+
+const char* DecimaNative::GetGameFunctionAPIUniqueName(ExportedSymbolMember* member)
+{
+	return member->mSymbolName;
+}
+
+GameFunctionAPI* DecimaNative::GetGameFunctionAPI(std::string uniqueName)
+{
+	if (g_gameFunctionAPIMap.contains(uniqueName))
+		return &g_gameFunctionAPIMap[uniqueName];
 
 	return nullptr;
 }
 
+GameFunctionAPI* DecimaNative::GetGameFunctionAPI(ExportedSymbolMember* member)
+{
+	return GetGameFunctionAPI(GetGameFunctionAPIUniqueName(member));
+}
+
+std::string trim(const std::string& str) {
+	if (str.empty()) return "";
+	const std::string whitespace = " \t\n\r\f\v";
+	size_t first = str.find_first_not_of(whitespace);
+	if (std::string::npos == first)
+		return "";
+
+	size_t last = str.find_last_not_of(whitespace);
+	return str.substr(first, (last - first + 1));
+}
+
+std::vector<GameFunctionAPI::SignaturePart> DecimaNative::CreateFunctionSignatureFromSymbolMember(ExportedSymbolMember* symbolMember)
+{
+	std::vector<GameFunctionAPI::SignaturePart> signatures;
+
+	// builder
+	auto CreateSigPart = [](ExportedSymbolMember::Signature symbolSigPart)
+		-> GameFunctionAPI::SignaturePart {
+		GameFunctionAPI::SignaturePart sig{};
+		sig.typeName = symbolSigPart.mTypeName;
+		// remove empty space, example: " const * tchar"
+		sig.modifier = trim(symbolSigPart.mModifiers);
+		sig.hasModifier = !sig.modifier.empty();
+		sig.type = symbolSigPart.mType;
+
+		sig.isConst = sig.modifier.find("const") != std::string::npos;
+		sig.isRef = sig.modifier.find("&") != std::string::npos;
+		if (!sig.isRef) {
+			sig.isPointerToPointer = sig.modifier.find("* *") != std::string::npos;
+			if (!sig.isPointerToPointer)
+				sig.isPointer = sig.modifier.find("*") != std::string::npos;
+		}
+
+		// helper
+		// format string
+		std::string& toString = sig.toString;
+
+		toString = sig.typeName;
+		if (sig.isRef)
+			toString = toString + "&";
+		else if (sig.isPointerToPointer)
+			toString = toString + "**";
+		else if (sig.isPointer)
+			toString = toString + "*";
+
+		if (sig.isConst)
+			toString = "const " + toString;
+
+		return sig;
+		};
+
+
+	//return type
+	auto lang = &symbolMember->mLanguages[0];
+	signatures.push_back(CreateSigPart(lang->signatureArray[0]));
+
+	//params type
+	for (int i = 1; i < lang->signatureArray.size(); i++) {
+		signatures.push_back(CreateSigPart(lang->signatureArray[i]));
+	}
+
+	// done
+	return signatures;
+}
+
+std::string DecimaNative::CreateFunctionSignatureString(GameFunctionAPI& func)
+{
+	std::stringstream sigNameStream;
+
+	sigNameStream << func.returnSignature.toString << " " << func.name;
+
+	int paramCount = func.paramSignatures.size();
+	sigNameStream << "(";
+	for (int i = 0; i < paramCount; i++) {
+		auto paramSig = func.paramSignatures[i];
+		sigNameStream << paramSig.toString;
+		sigNameStream << " param" << i + 1;
+		if (i < paramCount - 1) // add comma
+			sigNameStream << ", ";
+
+	}
+	sigNameStream << ")";
+
+	auto sigName = sigNameStream.str();
+
+	// debug
+	//log("sig name: %s", sigName.c_str());
+
+	return sigName;
+}
 
 template<typename Ret, typename ...Args>
 Ret DecimaNative::CallGameAPI(const char* functionName, Args ...args)
@@ -123,4 +247,9 @@ Ret DecimaNative::CallGameAPI(const char* functionName, Args ...args)
 	}
 
 	return result;
+}
+
+const char* GameFunctionAPI::ToString()
+{
+	return this->signatureToString.c_str();
 }

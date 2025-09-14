@@ -500,10 +500,14 @@ void OverlayMenu::DrawSymbolInspector()
 				auto memberTypeInt = (uint32_t)member.mKind;
 				if (BeginFirstRow(member.GetKindName(), false)) {
 					CopyToClipboard(memberPtr);
-					log("selected symbol member name: %s", member.mSymbolName);
 					auto type = member.mRTTI;
 					auto typeName = type ? type->GetName().c_str() : "null";
-					log("type name: %s", typeName);
+					if (member.IsExportFunction()) {
+						auto api = DecimaNative::GetGameFunctionAPI(memberPtr);
+						if (api) {
+							log("selected api: %s", api->ToString());
+						}
+					}
 				}
 
 				NextTextColumn(member.mSymbolName);

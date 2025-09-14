@@ -7,8 +7,24 @@ struct GameFunctionAPI {
 	ExportedSymbolGroup* symbolGroup;
 	ExportedSymbolMember* symbolMember;
 	const char* name;
-	const char* fullName;
+	const char* uniqueName;
 	void* address;
+	uintptr_t rva;
+
+	struct SignaturePart {
+		std::string typeName;
+		std::string modifier;
+		const RTTI* type;
+		bool isConst;
+		bool isPointer;
+		bool isPointerToPointer;
+		bool isRef;
+		bool hasModifier;
+		std::string toString;
+	};
+	SignaturePart returnSignature;
+	std::vector< SignaturePart> paramSignatures;
+	std::string signatureToString;
 
 	template<typename Ret, typename... Args>
 	Ret Call(Args... args) {
@@ -17,6 +33,7 @@ struct GameFunctionAPI {
 		return fn(args...);
 	}
 
+	const char* ToString();
 };
 
 struct DecimaNative
@@ -37,6 +54,11 @@ public:
 		return g_symbolSet;
 	}
 	static bool IsExportedSymbolGroup(void* o);
-	static GameFunctionAPI* GetGameFunctionAPI(const char* functionName);
+	static void ImportFunctionAPIFromSymbol(ExportedSymbolGroup* symbolGroup, ExportedSymbolMember* member);
+	static const char* GetGameFunctionAPIUniqueName(ExportedSymbolMember* member);
+	static GameFunctionAPI* GetGameFunctionAPI(std::string uniqueName);
+	static GameFunctionAPI* GetGameFunctionAPI(ExportedSymbolMember* member);
+	static std::vector<GameFunctionAPI::SignaturePart> CreateFunctionSignatureFromSymbolMember(ExportedSymbolMember* symbolMember);
+	static std::string CreateFunctionSignatureString(GameFunctionAPI& func);
 };
 

@@ -128,7 +128,7 @@ int HK_MySymbolLanguageInfoSetReturnTypeName(MyVector* p1, void* p2_returnTypeNa
 	log("p1 recheck count: %d", p1->count);
 	log("p2 0x10->typeName: %s", p2->unk0x10.typeName);
 	auto item = (ExportedSymbolMember::Signature*)p1->items[p1->count - 1];
-	log("item name: %s", item->mName);
+	log("item name: %s", item->mTypeName);
 	log("end HK_MySymbolLanguageInfoSetReturnTypeName");
 	return result;
 }

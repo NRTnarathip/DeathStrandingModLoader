@@ -367,7 +367,7 @@ struct ExportedSymbolMember {
 		SourceFile = 8,
 	};
 	struct Signature {
-		const char* mName; //0x0
+		const char* mTypeName; //0x0
 		const char* mModifiers; //0x8
 		const RTTI* mType; //0x10
 		void* mUnk18; //0x18
@@ -417,3 +417,4 @@ assert_offset(ExportedSymbolGroup, mDependencies, 0x28);
 assert_size(ExportedSymbolGroup, 0x38);
 
 
+const char* TryGetRTTIName(const RTTI* o);

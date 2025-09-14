@@ -145,7 +145,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DecimaNative.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
