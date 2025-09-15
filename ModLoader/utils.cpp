@@ -20,6 +20,8 @@
 #include "GameTypes.h" 
 #include "Logger.h"
 #include <set>
+#include <algorithm>
+#include <functional>
 
 uintptr_t GetImageBase() {
 	static uintptr_t g_imageBase = (uintptr_t)GetModuleHandleA(NULL);
@@ -110,6 +112,35 @@ uintptr_t AddrToRva(const void* addr) {
 void* GetFuncRva(uintptr_t rva)
 {
 	return (void*)(GetImageBase() + rva);
+}
+
+bool IsContains(const std::string& src, const std::string& word) {
+	std::string srcLowerCase = src;
+	std::string wordLowerCase = word;
+	std::transform(srcLowerCase.begin(), srcLowerCase.end(), srcLowerCase.begin(), ::tolower);
+	std::transform(wordLowerCase.begin(), wordLowerCase.end(), wordLowerCase.begin(), ::tolower);
+	return srcLowerCase.find(wordLowerCase) != std::string::npos;
+}
+
+bool IsContains(const std::string& src, const std::vector<const char*> words) {
+	for (auto word : words) {
+		if (IsContains(src, word))
+			return true;
+	}
+	return false;
+}
+
+bool IsContainsCaseSensitive(const std::string& src, const std::string& word)
+{
+	return src.find(word) != std::string::npos;
+}
+
+bool IsContainsCaseSensitive(const std::string& src, const std::vector<const char*> words)
+{
+	for (auto word : words)
+		if (IsContainsCaseSensitive(src, word))
+			return true;
+	return false;
 }
 
 

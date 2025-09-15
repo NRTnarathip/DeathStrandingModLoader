@@ -19,21 +19,6 @@
 using Microsoft::WRL::ComPtr;
 #define gui ImGui
 
-bool IsContains(const std::string& src, const std::string& word) {
-	std::string srcLowerCase = src;
-	std::string wordLowerCase = word;
-	std::transform(srcLowerCase.begin(), srcLowerCase.end(), srcLowerCase.begin(), ::tolower);
-	std::transform(wordLowerCase.begin(), wordLowerCase.end(), wordLowerCase.begin(), ::tolower);
-	return srcLowerCase.find(wordLowerCase) != std::string::npos;
-}
-bool IsContains(const std::string& src, const std::vector<const char*> words) {
-	for (auto word : words) {
-		if (IsContains(src, word))
-			return true;
-	}
-	return false;
-}
-
 bool IsSearchFilterSkipItem(std::string src, std::string word) {
 	if (word.empty()) return false;
 	return !IsContains(src, word);
@@ -741,7 +726,7 @@ void OverlayMenu::DrawFunctionAPIExporter()
 
 			std::vector<const char*> colItems;
 			colItems.push_back(fn.uniqueName);
-			colItems.push_back(fn.signatureString.c_str());
+			colItems.push_back(fn.signature.c_str());
 			colItems.push_back(fn.name);
 			tableItems.push_back(colItems);
 		}

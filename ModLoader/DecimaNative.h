@@ -7,11 +7,14 @@ struct GameFunctionAPI {
 	ExportedSymbolGroup* symbolGroup;
 	ExportedSymbolMember* symbolMember;
 	const char* name;
+	std::string symbolNamespace;
 	const char* uniqueName;
+	size_t hash;
+	std::string hashString;
 	void* address;
 	uintptr_t rva;
 
-	struct SignaturePart {
+	struct FunctionTypeInfo {
 		std::string typeName;
 		std::string modifier;
 		const RTTI* type;
@@ -23,15 +26,23 @@ struct GameFunctionAPI {
 		std::string toString;
 	};
 
-	SignaturePart returnSignature;
-	bool isNoReturn;
-	std::vector< SignaturePart> paramSignatures;
-	std::string signatureString;
+	FunctionTypeInfo returnInfo;
+	bool isReturnVoid;
+	std::vector<FunctionTypeInfo> paramInfos;
+	int GetParamCount() { return paramInfos.size(); }
 
+	std::string signature;
+	const char* ToString() { return signature.c_str(); }
+
+	bool isInstanceFunction;
+	FunctionTypeInfo instanceInfo;
+	const RTTI* instanceType;
+	std::string instanceTypeName;
+
+	// helper
 	template<typename Ret, typename... Args>
 	Ret Call(Args... args);
 
-	const char* ToString();
 };
 
 struct DecimaNative
@@ -56,7 +67,7 @@ public:
 	static const char* GetGameFunctionAPIUniqueName(ExportedSymbolMember* member);
 	static GameFunctionAPI* GetGameFunctionAPI(std::string uniqueName);
 	static GameFunctionAPI* GetGameFunctionAPI(ExportedSymbolMember* member);
-	static std::vector<GameFunctionAPI::SignaturePart> CreateFunctionSignatureFromSymbolMember(ExportedSymbolMember* symbolMember);
-	static std::string CreateFunctionSignatureString(GameFunctionAPI& func);
+	static std::vector<GameFunctionAPI::FunctionTypeInfo> BuildFunctionTypeInfos(ExportedSymbolMember* symbolMember);
+	static std::string BuildFunctionSignatureName(GameFunctionAPI& func);
 };
 

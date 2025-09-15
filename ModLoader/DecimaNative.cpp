@@ -99,29 +99,61 @@ void DecimaNative::ImportFunctionAPIFromSymbol(ExportedSymbolGroup* symbolGroup,
 
 	GameFunctionAPI api{};
 	api.uniqueName = funcUniqueName;
+	std::hash<std::string> funcHasher;
+	api.hash = funcHasher(funcUniqueName);
+	api.hashString = std::format("0x{:x}", api.hash);
+	std::string funNamespace = member->mSymbolNamespace ? member->mSymbolNamespace : "";
+	api.symbolNamespace = funNamespace;
 	api.name = funcInfo->name;
 	api.address = funcInfo->address;
-	api.rva = AddrToRva(api.address);
+	api.rva = AddrToRva(funcInfo->address);
 	api.symbolGroup = symbolGroup;
 	api.symbolMember = member;
 
 	// setup signature
-	auto funcSignatures = CreateFunctionSignatureFromSymbolMember(member);
+	auto funcTypeInfos = BuildFunctionTypeInfos(member);
 
-	// return signature
-	api.returnSignature = funcSignatures[0];
-	api.isNoReturn = api.returnSignature.typeName == "void";
+	// return type
+	api.returnInfo = funcTypeInfos[0];
+	api.isReturnVoid = api.returnInfo.typeName == "void";
 
-	// params signature
-	for (int i = 1; i < funcSignatures.size(); i++)
-		api.paramSignatures.push_back(funcSignatures[i]);
+	// params type
+	for (int i = 1; i < funcTypeInfos.size(); i++)
+		api.paramInfos.push_back(funcTypeInfos[i]);
 
-	api.signatureString = CreateFunctionSignatureString(api);
+
+	// build instance or virtual function info
+	static std::vector<const char*> instanceExportedWords = {
+		"_Exported"
+	};
+	if (IsContainsCaseSensitive(funcUniqueName, instanceExportedWords)) {
+		// get instance type param1
+		//log("try to redefine function to instance type");
+		//log("api: %s", api.uniqueName);
+		//log("param count: %d", api.GetParamCount());
+		if (api.GetParamCount() > 0) {
+			api.isInstanceFunction = true;
+			api.instanceInfo = api.paramInfos[0];
+			api.instanceType = api.instanceInfo.type;
+			api.instanceTypeName = api.instanceInfo.typeName;
+			// remove param1, cause it's instance object
+			api.paramInfos.erase(api.paramInfos.begin());
+			//log("instance type: %s", api.instanceTypeName.c_str());
+		}
+	}
+
+	// final decorate
+	api.signature = BuildFunctionSignatureName(api);
 
 	// added
 	g_gameFunctionAPIMap[api.uniqueName] = api;
 
 	// debug
+	//log("name: %s", member->mSymbolName);
+	//log("namespace: %s", member->mSymbolNamespace);
+	//log("group namespace: %s", symbolGroup->mNamespace);
+	//log("namespace: %s", api.symbolNamespace);
+	//log("uniqName: %s", api.uniqueName);
 }
 
 const char* DecimaNative::GetGameFunctionAPIUniqueName(ExportedSymbolMember* member)
@@ -153,14 +185,14 @@ std::string trim(const std::string& str) {
 	return str.substr(first, (last - first + 1));
 }
 
-std::vector<GameFunctionAPI::SignaturePart> DecimaNative::CreateFunctionSignatureFromSymbolMember(ExportedSymbolMember* symbolMember)
+std::vector<GameFunctionAPI::FunctionTypeInfo> DecimaNative::BuildFunctionTypeInfos(ExportedSymbolMember* symbolMember)
 {
-	std::vector<GameFunctionAPI::SignaturePart> signatures;
+	std::vector<GameFunctionAPI::FunctionTypeInfo> typeInfos;
 
 	// builder
-	auto CreateSigPart = [](ExportedSymbolMember::Signature symbolSigPart)
-		-> GameFunctionAPI::SignaturePart {
-		GameFunctionAPI::SignaturePart sig{};
+	auto CreateTypeInfo = [](ExportedSymbolMember::Signature symbolSigPart)
+		-> GameFunctionAPI::FunctionTypeInfo {
+		GameFunctionAPI::FunctionTypeInfo sig{};
 		sig.typeName = symbolSigPart.mTypeName;
 		// remove empty space, example: " const * tchar"
 		sig.modifier = trim(symbolSigPart.mModifiers);
@@ -196,27 +228,27 @@ std::vector<GameFunctionAPI::SignaturePart> DecimaNative::CreateFunctionSignatur
 
 	//return type
 	auto lang = &symbolMember->mLanguages[0];
-	signatures.push_back(CreateSigPart(lang->signatureArray[0]));
+	typeInfos.push_back(CreateTypeInfo(lang->signatureArray[0]));
 
 	//params type
 	for (int i = 1; i < lang->signatureArray.size(); i++) {
-		signatures.push_back(CreateSigPart(lang->signatureArray[i]));
+		typeInfos.push_back(CreateTypeInfo(lang->signatureArray[i]));
 	}
 
 	// done
-	return signatures;
+	return typeInfos;
 }
 
-std::string DecimaNative::CreateFunctionSignatureString(GameFunctionAPI& func)
+std::string DecimaNative::BuildFunctionSignatureName(GameFunctionAPI& func)
 {
 	std::stringstream sigNameStream;
 
-	sigNameStream << func.returnSignature.toString << " " << func.name;
+	sigNameStream << func.returnInfo.toString << " " << func.name;
 
-	int paramCount = func.paramSignatures.size();
+	int paramCount = func.paramInfos.size();
 	sigNameStream << "(";
 	for (int i = 0; i < paramCount; i++) {
-		auto paramSig = func.paramSignatures[i];
+		auto paramSig = func.paramInfos[i];
 		sigNameStream << paramSig.toString;
 		sigNameStream << " param" << i + 1;
 		if (i < paramCount - 1) // add comma
@@ -251,9 +283,4 @@ Ret GameFunctionAPI::Call(Args ...args) {
 	using Fn = Ret(*)(Args...);
 	Fn fn = reinterpret_cast<Fn>(this.address);
 	return fn(args...);
-}
-
-const char* GameFunctionAPI::ToString()
-{
-	return this->signatureString.c_str();
 }
