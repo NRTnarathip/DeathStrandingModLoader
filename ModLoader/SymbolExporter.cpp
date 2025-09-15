@@ -87,24 +87,27 @@ void SymbolExporter::ExportCHeaderFile(std::string fileName) {
 	std::set<std::string> typeNameSet;
 	for (auto& funcPair : functions) {
 		auto& func = funcPair.second;
-		ClassInfo* classInfo = nullptr;
 		std::string className;
 		if (func.isInstanceFunction) {
 			className = func.instanceTypeName;
 		}
 		else {
 			className = func.symbolNamespace;
-			// cut "Symbols" 
 			className = StringRemove(className, "Symbols");
 		}
+
+		// check if className empty
+		if (className.empty())
+			className = "DecimaEngine"; //default name
+
+		// new class info
 		if (classMap.find(className) == classMap.end()) {
-			// build new class info
-			classInfo = new ClassInfo();
-			classInfo->className = className;
-			classMap[className] = classInfo;
+			auto newClassInfo = new ClassInfo();
+			newClassInfo->className = className;
+			classMap[className] = newClassInfo;
 		}
 
-		classInfo = classMap[className];
+		auto classInfo = classMap[className];
 		//add function signature
 		classInfo->functions.push_back(&func);
 		typeNameSet.insert(func.returnInfo.typeName);
