@@ -4,6 +4,7 @@
 #include <unordered_set>
 #include <vector>
 #include <iostream>
+#include <filesystem>
 
 class ModEntry {
 public:
@@ -32,5 +33,9 @@ public:
 	bool Initialize();
 	bool TryGetCoreOrStreamFileRedirect(const char* coreFilePathNoExt,
 		ModEntry** outModEntry, const char** outCoreFilePathRedirect, bool isCoreStreamFileType);
+
+	const std::filesystem::path GetModsPath() const {
+		return rootModsFolderName;
+	}
 };
 

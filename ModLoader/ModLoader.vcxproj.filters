@@ -171,6 +171,18 @@
     <ClInclude Include="extern\decima-native\RTTI.h">
       <Filter>Source Files\decima-native</Filter>
     </ClInclude>
+    <ClInclude Include="LuaModEntry.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaModManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="json.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaModSandbox.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -284,6 +296,21 @@
     <ClCompile Include="extern\decima-native\RTTI.cpp">
       <Filter>Source Files\decima-native</Filter>
     </ClCompile>
+    <ClCompile Include="LuaModEntry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaModManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaModSandbox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaModFunctionAPI.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaModFunctionAPI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -306,6 +333,9 @@
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="build_prefetch.cmd">
+      <Filter>Resource Files</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="extern\lua\lua54.dll">
       <Filter>Resource Files</Filter>
     </CopyFileToFolders>
   </ItemGroup>

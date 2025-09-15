@@ -116,6 +116,11 @@ GameFunctionAPI* DecimaNative::GetGameFunctionAPI(ExportedSymbolMember* member)
 	return GetGameFunctionAPI(Reflection::GetFunctionExportName(member));
 }
 
+std::unordered_map<std::string, GameFunctionAPI*> DecimaNative::GetAllGameFunctionAPI()
+{
+	return g_gameFunctionAPIMap;
+}
+
 
 template<typename Ret, typename ...Args>
 Ret DecimaNative::CallGameAPI(const char* functionName, Args ...args)

@@ -37,5 +37,6 @@ public:
 		ExportedSymbolMember* member);
 	static GameFunctionAPI* GetGameFunctionAPI(std::string uniqueName);
 	static GameFunctionAPI* GetGameFunctionAPI(ExportedSymbolMember* member);
+	static std::unordered_map<std::string, GameFunctionAPI*> GetAllGameFunctionAPI();
 };
 

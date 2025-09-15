@@ -146,7 +146,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>mod_loader</TargetName>
-    <IncludePath>$(ProjectDir)extern;$(ProjectDir)extern/imgui;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)extern;$(ProjectDir)extern/imgui;$(ProjectDir)extern/sol;$(ProjectDir)extern/lua;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Users\narat\Desktop\DeathStandingThai\mod-loader\DSDModLoader\ModLoader\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Guy|x64'">
@@ -290,10 +290,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>libMinHook.x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libMinHook.x64.lib;lua54.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
-      <AdditionalLibraryDirectories>$(ProjectDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib;$(ProjectDir)extern\lua;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>if exist "$(ProjectDir)post-build.cmd" (
@@ -404,8 +404,12 @@ exit /b 0</Command>
     <ClInclude Include="ImGuiOverlayBase.h" />
     <ClInclude Include="ini.h" />
     <ClInclude Include="INIReader.h" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="LoaderConfig.h" />
     <ClInclude Include="Logger.h" />
+    <ClInclude Include="LuaModEntry.h" />
+    <ClInclude Include="LuaModManager.h" />
+    <ClInclude Include="LuaModSandbox.h" />
     <ClInclude Include="MinHook.h" />
     <ClInclude Include="ModManager.h" />
     <ClInclude Include="MoverComponent.h" />
@@ -445,6 +449,11 @@ exit /b 0</Command>
     <ClCompile Include="INIReader.cpp" />
     <ClCompile Include="LoaderConfig.cpp" />
     <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="LuaModEntry.cpp" />
+    <ClCompile Include="LuaModFunctionAPI.cpp" />
+    <ClCompile Include="LuaModFunctionAPI.h" />
+    <ClCompile Include="LuaModManager.cpp" />
+    <ClCompile Include="LuaModSandbox.cpp" />
     <ClCompile Include="ModManager.cpp" />
     <ClCompile Include="MoverComponent.cpp" />
     <ClCompile Include="mydx12.h" />
@@ -467,6 +476,9 @@ exit /b 0</Command>
       <FileType>Document</FileType>
     </CopyFileToFolders>
     <None Include="extern\decima-native\LICENSE" />
+    <CopyFileToFolders Include="extern\lua\lua54.dll">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

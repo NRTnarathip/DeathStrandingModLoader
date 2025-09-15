@@ -35,6 +35,7 @@
 #include "OverlayMenu.h"
 #include "Logger.h"
 #include "DecimaNative.h"
+#include "LuaModManager.h"
 
 Logger* logger;
 
@@ -64,6 +65,10 @@ bool Start() {
 	// setup hooks for winlator | gamehub
 	SetupWinlatorPatcher();
 
+	// setup Decima Native API
+	DecimaNative::Initialize();
+
+
 	// setup mod manager
 	ModManager* modManager = ModManager::Instance();
 	if (modManager->Initialize() == false) {
@@ -71,8 +76,10 @@ bool Start() {
 		return false;
 	}
 
-	// setup Decima Native API
-	DecimaNative::Initialize();
+	// setup lua mods
+	LuaModManager* luaModManager = LuaModManager::Instance();
+	luaModManager->LoadAllMods();
+
 
 	// setup overlay menu
 	OverlayMenu::Instance()->Initialize();
