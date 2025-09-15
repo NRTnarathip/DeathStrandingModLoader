@@ -14,23 +14,17 @@ void SymbolExporter::ExportAllFuncionAPI()
 	log("exporting to text file...");
 	std::ofstream txtFile("dsdc_export_functions.txt", std::ios::out | std::ios::trunc);
 	for (auto& funcPair : functions) {
-		auto& func = funcPair.second;
-		txtFile << std::format("[ namespace  ]  {}\n", func.symbolNamespace.c_str());
-		txtFile << std::format("[ functionID ]  {}\n", func.uniqueName);
-		txtFile << std::format("[ signature  ]  {}\n", func.signature);
+		auto& func = *funcPair.second;
+		txtFile << std::format("[ export     ]  {}\n", func.exportName.c_str());
+		txtFile << std::format("[ signature  ]  {}\n", func.ToString());
 		txtFile << std::format("[ rva        ]  0x{:x}\n", func.rva);
-		txtFile << std::format("[ hash       ]  {}\n", func.hashString);
-		txtFile << std::format("[ instance   ]  {}\n", func.instanceTypeName.c_str());
+		txtFile << std::format("[ hash       ]  {}\n", func.hashString.c_str());
+		txtFile << std::format("[ instance   ]  {}\n", func.GetInstanceTypeName().c_str());
 
 		txtFile << "\n";
 	}
 	log("exported all function");
 }
-
-struct ClassInfo {
-	std::string className;
-	std::vector<GameFunctionAPI*> functions;
-};
 
 struct HeaderBuilder {
 	std::stringstream ss;
@@ -51,17 +45,17 @@ struct HeaderBuilder {
 		AddLine("#include <" + name + ">");
 	}
 
-	void AddNewClass(ClassInfo* classInfo) {
+	void AddNewClass(ClassType* classInfo) {
 		const char* newLine = "\n";
-		auto className = classInfo->className;
+		auto className = classInfo->name;
 		AddLine("class " + className + " {");
 		AddLine("public:");
 
 		// just sort function by name
-		auto functionsSort = classInfo->functions;
+		auto functionsSort = classInfo->GetFunctions();
 		std::sort(functionsSort.begin(), functionsSort.end(),
-			[](GameFunctionAPI* a, GameFunctionAPI* b) {
-				return strcmp(a->name, b->name) < 0;
+			[](FunctionType* a, FunctionType* b) {
+				return a->name < b->name;
 			});
 
 		for (auto fun : functionsSort) {
@@ -80,39 +74,37 @@ struct HeaderBuilder {
 		return ss.str();
 	}
 };
+
 void SymbolExporter::ExportCHeaderFile(std::string fileName) {
 	log("exporting to header file...");
 	auto& functions = DecimaNative::g_gameFunctionAPIMap;
-	std::unordered_map<std::string, ClassInfo*> classMap;
+	std::unordered_map<std::string, ClassType*> classMap;
 	std::set<std::string> typeNameSet;
 	for (auto& funcPair : functions) {
-		auto& func = funcPair.second;
-		std::string className;
-		if (func.isInstanceFunction) {
-			className = func.instanceTypeName;
-		}
-		else {
-			className = func.symbolNamespace;
-			className = StringRemove(className, "Symbols");
-		}
+		GameFunctionAPI* funcPtr = funcPair.second;
+		auto& fn = *funcPtr;
+		//log("fun: %s", fn.name.c_str());
+		//log("fun instance type: %s", fn.GetInstanceTypeName().c_str());
+		auto className = ClassType::BuildClassName((FunctionType*)&fn);
 
 		// check if className empty
 		if (className.empty())
 			className = "DecimaEngine"; //default name
 
+		//log("class name: %s", className.c_str());
 		// new class info
 		if (classMap.find(className) == classMap.end()) {
-			auto newClassInfo = new ClassInfo();
-			newClassInfo->className = className;
+			auto newClassInfo = new ClassType();
+			newClassInfo->name = className;
 			classMap[className] = newClassInfo;
 		}
 
 		auto classInfo = classMap[className];
 		//add function signature
-		classInfo->functions.push_back(&func);
-		typeNameSet.insert(func.returnInfo.typeName);
-		for (auto param : func.paramInfos) {
-			typeNameSet.insert(param.typeName);
+		classInfo->AddFunction(&fn);
+		typeNameSet.insert(fn.returnType->name);
+		for (auto param : fn.parameters) {
+			typeNameSet.insert(param->name);
 		}
 	}
 	log("exported to header file");

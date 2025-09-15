@@ -2,7 +2,7 @@
 #include "utils.h"
 #include "GameTypes.h"
 #include "ObjectScanner.h"
-#include "extern/decima-native/source/Core/RTTIObject.h"
+#include <decima-native/RTTIObject.h>
 #include "Logger.h"
 #include <vector>
 #include <mutex>

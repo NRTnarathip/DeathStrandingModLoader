@@ -2,9 +2,9 @@
 #include "RendererHook.h"
 #include "utils.h"
 #include "ObjectScanner.h"
-#include "extern/decima-native/source/Core/RTTI.h"
-#include "extern/decima-native/source/Core/RTTIObject.h"
-#include "extern/decima-native/source/Core/RTTIRefObject.h"
+#include <decima-native/RTTI.h>
+#include <decima-native/RTTIObject.h>
+#include <decima-native/RTTIRefObject.h>
 #include "extern/imgui/imgui.h"
 #include "extern/imgui/backends/imgui_impl_win32.h"
 #include "extern/imgui/backends/imgui_impl_dx12.h"
@@ -725,15 +725,15 @@ void OverlayMenu::DrawFunctionAPIExporter()
 		tableItems.clear();
 		auto& functions = DecimaNative::g_gameFunctionAPIMap;
 		for (auto& funcPair : functions) {
-			auto& fn = funcPair.second;
-			if (IsSearchFilterSkipItem(fn.uniqueName, searchFuncName)) {
+			auto& fn = *funcPair.second;
+			if (IsSearchFilterSkipItem(fn.exportName, searchFuncName)) {
 				continue;
 			}
 
 			std::vector<const char*> colItems;
-			colItems.push_back(fn.uniqueName);
+			colItems.push_back(fn.exportName.c_str());
 			colItems.push_back(fn.signature.c_str());
-			colItems.push_back(fn.name);
+			colItems.push_back(fn.name.c_str());
 			tableItems.push_back(colItems);
 		}
 	}

@@ -10,9 +10,10 @@
 #include <cstring>
 #include <mutex>
 #include <unordered_set>
-#include "extern/decima-native/source/Core/RTTI.h"
-#include "extern/decima-native/source/Core/RTTIObject.h"
-#include "extern/decima-native/source/PCore/Array.h"
+#include <decima-native/RTTI.h>
+#include <decima-native/RTTIObject.h>
+#include <decima-native/Array.h>
+#include <decima-native/String.h>
 
 #define assert_offset(struct_type, member, expected_offset) \
     static_assert(offsetof(struct_type, member) == expected_offset, \
@@ -406,7 +407,8 @@ assert_size(ExportedSymbolMember, 0xE8);
 
 struct ExportedSymbolGroup : RTTIObject {
 	bool mAlwaysExport; //0x8
-	const char* mNamespace; //0x10
+	// unsafe mNamespace, may nullptr
+	const char* mNamespace; //0x10 
 	Array<ExportedSymbolMember> mMembers; //0x18
 	Array<RTTI*> mDependencies; //0x28
 };

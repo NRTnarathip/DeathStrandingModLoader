@@ -16,11 +16,11 @@
     <Filter Include="Source Files\utils">
       <UniqueIdentifier>{93987006-6eee-447d-848e-cc8f05d9036d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\decima-native-src">
-      <UniqueIdentifier>{6abf9b76-57f1-45ab-afd7-f64eb50d2128}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\imgui">
       <UniqueIdentifier>{0a093458-c32c-4744-a3f1-c09423a2e08f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\decima-native">
+      <UniqueIdentifier>{ad359769-3ba0-4bbb-8467-a0e04d839c1b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -68,27 +68,6 @@
     </ClInclude>
     <ClInclude Include="DevDebug.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="extern\decima-native\source\Core\RTTI.h">
-      <Filter>Source Files\decima-native-src</Filter>
-    </ClInclude>
-    <ClInclude Include="extern\decima-native\source\Core\RTTIObject.h">
-      <Filter>Source Files\decima-native-src</Filter>
-    </ClInclude>
-    <ClInclude Include="extern\decima-native\source\Core\RTTIRefObject.h">
-      <Filter>Source Files\decima-native-src</Filter>
-    </ClInclude>
-    <ClInclude Include="extern\decima-native\source\PCore\Array.h">
-      <Filter>Source Files\decima-native-src</Filter>
-    </ClInclude>
-    <ClInclude Include="extern\decima-native\source\PCore\Ref.h">
-      <Filter>Source Files\decima-native-src</Filter>
-    </ClInclude>
-    <ClInclude Include="extern\decima-native\source\XUtil.h">
-      <Filter>Source Files\decima-native-src</Filter>
-    </ClInclude>
-    <ClInclude Include="extern\decima-native\source\Offsets.h">
-      <Filter>Source Files\decima-native-src</Filter>
     </ClInclude>
     <ClInclude Include="OverlayMenu.h">
       <Filter>Source Files</Filter>
@@ -153,6 +132,45 @@
     <ClInclude Include="dsdc_header.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Reflection.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\RTTIObject.h">
+      <Filter>Source Files\decima-native</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\RTTIRefObject.h">
+      <Filter>Source Files\decima-native</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\String.h">
+      <Filter>Source Files\decima-native</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\UUID.h">
+      <Filter>Source Files\decima-native</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\XUtil.h">
+      <Filter>Source Files\decima-native</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\Array.h">
+      <Filter>Source Files\decima-native</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\FileDevice.h">
+      <Filter>Source Files\decima-native</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\Filename.h">
+      <Filter>Source Files\decima-native</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\FileSystem.h">
+      <Filter>Source Files\decima-native</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\Offsets.h">
+      <Filter>Source Files\decima-native</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\Ref.h">
+      <Filter>Source Files\decima-native</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\decima-native\RTTI.h">
+      <Filter>Source Files\decima-native</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -206,15 +224,6 @@
     <ClCompile Include="DevDebug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="extern\decima-native\source\Core\RTTI.cpp">
-      <Filter>Source Files\decima-native-src</Filter>
-    </ClCompile>
-    <ClCompile Include="extern\decima-native\source\Offsets.cpp">
-      <Filter>Source Files\decima-native-src</Filter>
-    </ClCompile>
-    <ClCompile Include="extern\decima-native\source\XUtil.cpp">
-      <Filter>Source Files\decima-native-src</Filter>
-    </ClCompile>
     <ClCompile Include="OverlayMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -263,9 +272,24 @@
     <ClCompile Include="SymbolExporter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Reflection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\decima-native\XUtil.cpp">
+      <Filter>Source Files\decima-native</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\decima-native\Offsets.cpp">
+      <Filter>Source Files\decima-native</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\decima-native\RTTI.cpp">
+      <Filter>Source Files\decima-native</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="extern\decima-native\LICENSE">
+      <Filter>Source Files\decima-native</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="device_support.txt">
