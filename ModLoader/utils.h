@@ -158,4 +158,5 @@ bool IsContainsCaseSensitive(const std::string& src, const std::string& word);
 bool IsContainsCaseSensitive(const std::string& src, const std::vector<const char*> words);
 bool IsContains(const std::string& src, const std::string& word);
 bool IsContains(const std::string& src, const std::vector<const char*> words);
+std::string StringRemove(std::string src, const std::string& word);
 

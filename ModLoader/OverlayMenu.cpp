@@ -702,6 +702,12 @@ void OverlayMenu::DrawFunctionAPIExporter()
 		SymbolExporter::ExportAllFuncionAPI();
 	}
 
+	static const char* cHeaderFileName = "dsdc_header.h";
+	auto btnExportCHeaderFileLabel = std::format("Export C Header File : {}", cHeaderFileName);
+	if (ImGui::Button(btnExportCHeaderFileLabel.c_str())) {
+		SymbolExporter::ExportCHeaderFile(cHeaderFileName);
+	}
+
 	static bool refreshList = false;
 	static std::string searchFuncName;
 	if (gui::InputText("Search", &searchFuncName)) {

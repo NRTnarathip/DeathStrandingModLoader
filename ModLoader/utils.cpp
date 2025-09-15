@@ -130,6 +130,15 @@ bool IsContains(const std::string& src, const std::vector<const char*> words) {
 	return false;
 }
 
+std::string StringRemove(std::string src, const std::string& word)
+{
+	size_t pos = src.find(word);
+	if (pos != std::string::npos) {
+		src.erase(pos, word.length());
+	}
+	return src;
+}
+
 bool IsContainsCaseSensitive(const std::string& src, const std::string& word)
 {
 	return src.find(word) != std::string::npos;
