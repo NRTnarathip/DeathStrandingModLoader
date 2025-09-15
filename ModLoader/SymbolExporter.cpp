@@ -26,10 +26,10 @@ void SymbolExporter::ExportAllFuncionAPI()
 	log("exported all function");
 }
 
-struct HeaderBuilder {
+struct CHeaderFileBuilder {
 	std::stringstream ss;
 	const char* tab = "    ";
-	HeaderBuilder() {
+	CHeaderFileBuilder() {
 		AddLine("#pragma once");
 		AddLine("");
 	}
@@ -79,7 +79,7 @@ void SymbolExporter::ExportCHeaderFile(std::string fileName) {
 	log("exporting to header file...");
 	auto& functions = DecimaNative::g_gameFunctionAPIMap;
 	std::unordered_map<std::string, ClassType*> classMap;
-	std::set<std::string> typeNameSet;
+	std::unordered_map<std::string, SignatureType*> allTypeMap;
 	for (auto& funcPair : functions) {
 		GameFunctionAPI* funcPtr = funcPair.second;
 		auto& fn = *funcPtr;
@@ -99,53 +99,28 @@ void SymbolExporter::ExportCHeaderFile(std::string fileName) {
 			classMap[className] = newClassInfo;
 		}
 
+		// setup class info
 		auto classInfo = classMap[className];
-		//add function signature
 		classInfo->AddFunction(&fn);
-		typeNameSet.insert(fn.returnType->name);
-		for (auto param : fn.parameters) {
-			typeNameSet.insert(param->name);
-		}
+
+		// collect all types
+		allTypeMap[fn.returnType->name] = fn.returnType;
+		for (auto param : fn.parameters)
+			allTypeMap[param->name] = param;
 	}
 	log("exported to header file");
 
 	// open file stream
-	HeaderBuilder header;
+	CHeaderFileBuilder header;
 
-	std::set<std::string> noDelcareTypeNameSet = {
-		"void",
-		"bool",
-		"double",
-		"float",
-		"int8",
-		"int",
-		"int16",
-		"int32",
-		"int64",
-		"uint8",
-		"uint16",
-		"uint",
-		"uint32",
-		"uint64",
-	};
 	header.Include("cstdint");
 	header.AddLine();
 
-	// forward primitive
-	header.Define("uint uint32_t");
-	std::vector<std::string> primTypeForward = {
-		"uint8", "uint16", "uint32", "uint64",
-		"int32", "int64", "int8", "int16", };
-	for (std::string typeName : primTypeForward) {
-		header.Define(typeName + " " + typeName + "_t");
-	}
-	header.AddLine();
-
 	// forward type
-	for (auto& typeName : typeNameSet) {
-		if (noDelcareTypeNameSet.find(typeName) != noDelcareTypeNameSet.end())
-			continue;
-		header.AddLine("struct " + typeName + ";");
+	for (auto& typePair : allTypeMap) {
+		auto type = typePair.second;
+		if (type->isPrimitive) continue;
+		header.AddLine("struct " + type->name + ";");
 	}
 	header.AddLine();
 

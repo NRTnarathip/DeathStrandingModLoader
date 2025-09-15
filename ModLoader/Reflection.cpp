@@ -23,32 +23,58 @@ SignatureType* Reflection::BuildType(ExportedSymbolGroup* symbolGroup, ExportedS
 	ExportedSymbolMember::Signature* signaturePart)
 {
 	auto typePtr = new SignatureType();
-	SignatureType& typeInfo = *typePtr;
-	typeInfo.name = signaturePart->mTypeName;
-	// remove empty space, example: " const * tchar"
-	typeInfo.modifier = trim(signaturePart->mModifiers);
-	typeInfo.hasModifier = !typeInfo.modifier.empty();
-	typeInfo.rtti = signaturePart->mType;
-
-	typeInfo.isConst = typeInfo.modifier.find("const") != std::string::npos;
-	typeInfo.isRef = typeInfo.modifier.find("&") != std::string::npos;
-	if (!typeInfo.isRef) {
-		typeInfo.isPointerToPointer = typeInfo.modifier.find("* *") != std::string::npos;
-		if (!typeInfo.isPointerToPointer)
-			typeInfo.isPointer = typeInfo.modifier.find("*") != std::string::npos;
+	SignatureType& type = *typePtr;
+	type.name = signaturePart->mTypeName;
+	// fix type name correct
+	// example: uint32 to uint32_t
+	{
+		// type name from decima symbol signature part
+		static std::unordered_map<std::string, std::string> g_renameTypeMap = {
+			{"uint8", "uint8_t"},
+			{"uint16", "uint16_t"},
+			{"uint32", "uint32_t"},
+			{"uint64", "uint64_t"},
+			{"uint", "uint32_t"},
+			{"int8", "int8_t"},
+			{"int16", "int16_t"},
+			{"int32", "int32_t"},
+			{"int64", "int64_t"},
+			{"int", "int32_t"},
+			{"tchar", "wchar_t"},
+		};
+		if (g_renameTypeMap.find(type.name) != g_renameTypeMap.end()) {
+			type.name = g_renameTypeMap[type.name];
+		}
 	}
 
-	std::string& signature = typeInfo.signature;
+	// post process type.name
+	type.isPrimitive = BaseType::IsPrimitive(type.name);
 
-	signature = signature + typeInfo.name;
-	if (typeInfo.isRef)
+
+	// remove empty space, example: " const * tchar"
+	type.modifier = trim(signaturePart->mModifiers);
+	type.hasModifier = !type.modifier.empty();
+	type.rtti = signaturePart->mType;
+
+	type.isConst = type.modifier.find("const") != std::string::npos;
+	type.isRef = type.modifier.find("&") != std::string::npos;
+	if (!type.isRef) {
+		type.isPointerToPointer = type.modifier.find("* *") != std::string::npos;
+		if (!type.isPointerToPointer)
+			type.isPointer = type.modifier.find("*") != std::string::npos;
+	}
+
+	std::string& signature = type.signature;
+
+	signature = signature + type.name;
+	if (type.isRef)
 		signature = signature + "&";
-	else if (typeInfo.isPointerToPointer)
+	else if (type.isPointerToPointer)
 		signature = signature + "**";
-	else if (typeInfo.isPointer)
+	else if (type.isPointer)
 		signature = signature + "*";
 
-	if (typeInfo.isConst)
+	if (type.isConst)
 		signature = "const " + signature;
 
 	// optional
@@ -95,14 +121,14 @@ FunctionType* Reflection::BuildFunction(ExportedSymbolGroup* symbolGroup, Export
 	// set signature
 	// return type
 	auto& funSignatures = langInfo.signatureArray;
-	ReturnType* returnType = (ReturnType*)BuildType(symbolGroup, symbolMember, &funSignatures[0]);
+	auto returnType = BuildType(symbolGroup, symbolMember, &funSignatures[0]);
 	fun.returnType = returnType;
 	fun.isReturnVoid = fun.returnType->name == "void";
 
 	// set params type
 	for (int i = 1; i < funSignatures.size(); i++) {
 		auto& paramSig = funSignatures[i];
-		auto paramType = (ParameterType*)BuildType(symbolGroup, symbolMember, &paramSig);
+		auto paramType = BuildType(symbolGroup, symbolMember, &paramSig);
 		fun.parameters.push_back(paramType);
 	}
 
@@ -114,7 +140,7 @@ FunctionType* Reflection::BuildFunction(ExportedSymbolGroup* symbolGroup, Export
 		// get instance type param1
 		if (fun.GetParamCount() > 0) {
 			fun.isInstanceFunction = true;
-			fun.instanceInfo = (SignatureType*)fun.parameters[0];
+			fun.instanceType = (SignatureType*)fun.parameters[0];
 			// remove param1, cause it's instance object
 			fun.parameters.erase(fun.parameters.begin());
 		}
@@ -205,7 +231,7 @@ FunctionType* ClassType::GetFunctionByExportName(std::string exportName)
 std::string ClassType::BuildClassName(FunctionType* fun)
 {
 	if (fun->isInstanceFunction)
-		return fun->instanceInfo->name;
+		return fun->instanceType->name;
 
 	auto mNamespace = fun->symbolGroup->mNamespace;
 	if (mNamespace) {
@@ -238,3 +264,18 @@ FunctionType* ClassType::GetFunctionByName(std::string name)
 	return nullptr;
 }
 
+bool BaseType::IsPrimitive(std::string name)
+{
+	static std::set<std::string> g_primitiveTypeNames = {
+		"void", "bool", "char", "wchar_t",
+		"int8_t","int16_t","int32_t","int64_t",
+		"uint8_t","uint16_t","uint32_t","uint64_t",
+		"int", "size_t", "float", "double", "long double"
+	};
+
+	if (g_primitiveTypeNames.find(name) != g_primitiveTypeNames.end()) {
+		return true;
+	}
+
+	return false;
+}

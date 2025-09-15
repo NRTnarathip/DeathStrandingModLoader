@@ -11,9 +11,13 @@ struct ClassType;
 class BaseType {
 public:
 	std::string name;
+	std::string signature;
+	bool isPrimitive;
+
 	virtual const char* ToString() {
-		return name.c_str();
+		return signature.c_str();
 	}
+	static bool IsPrimitive(std::string name);
 };
 
 class SignatureType : public BaseType {
@@ -25,19 +29,7 @@ public:
 	bool isRef;
 	bool hasModifier;
 	const RTTI* rtti;
-	std::string signature;
 };
-
-class ParameterType : public SignatureType {
-public:
-
-};
-
-class ReturnType : public SignatureType {
-public:
-
-};
-
 
 class FunctionType : public BaseType {
 public:
@@ -46,20 +38,17 @@ public:
 	std::string exportName; // unique name
 	void* address;
 	uintptr_t rva;
-	ReturnType* returnType;
+	SignatureType* returnType;
 	bool isReturnVoid;
-	std::vector<ParameterType*> parameters;
-	// full name, example: void GetEntityPosition(Entity* param1, Vec3* param2)
-	std::string signature;
+	std::vector<SignatureType*> parameters;
 	bool isInstanceFunction;
-	SignatureType* instanceInfo;
+	SignatureType* instanceType;
 	size_t hash;
 	std::string hashString;
 
 
-	const char* ToString() { return signature.c_str(); }
 	int GetParamCount() const { return parameters.size(); }
-	std::string GetInstanceTypeName() const { return instanceInfo ? instanceInfo->name : ""; }
+	std::string GetInstanceTypeName() const { return instanceType ? instanceType->name : ""; }
 };
 
 class ClassType {
