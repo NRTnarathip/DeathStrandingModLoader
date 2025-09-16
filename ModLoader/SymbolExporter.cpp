@@ -73,12 +73,18 @@ struct CHeaderFileBuilder {
 	std::string ToString() {
 		return ss.str();
 	}
+
+	void SaveToFile(std::string fileName) {
+		std::ofstream file(fileName.c_str(), std::ios::out | std::ios::trunc);
+		file << ToString();
+		file.close();
+	}
 };
 
 void SymbolExporter::ExportCHeaderFile(std::string fileName) {
 	log("exporting to header file...");
 	auto& functions = DecimaNative::g_gameFunctionAPIMap;
-	std::unordered_map<std::string, ClassType*> classMap;
+	std::unordered_map<std::string, ClassType> classMap;
 	std::unordered_map<std::string, SignatureType*> allTypeMap;
 	for (auto& funcPair : functions) {
 		GameFunctionAPI* funcPtr = funcPair.second;
@@ -94,14 +100,14 @@ void SymbolExporter::ExportCHeaderFile(std::string fileName) {
 		//log("class name: %s", className.c_str());
 		// new class info
 		if (classMap.find(className) == classMap.end()) {
-			auto newClassInfo = new ClassType();
-			newClassInfo->name = className;
+			ClassType newClassInfo;
+			newClassInfo.name = className;
 			classMap[className] = newClassInfo;
 		}
 
 		// setup class info
-		auto classInfo = classMap[className];
-		classInfo->AddFunction(&fn);
+		auto classType = classMap[className];
+		classType.AddFunction(&fn);
 
 		// collect all types
 		allTypeMap[fn.returnType->name] = fn.returnType;
@@ -126,12 +132,24 @@ void SymbolExporter::ExportCHeaderFile(std::string fileName) {
 
 	// build all class
 	for (auto& classInfoPair : classMap) {
-		auto classInfo = classInfoPair.second;
-		header.AddNewClass(classInfo);
+		auto& classInfo = classInfoPair.second;
+		header.AddNewClass(&classInfo);
 	}
 
 	// done
 	std::ofstream file(fileName.c_str(), std::ios::out | std::ios::trunc);
 	file << header.ToString();
 
+}
+
+#include "LuaModFunctionAPI.h"
+
+void SymbolExporter::ExportCHeaderAPILua(std::string saveFileName)
+{
+	log("exporting Game Function API for lua native");
+
+	//CHeaderFileBuilder header{};
+	//std::vector<ClassType> classTypes;
+	//header.SaveToFile(saveFileName);
+	log("exported all function api for lua native");
 }

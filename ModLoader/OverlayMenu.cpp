@@ -58,9 +58,9 @@ void OverlayMenu::Initialize()
 {
 	log("OverlayMenu init...");
 
-	renderer->RegisterPresent([&](UINT sync, UINT flags)
+	renderer->RegisterPresent([this]()
 		{
-			OnPresent(sync, flags);
+			OnPresent();
 		}
 	);
 
@@ -743,7 +743,7 @@ void OverlayMenu::DrawFunctionAPIExporter()
 	EndWindow();
 }
 
-void OverlayMenu::OnPresent(unsigned int sync, unsigned int flags)
+void OverlayMenu::OnPresent()
 {
 	UpdateOverlayToggle();
 	if (!isShow)

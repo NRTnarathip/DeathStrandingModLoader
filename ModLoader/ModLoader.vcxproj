@@ -450,8 +450,6 @@ exit /b 0</Command>
     <ClCompile Include="LoaderConfig.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="LuaModEntry.cpp" />
-    <ClCompile Include="LuaModFunctionAPI.cpp" />
-    <ClCompile Include="LuaModFunctionAPI.h" />
     <ClCompile Include="LuaModManager.cpp" />
     <ClCompile Include="LuaModSandbox.cpp" />
     <ClCompile Include="ModManager.cpp" />

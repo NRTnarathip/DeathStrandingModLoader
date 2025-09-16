@@ -42,7 +42,7 @@ bool LuaModEntry::Start()
 	}
 
 	log("try setup lua sandbox");
-	sandbox.Setup();
+	sandbox.SetupEnvrionment();
 	path firstLua = *luaFiles.begin();
 	auto luaFileName = firstLua.filename().string();
 	log("try run lua entry file: %s", luaFileName.c_str());
@@ -53,4 +53,9 @@ bool LuaModEntry::Start()
 	}
 
 	return true;
+}
+
+void LuaModEntry::UpdateTick()
+{
+	sandbox.UpdateTick();
 }

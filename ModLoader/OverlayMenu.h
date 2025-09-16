@@ -27,7 +27,7 @@ private:
 	void* dumpObjPtr = nullptr;
 	int dumpStructSizeCurrent = 0x100;
 	void UpdateOverlayToggle();
-	void OnPresent(unsigned int sync, unsigned int flags);
+	void OnPresent();
 	void DrawImGuiData();
 	void InitializeBeforePresent();
 	void DrawEntityInspector();

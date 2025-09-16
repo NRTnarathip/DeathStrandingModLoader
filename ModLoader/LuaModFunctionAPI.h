@@ -4,5 +4,6 @@
 class LuaModFunctionAPI {
 public:
 	static void Log(sol::variadic_args args);
-	static void Wait(int ms);
+	static int Await(int ms);
+	static void CreateThread(sol::function fnBody);
 };

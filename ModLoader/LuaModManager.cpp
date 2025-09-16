@@ -1,6 +1,7 @@
 #include "LuaModManager.h"
 #include "ModManager.h"
 #include <filesystem>
+#include "RendererHook.h"
 
 #include "utils.h"
 #undef log
@@ -27,6 +28,32 @@ std::set<path> ScanFiles(path dir, std::string fileName) {
 
 // static vars
 const std::string LuaModManager::k_manifestFileName = "manifest.json";
+
+void HK_OnPresent(UINT p1Sync, UINT p2Flags) {
+
+}
+
+void LuaModManager::UpdateTick()
+{
+	try {
+		for (auto& modItem : m_mods) {
+			auto m = modItem.second;
+			m->UpdateTick();
+		}
+	}
+	catch (std::exception ex) {
+		Log("Error UpdateTick: %s", ex.what());
+	}
+}
+
+LuaModManager::LuaModManager()
+{
+	Log("init LuaModManager...");
+	auto render = RendererHook::Instance();
+	render->RegisterPresent([this]() {
+		this->UpdateTick();
+		});
+}
 
 // funcs
 void LuaModManager::LoadAllMods()
@@ -74,7 +101,7 @@ LuaModEntry* LuaModManager::LoadMod(path manifestPath)
 
 
 	// added
-	mods[mod->manifest.UniqueID] = mod;
+	m_mods[mod->manifest.UniqueID] = mod;
 	Log("loaded mod: %s", mod->GetModName());
 
 	// post process
@@ -88,8 +115,8 @@ LuaModEntry* LuaModManager::LoadMod(path manifestPath)
 
 LuaModEntry* LuaModManager::GetMod(std::string uniqueID)
 {
-	if (mods.find(uniqueID) != mods.end())
-		return mods[uniqueID];
+	if (m_mods.find(uniqueID) != m_mods.end())
+		return m_mods[uniqueID];
 	return nullptr;
 }
 

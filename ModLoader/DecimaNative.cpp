@@ -135,9 +135,3 @@ Ret DecimaNative::CallGameAPI(const char* functionName, Args ...args)
 	return result;
 }
 
-template<typename Ret, typename ...Args>
-Ret GameFunctionAPI::Call(Args ...args) {
-	using Fn = Ret(*)(Args...);
-	Fn fn = reinterpret_cast<Fn>(this.address);
-	return fn(args...);
-}

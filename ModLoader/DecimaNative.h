@@ -11,13 +11,15 @@ public:
 	const RTTI* instanceRTTI;
 
 	// helper
-	template<typename Ret, typename... Args>
-	Ret Call(Args... args);
+	template<typename Ret, typename ...Args>
+	Ret Call(Args&&...args) {
+		using Fn = Ret(*)(Args...);
+		Fn fn = reinterpret_cast<Fn>(this->address);
+		return fn(std::forward<Args>(args)...);
+	}
 };
 
-struct DecimaNative
-{
-public:
+struct DecimaNative {
 	static std::unordered_map<std::string, GameFunctionAPI*> g_gameFunctionAPIMap;
 	static std::set<ExportedSymbolGroup*> g_symbolSet;
 	static Array<ExportedSymbolGroup*>* g_symbolArray;

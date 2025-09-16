@@ -783,7 +783,7 @@ HRESULT RendererHook::HK_Present(void* pSwapChain, UINT SyncInterval, UINT Flags
 
 	for (auto& callback : m_presentCallbacks) {
 		try {
-			callback(SyncInterval, Flags);
+			callback();
 		}
 		catch (const std::exception& e) {
 			log("Exception in PresentCallback: %s", e.what());
@@ -794,7 +794,7 @@ HRESULT RendererHook::HK_Present(void* pSwapChain, UINT SyncInterval, UINT Flags
 	return hr;
 }
 
-void RendererHook::RegisterPresent(PresentCallback callback)
+void RendererHook::RegisterPresent(OnPresent_t callback)
 {
 	// check hook 
 

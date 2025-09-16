@@ -305,12 +305,6 @@
     <ClCompile Include="LuaModSandbox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LuaModFunctionAPI.h">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LuaModFunctionAPI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

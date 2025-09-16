@@ -3,13 +3,16 @@
 
 class LuaModManager {
 private:
-	std::unordered_map<LuaModUniqueID_t, LuaModEntry*> mods;
+	std::unordered_map<LuaModUniqueID_t, LuaModEntry*> m_mods;
+	void UpdateTick();
 
 public:
 	static LuaModManager* Instance() {
 		static LuaModManager inst;
 		return &inst;
 	}
+
+	LuaModManager();
 
 	// const
 	static const std::string k_manifestFileName;

@@ -83,8 +83,7 @@ typedef void(*ID3D12Resource_Unmap_t)(
 	ID3D12Resource* self, UINT Subresource,
 	_In_opt_  const D3D12_RANGE* pWrittenRange);
 
-using PresentCallback = std::function<void(UINT, UINT)>;
-
+using OnPresent_t = std::function<void()>;
 
 class Logger;
 
@@ -125,12 +124,12 @@ public:
 		return m_device->GetDeviceRemovedReason();
 	}
 
-	void RegisterPresent(PresentCallback callback);
+	void RegisterPresent(OnPresent_t callback);
 
 	HRESULT HK_Present(void* pSwapChain, UINT SyncInterval, UINT Flags);
 
 private:
-	std::vector<PresentCallback> m_presentCallbacks;
+	std::vector<OnPresent_t> m_presentCallbacks;
 	bool m_isEnableLog = false;
 	Logger* m_logger;
 	HWND m_window = 0;

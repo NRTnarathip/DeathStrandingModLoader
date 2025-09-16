@@ -28,5 +28,6 @@ public:
 	const char* GetModName() const {
 		return manifest.Name.c_str();
 	}
+	void UpdateTick();
 };
 
