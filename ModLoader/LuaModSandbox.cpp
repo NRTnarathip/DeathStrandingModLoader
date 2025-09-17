@@ -114,38 +114,55 @@ void LuaModSandbox::LuaImport(std::string path)
 
 void LuaModSandbox::Restart()
 {
-	m_restartTimepoint = std::chrono::steady_clock::now();
+	// setup env
+	SetNewStatus(LuaModStatus::Running);
 	CreateNewEnvrionment();
+}
+
+void LuaModSandbox::Stop()
+{
+	if (!IsRunning()) {
+		log("can't stop mod because is not running");
+		return;
+	}
+
+	SetNewStatus(LuaModStatus::Stop);
+
+	log("stopped sandbox!");
 }
 
 bool LuaModSandbox::RunMainCodeOnce(std::string code)
 {
 	log("try run main code...");
 	// clear status first!
-	if (!IsIdle()) {
-		log("error can't run code!, need status to Idle");
+	if (!IsRunning()) {
+		log("error can't run code!, mod are not Running");
 		return false;
 	}
 
 	try {
 		this->m_code = code;
-		m_currentStatus = LuaModStatus::Running;
+		SetNewStatus(LuaModStatus::Running);
 		log("try run sol::script()..");
 		m_solState.script(code);
 		log("run sol::script() successfully");
 	}
 	catch (const sol::error& e) {
-		m_currentStatus = LuaModStatus::Error;
+		SetNewStatus(LuaModStatus::Error);
 		auto errorString = std::format("LuaSandbox Error: {}", e.what());
 		log(errorString.c_str());
 	}
 
-	return m_currentStatus == LuaModStatus::Running;
+	return IsRunning();
 }
 
 void LuaModSandbox::UpdateTick()
 {
 	//log("try lua sandbox update..");
+	if (IsStop() || IsError()) {
+		// don't update any thing
+		return;
+	}
 
 	try {
 		for (auto& newThreadSafePtr : m_threadNewList) {
@@ -211,9 +228,31 @@ void LuaModSandbox::UpdateTick()
 		//log("lua sandbox updated");
 	}
 	catch (const sol::error& e) {
-		m_currentStatus = LuaModStatus::Error;
+		SetNewStatus(LuaModStatus::Error);
 		auto errorString = std::format("LuaSandbox Error: {}", e.what());
 		log(errorString.c_str());
+	}
+}
+
+void LuaModSandbox::SetNewStatus(LuaModStatus newStatus)
+{
+	m_currentStatus = newStatus;
+	switch (newStatus) {
+	case LuaModStatus::Idle:
+	case LuaModStatus::Running: {
+		// clear
+		m_stopTimepoint = steady_clock::time_point();
+		m_restartTimePoint = steady_clock::now();
+		break;
+	}
+	case LuaModStatus::Stop:
+	case LuaModStatus::Error: {
+		// mark on stop
+		m_stopTimepoint = steady_clock::now();
+		break;
+	}
+	default:
+		break;
 	}
 }
 
@@ -254,20 +293,23 @@ bool LuaModSandbox::IsIdle() const {
 bool LuaModSandbox::IsRunning() const {
 	return m_currentStatus == LuaModStatus::Running;
 }
+bool LuaModSandbox::IsStop() const {
+	return m_currentStatus == LuaModStatus::Stop;
+}
 bool LuaModSandbox::IsError()const {
 	return m_currentStatus == LuaModStatus::Error;
 }
 
 using namespace std::chrono;
 size_t LuaModSandbox::GetRunDurationMs() {
-	auto now = std::chrono::steady_clock::now();
+	std::chrono::steady_clock::time_point endTimePoint;
 	if (m_stopTimepoint.time_since_epoch().count() != 0) {
-		auto durationStartToStop = duration_cast<milliseconds>(now - m_restartTimepoint);
-		return durationStartToStop.count();
+		endTimePoint = m_stopTimepoint;
 	}
-
-	auto durationNow = duration_cast<milliseconds>(now - m_restartTimepoint);
-	return durationNow.count();
+	else {
+		endTimePoint = steady_clock::now();
+	}
+	return duration_cast<milliseconds>(endTimePoint - m_restartTimePoint).count();
 }
 
 LuaThreadCoroutine::LuaThreadCoroutine()

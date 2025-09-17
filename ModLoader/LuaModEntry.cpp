@@ -94,6 +94,15 @@ bool LuaModEntry::Restart()
 	return true;
 }
 
+void LuaModEntry::Stop()
+{
+	log("try to stop modName: %s", GetModName());
+
+	m_sandbox.Stop();
+
+	log("done stop modName: %s", GetModName());
+}
+
 void LuaModEntry::UpdateTick()
 {
 	m_sandbox.UpdateTick();
@@ -101,10 +110,11 @@ void LuaModEntry::UpdateTick()
 
 const char* LuaModEntry::GetStatusName()
 {
-	switch (m_sandbox.m_currentStatus) {
+	switch (m_sandbox.GetStatus()) {
 	case LuaModStatus::Idle: return "Idle";
 	case LuaModStatus::Running: return "Running";
 	case LuaModStatus::Error: return "Error";
+	case LuaModStatus::Stop: return "Stop";
 	}
 	return "Unknow Status Name";
 }

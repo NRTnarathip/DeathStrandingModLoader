@@ -13,6 +13,7 @@ using namespace std::chrono;
 enum LuaModStatus : uint32_t {
 	Idle,
 	Running,
+	Stop,
 	Error,
 };
 
@@ -39,8 +40,10 @@ private:
 
 	sol::state m_solState;
 	std::string m_code;
+	LuaModStatus m_currentStatus;
+	void SetNewStatus(LuaModStatus newStatus);
 
-	std::chrono::steady_clock::time_point m_restartTimepoint;
+	std::chrono::steady_clock::time_point m_restartTimePoint;
 	std::chrono::steady_clock::time_point m_stopTimepoint;
 
 	// Global Static API
@@ -53,14 +56,17 @@ private:
 	void LuaImport(std::string path);
 
 public:
-	LuaModStatus m_currentStatus;
 
 	void Restart();
+	void Stop();
 	bool RunMainCodeOnce(std::string code);
 	void UpdateTick();
 	bool IsIdle() const;
 	bool IsRunning() const;
+	bool IsStop() const;
 	bool IsError() const;
+	LuaModStatus GetStatus() const { return m_currentStatus; }
 	size_t GetRunDurationMs();
+
 };
 

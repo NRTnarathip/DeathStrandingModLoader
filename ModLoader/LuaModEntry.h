@@ -33,6 +33,7 @@ public:
 	LuaModEntry();
 	void Setup(LuaModManifest modManifest, path modManifestPath);
 	bool Restart();
+	void Stop();
 	void UpdateTick();
 
 	// helper
