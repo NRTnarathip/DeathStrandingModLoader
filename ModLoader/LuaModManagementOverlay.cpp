@@ -18,19 +18,6 @@ void LuaModManagementOverlay::OnDraw()
 		m_selectMod = (*mods.begin()).second.get();
 	}
 
-	// Mod selected info
-	{
-		auto selectedModID = GetSelectedModID();
-		Text(std::format("Current Selected ModID: {}", selectedModID));
-		if (Button("Restart")) {
-			m_selectMod->Restart();
-		}
-		ImGui::SameLine();
-		if (Button("Stop")) {
-			m_selectMod->Stop();
-		}
-	}
-
 	// Command Tool
 	static std::string g_command;
 	if (ImGui::InputText("Command", &g_command, ImGuiInputTextFlags_EnterReturnsTrue)) {
@@ -40,8 +27,48 @@ void LuaModManagementOverlay::OnDraw()
 		g_command = "";
 	}
 
-	if (m_selectMod) {
+	// Log Windows
+	{
+		ImGui::Separator();
+		static bool g_autoScroll = true;
+		ImGui::Checkbox("Auto Scroll", &g_autoScroll);
+		ImGui::BeginChild("log_window", ImVec2(0, 400), false, ImGuiWindowFlags_HorizontalScrollbar);
 
+		struct GlobalModLog {
+			std::deque<std::tuple<LuaModEntry*, std::string>> modLines;
+			int maxLines = 1000;
+
+			void AddModLog(LuaModSandbox* sandbox, std::string logLine) {
+				auto mod = LuaModManager::Instance()->GetModBySandboxID(sandbox->GetID());
+				// decorate log line
+				auto timeNow = Logger::GetTimeNowMsString();
+				logLine = std::format("[{}] [{}] {}",
+					timeNow.c_str(), mod->GetID(), logLine.c_str());
+
+				// added
+				modLines.push_back({ mod, logLine });
+				while (modLines.size() > maxLines) {
+					modLines.pop_front();
+				}
+			}
+		};
+		static GlobalModLog g_globalLog;
+		static bool g_isSetupGlobalModLog = false;
+		if (g_isSetupGlobalModLog == false) {
+			g_isSetupGlobalModLog = true;
+			LuaModLog::g_onLuaLogCallbacks.push_back([&](LuaModSandbox* sandbox, std::string logLine) {
+				g_globalLog.AddModLog(sandbox, logLine);
+				});
+		}
+
+		for (auto& [mod, modLogLine] : g_globalLog.modLines) {
+			ImGui::TextUnformatted(modLogLine.c_str());
+		}
+
+		if (g_autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+			ImGui::SetScrollHereY(1.0f);
+		}
+		ImGui::EndChild();
 	}
 
 
@@ -71,13 +98,24 @@ void LuaModManagementOverlay::OnDraw()
 		"Mod Name", "Mod ID", "Version", "Status", "Time Duration"
 	};
 	m_onClickTableRow = [&](std::string tableID, int row) {
-		log("on click row: %d", row);
 		auto items = g_tableItems[row];
 		auto modID = items[1];
 		m_selectMod = luaModManager->GetMod(modID);
-		log("selected mod ID: %s", m_selectMod->GetID());
 		};
 
+
+	ImGui::Separator();
+	auto selectedModID = GetSelectedModID();
+	Text(std::format("Current Selected ModID: {}", selectedModID));
+	if (Button("Restart")) {
+		m_selectMod->Restart();
+	}
+	ImGui::SameLine();
+	if (Button("Stop")) {
+		m_selectMod->Stop();
+	}
+
+	ImGui::Separator();
 	ImGui::BeginChild("mods_child");
 	ImGui::InputText("Search Mod Name", &g_searchModName);
 	DrawTableTemplate("mods_table", g_tableColumnNames, g_tableItems);

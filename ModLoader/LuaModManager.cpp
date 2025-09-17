@@ -32,6 +32,18 @@ void LuaModManager::UpdateTick()
 	}
 }
 
+LuaModEntry* LuaModManager::CreateNewMod(LuaModManifest& manifest)
+{
+	m_mods.emplace(manifest.UniqueID, std::make_unique<LuaModEntry>());
+	auto mod = GetMod(manifest.UniqueID);
+
+	auto sandbox = mod->GetSandbox();
+	std::string sandboxID = sandbox->GetID();
+	log("try added sandboxID: %s", sandboxID);
+	m_modsMapBySandboxID[sandboxID] = mod;
+	return mod;
+}
+
 LuaModManager::LuaModManager()
 {
 	log("init LuaModManager...");
@@ -75,12 +87,10 @@ LuaModEntry* LuaModManager::LoadMod(path manifestPath)
 	}
 
 
-	// create new mod
-	m_mods.emplace(manifest.UniqueID, std::make_unique<LuaModEntry>());
-
+	// create new mod & registered
+	auto mod = CreateNewMod(manifest);
 
 	// setup mod
-	LuaModEntry* mod = GetMod(manifest.UniqueID);
 	mod->Setup(manifest, manifestPath);
 	log("loaded mod: %s", mod->GetModName());
 
@@ -96,8 +106,16 @@ LuaModEntry* LuaModManager::LoadMod(path manifestPath)
 
 LuaModEntry* LuaModManager::GetMod(std::string uniqueID)
 {
-	if (m_mods.find(uniqueID) != m_mods.end())
-		return m_mods[uniqueID].get();
+	if (m_mods.contains(uniqueID))
+		return m_mods.at(uniqueID).get();
+	return nullptr;
+}
+
+LuaModEntry* LuaModManager::GetModBySandboxID(std::string sandboxID)
+{
+	if (m_modsMapBySandboxID.contains(sandboxID)) {
+		return m_modsMapBySandboxID.at(sandboxID);
+	}
 	return nullptr;
 }
 
@@ -120,3 +138,4 @@ LuaModManifest LuaModManager::ParseManifest(path manifestPath)
 	m.Version = j.value("Version", "0.0.0");
 	return m;
 }
+

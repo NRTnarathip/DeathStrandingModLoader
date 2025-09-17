@@ -4,6 +4,7 @@
 #include <set>
 #include <unordered_map>
 #include "LuaModSandbox.h"
+#include <deque>
 
 using path = std::filesystem::path;
 
@@ -42,6 +43,7 @@ public:
 	const char* GetStatusName();
 	LuaModSandbox* GetSandbox() { return &m_sandbox; }
 	const char* GetVersion() { return m_manifest.Version.c_str(); };
+	LuaModLog* GetModLog() { return m_sandbox.GetModLog(); }
 
 	// const
 	inline static const std::string K_MainLuaFileName = "main.lua";

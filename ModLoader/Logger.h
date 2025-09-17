@@ -1,5 +1,6 @@
 #pragma once
 #include <fstream>
+#include <iostream>
 
 class LoaderConfig;
 
@@ -13,11 +14,15 @@ public:
 	}
 	void logFormat(const char* format, ...);
 
+	// static utils
+	static std::string GetTimeNowMsString();
+
 private:
 	Logger();
 	std::ofstream m_logStream;
 	const char* m_logFileName = "mod_log.txt";
 	LoaderConfig* m_config;
+
 };
 
 

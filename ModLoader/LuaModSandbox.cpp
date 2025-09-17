@@ -3,6 +3,9 @@
 #include "utils.h"
 #include "LuaModFunctionAPI.h"
 
+std::vector<LuaModLog::OnLuaNativeLogCallback_t> LuaModLog::g_onLuaLogCallbacks;
+
+
 namespace LuaNative {
 
 	// Utils API
@@ -40,18 +43,8 @@ namespace LuaNative {
 
 	}
 
-	static void LuaLog(sol::variadic_args args) {
+	static std::string LuaLog(sol::variadic_args args) {
 		std::stringstream ss;
-
-		// timestamp
-		auto now = std::chrono::system_clock::now();
-		auto time_t = std::chrono::system_clock::to_time_t(now);
-		auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-			now.time_since_epoch()) % 1000;
-		auto tm = *std::localtime(&time_t);
-		std::string tmFormat = std::format("{:02d}:{:02d}:{:02d}:{:03d}",
-			tm.tm_hour, tm.tm_min, tm.tm_sec, ms.count());
-		ss << "[LUA][" << tmFormat.c_str() << "] ";
 
 		// main
 		int argCount = args.size();
@@ -64,7 +57,11 @@ namespace LuaNative {
 		}
 
 		// log it
-		log(ss.str().c_str());
+		auto finalLogString = ss.str();
+		log(("[LUA] " + finalLogString).c_str());
+
+		//return
+		return finalLogString;
 	}
 
 
@@ -87,7 +84,14 @@ void LuaModSandbox::CreateNewEnvrionment()
 
 
 	// Default API
-	m_solState.set_function("Log", LuaNative::LuaLog);
+	m_solState.set_function("Log", [this](sol::variadic_args args) {
+		auto logResult = LuaNative::LuaLog(args);
+		m_modLog.Push(logResult);
+		for (auto& callback : LuaModLog::g_onLuaLogCallbacks) {
+			callback(this, logResult);
+		}
+
+		});
 	m_solState.set_function("Import", [this](std::string filePath) {
 		this->LuaImport(filePath);
 		});
@@ -110,6 +114,14 @@ void LuaModSandbox::LuaImport(std::string path)
 
 
 	log("imported lua file: %s", path);
+}
+
+LuaModSandbox::LuaModSandbox()
+{
+	static size_t g_idNumberCounter = 0;
+	// start at 1
+	m_id = std::format("Sandbox:0x{:x}", ++g_idNumberCounter);
+
 }
 
 void LuaModSandbox::Restart()

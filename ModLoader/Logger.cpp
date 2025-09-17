@@ -11,6 +11,20 @@
 #include <cstdarg>
 #include <sstream>
 
+
+std::string Logger::GetTimeNowMsString() {
+	std::stringstream ss;
+	auto now = std::chrono::system_clock::now();
+	auto time_t = std::chrono::system_clock::to_time_t(now);
+	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+		now.time_since_epoch()) % 1000;
+	auto tm = *std::localtime(&time_t);
+	std::string tmFormat = std::format("{:02d}:{:02d}:{:02d}:{:03d}",
+		tm.tm_hour, tm.tm_min, tm.tm_sec, ms.count());
+	ss << tmFormat.c_str();
+	return ss.str();
+}
+
 Logger::Logger()
 {
 	m_config = LoaderConfig::Instance();

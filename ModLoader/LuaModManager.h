@@ -1,5 +1,7 @@
 #pragma once
 #include "LuaModEntry.h"
+#include <unordered_map>
+#include <iostream>
 
 using LuaModsMap_t = std::unordered_map<std::string, std::unique_ptr<LuaModEntry>>;
 
@@ -7,7 +9,8 @@ class LuaModManager {
 private:
 	void UpdateTick();
 	LuaModsMap_t m_mods;
-
+	std::unordered_map<std::string, LuaModEntry*> m_modsMapBySandboxID;
+	LuaModEntry* CreateNewMod(LuaModManifest& manifest);
 public:
 	static LuaModManager* Instance() {
 		static LuaModManager inst;
@@ -25,5 +28,6 @@ public:
 	LuaModEntry* GetMod(std::string uniqueID);
 	LuaModsMap_t& GetAllMod() { return m_mods; }
 	LuaModManifest ParseManifest(path path);
+	LuaModEntry* GetModBySandboxID(std::string sandboxID);
 };
 
