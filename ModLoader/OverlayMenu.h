@@ -4,7 +4,7 @@
 
 class RendererHook;
 
-class OverlayMenu : ImGuiOverlayBase
+class OverlayMenu final : public ImGuiOverlayBase
 {
 public:
 	static OverlayMenu* Instance()
@@ -20,7 +20,12 @@ public:
 	void Initialize();
 	void SetDumpStructPtr(void* p, int size = -1);
 
+	std::string GetWindowTitle() override { return "Master Overlay"; }
+	void OnDraw() override {}
+
 private:
+	std::vector<ImGuiOverlayBase*> m_overlays;
+
 	RendererHook* renderer;
 	ObjectScanner* objScanner;
 	EntityList* entityList = nullptr;

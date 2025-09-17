@@ -26,12 +26,17 @@ bool IsSearchFilterSkipItem(std::string src, std::string word) {
 
 OverlayMenu* g_overlay;
 
+#include "LuaModManagementOverlay.h"
 OverlayMenu::OverlayMenu()
 {
 	g_overlay = this;
 	renderer = RendererHook::Instance();
 	objScanner = ObjectScanner::Instance();
 	entityList = &objScanner->entityList;
+
+
+	// register overlay class
+	m_overlays.push_back(new LuaModManagementOverlay());
 }
 
 void OverlayMenu::UpdateOverlayToggle() {
@@ -477,7 +482,7 @@ void OverlayMenu::DrawSymbolInspector()
 				ExportedSymbolMember* memberPtr = &symbol->mMembers[i];
 				ImGui::PushID(i);
 				auto memberTypeInt = (uint32_t)member.mKind;
-				if (BeginTableNewRow(member.GetKindName(), false)) {
+				if (BeginTableSelectableNewRow(member.GetKindName(), false)) {
 					CopyToClipboard(memberPtr);
 					auto type = member.mRTTI;
 					auto typeName = type ? type->GetName().c_str() : "null";
@@ -714,8 +719,8 @@ void OverlayMenu::DrawFunctionAPIExporter()
 		refreshList = true;
 	}
 
-	static std::vector<const char*> tableColumNames = { "Export Name", "Signature", "Name" };
-	static std::vector<std::vector<const char*>> tableItems;
+	static std::vector<std::string> tableColumNames = { "Export Name", "Signature", "Name" };
+	static std::vector<std::vector<std::string>> tableItems;
 
 	if (tableItems.empty())
 		refreshList = true;
@@ -730,10 +735,10 @@ void OverlayMenu::DrawFunctionAPIExporter()
 				continue;
 			}
 
-			std::vector<const char*> colItems;
-			colItems.push_back(fn.exportName.c_str());
-			colItems.push_back(fn.signature.c_str());
-			colItems.push_back(fn.name.c_str());
+			std::vector<std::string> colItems;
+			colItems.push_back(fn.exportName);
+			colItems.push_back(fn.signature);
+			colItems.push_back(fn.name);
 			tableItems.push_back(colItems);
 		}
 	}
@@ -770,6 +775,13 @@ void OverlayMenu::OnPresent()
 	DrawDumpStructMenu();
 	DrawObjectInstanceListViewer();
 	DrawFunctionAPIExporter();
+
+	for (auto& overlay : m_overlays) {
+		auto title = overlay->GetWindowTitle();
+		overlay->BeginWindow(title);
+		overlay->OnDraw();
+		overlay->EndWindow();
+	}
 
 	// final
 	DrawImGuiData();

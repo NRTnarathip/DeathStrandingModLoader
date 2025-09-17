@@ -98,3 +98,13 @@ void LuaModEntry::UpdateTick()
 {
 	m_sandbox.UpdateTick();
 }
+
+const char* LuaModEntry::GetStatusName()
+{
+	switch (m_sandbox.m_currentStatus) {
+	case LuaModStatus::Idle: return "Idle";
+	case LuaModStatus::Running: return "Running";
+	case LuaModStatus::Error: return "Error";
+	}
+	return "Unknow Status Name";
+}

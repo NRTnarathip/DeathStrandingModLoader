@@ -3,6 +3,12 @@
 #include <algorithm>
 #include "utils.h"
 
+
+// helpr
+void ImGuiOverlayBase::BeginWindow(std::string name) {
+	ImGui::Begin(name.c_str());
+}
+
 bool ImGuiOverlayBase::BeginTable(const char* label_id,
 	std::vector<const char*> columeNames)
 {
@@ -23,7 +29,7 @@ bool ImGuiOverlayBase::BeginTable(const char* label_id,
 	return on;
 }
 
-bool ImGuiOverlayBase::BeginTableNewRow(const char* label, bool selected)
+bool ImGuiOverlayBase::BeginTableSelectableNewRow(const char* label, bool selected)
 {
 	ImGui::TableNextRow();
 	ImGui::TableNextColumn();
@@ -46,8 +52,8 @@ void ImGuiOverlayBase::NextTextColumn(const char* fmt, ...)
 	ImGui::TextUnformatted(result.c_str());
 }
 
-void ImGuiOverlayBase::DrawTableTemplate(const char* label_id, std::vector<const char*>& columnNames,
-	std::vector<std::vector<const char*>>& tableItems)
+void ImGuiOverlayBase::DrawTableTemplate(std::string label_id, std::vector<std::string>& columnNames,
+	std::vector<std::vector<std::string>>& tableItems)
 {
 	const auto flags = ImGuiTableFlags_ScrollY
 		| ImGuiTableFlags_Borders
@@ -56,12 +62,12 @@ void ImGuiOverlayBase::DrawTableTemplate(const char* label_id, std::vector<const
 		| ImGuiTableFlags_Resizable
 		| ImGuiTableFlags_Sortable
 		| ImGuiTableFlags_Reorderable;
-	bool on = ImGui::BeginTable(label_id, columnNames.size(), flags);
+	bool on = ImGui::BeginTable(label_id.c_str(), columnNames.size(), flags);
 	if (!on) return;
 
 	ImGui::TableSetupScrollFreeze(0, 1);
 	for (auto name : columnNames)
-		ImGui::TableSetupColumn(name);
+		ImGui::TableSetupColumn(name.c_str());
 	ImGui::TableHeadersRow();
 
 	int columnCount = columnNames.size();
@@ -72,8 +78,8 @@ void ImGuiOverlayBase::DrawTableTemplate(const char* label_id, std::vector<const
 			int col = spec.ColumnIndex;
 			auto dir = spec.SortDirection;
 			std::sort(tableItems.begin(), tableItems.end(),
-				[&](std::vector<const char*>& left, std::vector<const char*>& right) {
-					int cmp = std::strcmp(left[col], right[col]);
+				[&](auto& left, auto& right) {
+					int cmp = left[col] < right[col];
 					return dir == ImGuiSortDirection_Ascending ? cmp < 0 : cmp > 0;
 				});
 
@@ -82,13 +88,16 @@ void ImGuiOverlayBase::DrawTableTemplate(const char* label_id, std::vector<const
 	}
 
 	int rowIndex = 0;
-	for (std::vector<const char*>& items : tableItems) {
-		ImGui::PushID(rowIndex++);
+	for (auto& items : tableItems) {
+		ImGui::PushID(rowIndex);
 		ImGui::TableNextRow();
 		for (int i = 0; i < items.size(); i++) {
-			auto text = items[i];
+			auto text = items[i].c_str();
 			if (i == 0) {
-				BeginTableNewRow(text);
+				if (BeginTableSelectableNewRow(text)) {
+					if (m_onClickTableRow)
+						m_onClickTableRow(label_id, rowIndex);
+				}
 			}
 			else {
 				ImGui::TableSetColumnIndex(i);
@@ -96,7 +105,13 @@ void ImGuiOverlayBase::DrawTableTemplate(const char* label_id, std::vector<const
 			}
 		}
 		ImGui::PopID();
+		rowIndex++;
 	}
 
 	EndTable();
+}
+
+bool ImGuiOverlayBase::IsSearchFilterSkipItem(std::string src, std::string word) {
+	if (word.empty()) return false;
+	return !IsContains(src, word);
 }

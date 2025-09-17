@@ -38,6 +38,9 @@ public:
 	// helper
 	const char* GetModName() const { return m_manifest.Name.c_str(); }
 	const char* GetID() const { return m_manifest.UniqueID.c_str(); }
+	const char* GetStatusName();
+	LuaModSandbox* GetSandbox() { return &m_sandbox; }
+	const char* GetVersion() { return m_manifest.Version.c_str(); };
 
 	// const
 	inline static const std::string K_MainLuaFileName = "main.lua";

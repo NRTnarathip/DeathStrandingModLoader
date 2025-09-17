@@ -114,6 +114,7 @@ void LuaModSandbox::LuaImport(std::string path)
 
 void LuaModSandbox::Restart()
 {
+	m_restartTimepoint = std::chrono::steady_clock::now();
 	CreateNewEnvrionment();
 }
 
@@ -255,6 +256,18 @@ bool LuaModSandbox::IsRunning() const {
 }
 bool LuaModSandbox::IsError()const {
 	return m_currentStatus == LuaModStatus::Error;
+}
+
+using namespace std::chrono;
+size_t LuaModSandbox::GetRunDurationMs() {
+	auto now = std::chrono::steady_clock::now();
+	if (m_stopTimepoint.time_since_epoch().count() != 0) {
+		auto durationStartToStop = duration_cast<milliseconds>(now - m_restartTimepoint);
+		return durationStartToStop.count();
+	}
+
+	auto durationNow = duration_cast<milliseconds>(now - m_restartTimepoint);
+	return durationNow.count();
 }
 
 LuaThreadCoroutine::LuaThreadCoroutine()

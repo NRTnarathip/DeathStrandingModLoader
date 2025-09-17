@@ -408,6 +408,7 @@ exit /b 0</Command>
     <ClInclude Include="LoaderConfig.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="LuaModEntry.h" />
+    <ClInclude Include="LuaModManagementOverlay.h" />
     <ClInclude Include="LuaModManager.h" />
     <ClInclude Include="LuaModSandbox.h" />
     <ClInclude Include="FileUtils.h" />
@@ -451,6 +452,7 @@ exit /b 0</Command>
     <ClCompile Include="LoaderConfig.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="LuaModEntry.cpp" />
+    <ClCompile Include="LuaModManagementOverlay.cpp" />
     <ClCompile Include="LuaModManager.cpp" />
     <ClCompile Include="LuaModSandbox.cpp" />
     <ClCompile Include="FileUtils.cpp" />

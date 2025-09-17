@@ -40,6 +40,9 @@ private:
 	sol::state m_solState;
 	std::string m_code;
 
+	std::chrono::steady_clock::time_point m_restartTimepoint;
+	std::chrono::steady_clock::time_point m_stopTimepoint;
+
 	// Global Static API
 	static int LuaAwait(int ms);
 
@@ -58,5 +61,6 @@ public:
 	bool IsIdle() const;
 	bool IsRunning() const;
 	bool IsError() const;
+	size_t GetRunDurationMs();
 };
 
