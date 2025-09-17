@@ -40,7 +40,7 @@ namespace LuaNative {
 
 	}
 
-	static void Log(sol::variadic_args args) {
+	static void LuaLog(sol::variadic_args args) {
 		std::stringstream ss;
 
 		// timestamp
@@ -68,74 +68,97 @@ namespace LuaNative {
 	}
 
 
-
 	// Game API
 	static void* GetLocalPlayer() {
+		log("try get local player..");
 		static auto fn = DecimaNative::GetGameFunctionAPI("DSPlayerEntity_sExportedGetLocalDSPlayerEntity");
-		return fn->Call<void*>();
+		auto result = fn->Call<void*>();
+		log("result: %p", result);
+		return result;
 	}
 }
 
 
-void LuaModSandbox::SetupEnvrionment()
+void LuaModSandbox::CreateNewEnvrionment()
 {
 	// enable libs
-	lua.open_libraries(sol::lib::base, sol::lib::math,
+	m_solState.open_libraries(sol::lib::base, sol::lib::math,
 		sol::lib::table, sol::lib::string);
 
 
 	// Default API
-	lua.set_function("Log", LuaNative::Log);
-	lua.set_function("Await", sol::yielding(Await));
-	lua.set_function("CreateThread", [this](sol::function fn) {
-		this->CreateThread(fn);
+	m_solState.set_function("Log", LuaNative::LuaLog);
+	m_solState.set_function("Import", [this](std::string filePath) {
+		this->LuaImport(filePath);
+		});
+	m_solState.set_function("Await", sol::yielding(LuaAwait));
+	m_solState.set_function("CreateThread", [this](sol::function fn) {
+		this->LuaCreateThread(fn);
 		});
 
 	// Alias
-	lua["Wait"] = lua["Await"];
+	m_solState["Wait"] = m_solState["Await"];
 
 
 	// Setup Game API
-	lua.set_function("GetLocalPlayer", LuaNative::GetLocalPlayer);
+	m_solState.set_function("GetLocalPlayer", LuaNative::GetLocalPlayer);
 }
 
-
-bool LuaModSandbox::Run(std::string code)
+void LuaModSandbox::LuaImport(std::string path)
 {
-	log("try run code...");
+	log("try importing lua file: %s", path);
+
+
+	log("imported lua file: %s", path);
+}
+
+void LuaModSandbox::Restart()
+{
+	CreateNewEnvrionment();
+}
+
+bool LuaModSandbox::RunMainCodeOnce(std::string code)
+{
+	log("try run main code...");
 	// clear status first!
-	if (!IsIdle())
+	if (!IsIdle()) {
+		log("error can't run code!, need status to Idle");
 		return false;
+	}
 
 	try {
-		this->code = code;
-		status = LuaModStatus::Running;
-		lua.script(code);
-		log("run code successfully");
+		this->m_code = code;
+		m_currentStatus = LuaModStatus::Running;
+		log("try run sol::script()..");
+		m_solState.script(code);
+		log("run sol::script() successfully");
 	}
 	catch (const sol::error& e) {
-		status = LuaModStatus::Error;
+		m_currentStatus = LuaModStatus::Error;
 		auto errorString = std::format("LuaSandbox Error: {}", e.what());
 		log(errorString.c_str());
 	}
 
-	return !IsError();
+	return m_currentStatus == LuaModStatus::Running;
 }
 
 void LuaModSandbox::UpdateTick()
 {
+	//log("try lua sandbox update..");
+
 	try {
-		for (auto& newThread : m_threadNewList) {
-			m_threadWorkingList.push_back(newThread);
-			log("added thread: %d to working", newThread->id);
+		for (auto& newThreadSafePtr : m_threadNewList) {
+			auto t = newThreadSafePtr.get();
+			m_threadWorkingList.push_back(std::move(newThreadSafePtr));
+			log("added thread: %d to working", t->id);
 		}
 		m_threadNewList.clear();
 
 		const auto now = steady_clock::now();
 
 		// update all thread working list
-		for (auto& thread : m_threadWorkingList) {
-			auto t = thread;
+		for (auto& threadSafePtr : m_threadWorkingList) {
+			auto t = threadSafePtr.get();
 			auto& co = t->co;
 
 			//log("try update thread: %d", t->id);
@@ -184,25 +207,27 @@ void LuaModSandbox::UpdateTick()
 		// remove thread finish
 		TryCleanupThreadList();
 
+		//log("lua sandbox updated");
 	}
 	catch (const sol::error& e) {
-		status = LuaModStatus::Error;
+		m_currentStatus = LuaModStatus::Error;
 		auto errorString = std::format("LuaSandbox Error: {}", e.what());
 		log(errorString.c_str());
 	}
 }
 
-int LuaModSandbox::Await(int ms) {
-	// just yield. simple code
-	return ms;
+int LuaModSandbox::LuaAwait(int ms) {
+	return ms; // just yield. simple code
 }
 
-void LuaModSandbox::CreateThread(sol::function fnBody)
+void LuaModSandbox::LuaCreateThread(sol::function fnBody)
 {
-	auto t = new LuaThreadCoroutine();
-	t->thread = sol::thread::create(lua.lua_state());
+	log("try lua CreateThread...");
+	m_threadNewList.emplace_back(std::make_unique<LuaThreadCoroutine>());
+	auto t = m_threadNewList.back().get();
+	t->thread = sol::thread::create(m_solState.lua_state());
 	t->co = sol::coroutine(t->thread.state(), fnBody);
-	m_threadNewList.push_back(t);
+	log("created lua thread: %d", t->id);
 }
 
 void LuaModSandbox::TryCleanupThreadList() {
@@ -210,10 +235,9 @@ void LuaModSandbox::TryCleanupThreadList() {
 		std::remove_if(
 			m_threadWorkingList.begin(),
 			m_threadWorkingList.end(),
-			[this](auto t) {
+			[](std::unique_ptr<LuaThreadCoroutine>& t) {
 				if (t->isFinish) {
-					log("remove thread: %p", t);
-					delete t;
+					log("removing thread: %d", t->id);
 					return true;
 				}
 				return false;
@@ -221,17 +245,16 @@ void LuaModSandbox::TryCleanupThreadList() {
 		),
 		m_threadWorkingList.end()
 	);
-
 }
 
 bool LuaModSandbox::IsIdle() const {
-	return status == LuaModStatus::Idle;
+	return m_currentStatus == LuaModStatus::Idle;
 }
 bool LuaModSandbox::IsRunning() const {
-	return status == LuaModStatus::Running;
+	return m_currentStatus == LuaModStatus::Running;
 }
 bool LuaModSandbox::IsError()const {
-	return status == LuaModStatus::Error;
+	return m_currentStatus == LuaModStatus::Error;
 }
 
 LuaThreadCoroutine::LuaThreadCoroutine()

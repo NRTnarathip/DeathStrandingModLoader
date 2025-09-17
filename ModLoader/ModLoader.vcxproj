@@ -410,6 +410,7 @@ exit /b 0</Command>
     <ClInclude Include="LuaModEntry.h" />
     <ClInclude Include="LuaModManager.h" />
     <ClInclude Include="LuaModSandbox.h" />
+    <ClInclude Include="FileUtils.h" />
     <ClInclude Include="MinHook.h" />
     <ClInclude Include="ModManager.h" />
     <ClInclude Include="MoverComponent.h" />
@@ -452,6 +453,7 @@ exit /b 0</Command>
     <ClCompile Include="LuaModEntry.cpp" />
     <ClCompile Include="LuaModManager.cpp" />
     <ClCompile Include="LuaModSandbox.cpp" />
+    <ClCompile Include="FileUtils.cpp" />
     <ClCompile Include="ModManager.cpp" />
     <ClCompile Include="MoverComponent.cpp" />
     <ClCompile Include="mydx12.h" />

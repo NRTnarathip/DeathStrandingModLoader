@@ -5,29 +5,41 @@
 #include <unordered_map>
 #include "LuaModSandbox.h"
 
-using LuaModUniqueID_t = std::string;
 using path = std::filesystem::path;
 
 struct LuaModManifest {
 	std::string Name;
 	std::string UniqueID;
 	std::string Version;
+
+	// const
+	inline static const std::string K_ManifestJson = "manifest.json";
 };
 
 class LuaModEntry {
-public:
-	LuaModManifest manifest;
-	path modDir;
-	path manifestPath;
-	std::set<path> luaFiles;
-	LuaModSandbox sandbox;
-
-	void Setup(path modDir, LuaModManifest manifest);
+private:
 	std::set<path> ScanLuaFiles();
-	bool Start();
-	const char* GetModName() const {
-		return manifest.Name.c_str();
-	}
+	path FindLuaFileByName(std::string path);
+	path m_modPath;
+	path m_manifestPath;
+	std::set<path> m_luaFiles;
+	LuaModSandbox m_sandbox;
+	LuaModManifest m_manifest;
+	bool m_isSetup = false;
+	std::string GetModPathString();
+
+public:
+	// main functions
+	LuaModEntry();
+	void Setup(LuaModManifest modManifest, path modManifestPath);
+	bool Restart();
 	void UpdateTick();
+
+	// helper
+	const char* GetModName() const { return m_manifest.Name.c_str(); }
+	const char* GetID() const { return m_manifest.UniqueID.c_str(); }
+
+	// const
+	inline static const std::string K_MainLuaFileName = "main.lua";
 };
 

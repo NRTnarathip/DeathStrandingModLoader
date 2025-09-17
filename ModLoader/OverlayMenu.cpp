@@ -100,7 +100,7 @@ void InitImGuiStyle() {
 	ImFont* consolas = io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/consolab.ttf", 20.0f);
 	ImGui::PushFont(consolas);
 	// background
-	float opacity = 0.8;
+	float opacity = 0.95;
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, opacity));
 }
 

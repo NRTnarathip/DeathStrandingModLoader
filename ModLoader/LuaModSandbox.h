@@ -34,26 +34,29 @@ struct LuaThreadCoroutine {
 
 class LuaModSandbox {
 private:
-	std::vector<LuaThreadCoroutine*> m_threadWorkingList;
-	std::vector<LuaThreadCoroutine*> m_threadNewList;
-public:
-	LuaModStatus status;
-	sol::state lua;
-	std::string code;
+	std::vector<std::unique_ptr<LuaThreadCoroutine>> m_threadWorkingList;
+	std::vector<std::unique_ptr<LuaThreadCoroutine>> m_threadNewList;
 
-	void SetupEnvrionment();
-	bool Run(std::string code);
+	sol::state m_solState;
+	std::string m_code;
+
+	// Global Static API
+	static int LuaAwait(int ms);
+
+	// Global Instance API
+	void LuaCreateThread(sol::function fn);
+	void TryCleanupThreadList();
+	void CreateNewEnvrionment();
+	void LuaImport(std::string path);
+
+public:
+	LuaModStatus m_currentStatus;
+
+	void Restart();
+	bool RunMainCodeOnce(std::string code);
 	void UpdateTick();
 	bool IsIdle() const;
 	bool IsRunning() const;
 	bool IsError() const;
-
-
-	// Global Static API
-	static int Await(int ms);
-
-	// Global Instance API
-	void CreateThread(sol::function fn);
-	void TryCleanupThreadList();
 };
 

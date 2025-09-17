@@ -3,7 +3,7 @@
 
 class LuaModManager {
 private:
-	std::unordered_map<LuaModUniqueID_t, LuaModEntry*> m_mods;
+	std::unordered_map<std::string, std::unique_ptr<LuaModEntry>> m_mods;
 	void UpdateTick();
 
 public:
@@ -15,8 +15,7 @@ public:
 	LuaModManager();
 
 	// const
-	static const std::string k_manifestFileName;
-	std::filesystem::path modsDir = "LuaMods";
+	inline static const std::filesystem::path K_LuaModsDirName = "LuaMods";
 
 	// functions
 	void LoadAllMods();

@@ -183,6 +183,9 @@
     <ClInclude Include="LuaModSandbox.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="FileUtils.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -303,6 +306,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LuaModSandbox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
