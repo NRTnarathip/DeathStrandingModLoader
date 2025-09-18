@@ -139,6 +139,26 @@ std::string StringRemove(std::string src, const std::string& word)
 	return src;
 }
 
+std::string StringConcatComma(std::vector<std::string> items)
+{
+	if (items.empty())
+		return "";
+
+	if (items.size() == 1)
+		return items[0];
+
+	// found items >= 2
+	std::string line;
+	for (auto item : items) {
+		if (item.empty())
+			continue;
+		line += item + ", ";
+	}
+
+	// remove last comma >> ", "
+	return line.substr(0, line.size() - 2);
+}
+
 bool IsContainsCaseSensitive(const std::string& src, const std::string& word)
 {
 	return src.find(word) != std::string::npos;

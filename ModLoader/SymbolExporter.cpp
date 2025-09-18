@@ -60,9 +60,6 @@ struct CHeaderFileBuilder {
 
 		for (auto fun : functionsSort) {
 			std::stringstream line;
-			if (!fun->isInstanceFunction) {
-				line << "static ";
-			}
 			line << fun->signature << ";";
 			AddLine(tab + line.str());
 		}

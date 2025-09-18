@@ -25,6 +25,9 @@
     <Filter Include="Source Files\LuaMod">
       <UniqueIdentifier>{5c89b3e9-74ce-4c58-9f0d-a520bf32db9a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Overlay">
+      <UniqueIdentifier>{1c72900a-daa1-487b-92d9-23d2c9ebf9b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="archive_reader.h">
@@ -192,6 +195,15 @@
     <ClInclude Include="LuaModSandbox.h">
       <Filter>Source Files\LuaMod</Filter>
     </ClInclude>
+    <ClInclude Include="GameAPIExporterOverlay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\SteamLibrary\steamapps\common\DEATH STRANDING DIRECTORS CUT\LuaGameBindings.h">
+      <Filter>Source Files\LuaMod</Filter>
+    </ClInclude>
+    <ClInclude Include="GameAPIGenerated.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -319,6 +331,9 @@
     </ClCompile>
     <ClCompile Include="LuaModSandbox.cpp">
       <Filter>Source Files\LuaMod</Filter>
+    </ClCompile>
+    <ClCompile Include="GameAPIExporterOverlay.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

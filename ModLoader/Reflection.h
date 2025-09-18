@@ -49,6 +49,9 @@ public:
 
 	int GetParamCount() const { return parameters.size(); }
 	std::string GetInstanceTypeName() const { return instanceType ? instanceType->name : ""; }
+
+	// example: "Entity* param1, Vec3* param2, bool param3"
+	std::string BuildParamSignatures();
 };
 
 class ClassType {

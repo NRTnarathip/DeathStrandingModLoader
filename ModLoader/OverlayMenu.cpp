@@ -27,6 +27,7 @@ bool IsSearchFilterSkipItem(std::string src, std::string word) {
 OverlayMenu* g_overlay;
 
 #include "LuaModManagementOverlay.h"
+#include  "GameAPIExporterOverlay.h"
 OverlayMenu::OverlayMenu()
 {
 	g_overlay = this;
@@ -37,6 +38,7 @@ OverlayMenu::OverlayMenu()
 
 	// register overlay class
 	m_overlays.push_back(new LuaModManagementOverlay());
+	m_overlays.push_back(new GameAPIExporterOverlay());
 }
 
 void OverlayMenu::UpdateOverlayToggle() {

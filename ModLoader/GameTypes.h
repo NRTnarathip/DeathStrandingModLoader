@@ -215,6 +215,10 @@ struct MyVec4Float : MyVec3Float {
 #define MyVec3Pack MyVec3Float
 #define MyVec4 MyVec4Double
 #define MyVec4Pack MyVec4Float
+#define Vec3 MyVec3Double
+#define Vec3Pack MyVec3Float
+#define Vec4 MyVec4Double
+#define Vec4Pack MyVec4Float
 
 // size 36bit
 struct MyRotMatrix {

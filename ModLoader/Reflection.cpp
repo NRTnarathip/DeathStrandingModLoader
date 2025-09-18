@@ -64,6 +64,7 @@ SignatureType* Reflection::BuildType(ExportedSymbolGroup* symbolGroup, ExportedS
 			type.isPointer = type.modifier.find("*") != std::string::npos;
 	}
 
+	// building signature
 	std::string& signature = type.signature;
 
 	signature = signature + type.name;
@@ -168,6 +169,9 @@ std::string Reflection::BuildFunctionSignatureName(FunctionType* funPtr)
 	std::stringstream sigNameStream;
 
 	FunctionType& fun = *funPtr;
+
+	if (!fun.isInstanceFunction)
+		sigNameStream << "static ";
 
 	sigNameStream << fun.returnType->signature << " " << fun.name;
 
@@ -278,4 +282,20 @@ bool BaseType::IsPrimitive(std::string name)
 	}
 
 	return false;
+}
+
+std::string FunctionType::BuildParamSignatures()
+{
+	if (parameters.empty())
+		return "";
+
+	std::string sig;
+	auto paramCount = GetParamCount();
+	for (int i = 0; i < paramCount; i++) {
+		auto p = parameters[i];
+		sig += std::format("{} param{}, ", p->signature, i + 1);
+	}
+	// remove last word comma >> ", "
+	sig = sig.substr(0, sig.size() - 2);
+	return sig;
 }

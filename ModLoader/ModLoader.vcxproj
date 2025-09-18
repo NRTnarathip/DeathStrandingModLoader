@@ -377,6 +377,7 @@ exit /b 0</Command>
     <ClInclude Include="DecimaNative.h" />
     <ClInclude Include="DevDebug.h" />
     <ClInclude Include="dsdc_header.h" />
+    <ClInclude Include="E:\SteamLibrary\steamapps\common\DEATH STRANDING DIRECTORS CUT\LuaGameBindings.h" />
     <ClInclude Include="EntityList.hpp" />
     <ClInclude Include="extern\decima-native\Array.h" />
     <ClInclude Include="extern\decima-native\FileDevice.h" />
@@ -400,6 +401,8 @@ exit /b 0</Command>
     <ClInclude Include="extern\imgui\imstb_truetype.h" />
     <ClInclude Include="extern\imgui\misc\cpp\imgui_stdlib.h" />
     <ClInclude Include="extern\imgui\misc\single_file\imgui_single_file.h" />
+    <ClInclude Include="GameAPIExporterOverlay.h" />
+    <ClInclude Include="GameAPIGenerated.h" />
     <ClInclude Include="hooks.h" />
     <ClInclude Include="ImGuiOverlayBase.h" />
     <ClInclude Include="ini.h" />
@@ -445,6 +448,7 @@ exit /b 0</Command>
     <ClCompile Include="extern\imgui\imgui_widgets.cpp" />
     <ClCompile Include="extern\imgui\misc\cpp\imgui_stdlib.cpp" />
     <ClCompile Include="extern\imgui\misc\fonts\binary_to_compressed_c.cpp" />
+    <ClCompile Include="GameAPIExporterOverlay.cpp" />
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="ImGuiOverlayBase.cpp" />
     <ClCompile Include="ini.c" />
