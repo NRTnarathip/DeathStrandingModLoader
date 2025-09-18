@@ -21,6 +21,8 @@ public:
 };
 
 class SignatureType : public BaseType {
+private:
+	uint32_t m_typeSize = -1;
 public:
 	std::string modifier;
 	bool isConst;
@@ -29,6 +31,7 @@ public:
 	bool isRef;
 	bool hasModifier;
 	const RTTI* rtti;
+	uint32_t GetTypeSize();
 };
 
 class FunctionType : public BaseType {
@@ -61,11 +64,19 @@ private:
 	std::vector<FunctionType*> m_functionVector;
 public:
 	std::string name;
+	const RTTI* rtti;
+
 	// Key: export name
 	FunctionType* AddFunction(FunctionType* fun);
 	FunctionType* GetFunctionByName(std::string name);
 	FunctionType* GetFunctionByExportName(std::string exportName);
 	std::vector<FunctionType*> GetFunctions() { return m_functionVector; }
+	uint32_t GetTypeSize() {
+		return rtti ? GetRTTITypeSize(rtti) : 0;
+	}
+	int GetFunctionCount() {
+		return m_functionVector.size();
+	}
 
 	static std::string BuildClassName(FunctionType* fun);
 };

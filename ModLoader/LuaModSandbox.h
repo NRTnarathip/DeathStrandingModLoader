@@ -59,7 +59,7 @@ private:
 	std::vector<std::unique_ptr<LuaThreadCoroutine>> m_threadNewList;
 
 	std::string m_id;
-	sol::state m_solState;
+	sol::state m_lua;
 	std::string m_code;
 	LuaModStatus m_currentStatus;
 	void SetNewStatus(LuaModStatus newStatus);

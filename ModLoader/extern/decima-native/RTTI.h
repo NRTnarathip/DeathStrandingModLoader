@@ -67,7 +67,7 @@ struct RTTI {
 	[[nodiscard]] const RTTIContainer* AsContainer() const {
 		return mKind == RTTIKind::Container ? reinterpret_cast<const RTTIContainer*>(this) : nullptr;
 	}
-	const char* GetKindName() {
+	const char* GetKindName() const {
 		switch (mKind)
 		{
 		case RTTIKind::Atom: return "RTTIAtom";
@@ -124,6 +124,7 @@ struct RTTIEnum : RTTI {
 	const char* mTypeName;
 	const RTTIValue* mValues;
 	const RTTI* mRepresentationType;
+	[[nodiscard]] auto Values() const { return std::span{ mValues, mNumValues }; }
 };
 
 ASSERT_SIZE(RTTIEnum, 0x28);

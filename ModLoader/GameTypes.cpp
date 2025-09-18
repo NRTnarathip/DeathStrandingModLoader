@@ -102,21 +102,21 @@ const char* Entity::GetName()
 	return "null";
 }
 
-MyVec4Float Entity::GetVelocity()
+MyVec4Pack Entity::GetVelocity()
 {
-	MyVec4Float velocity;
+	MyVec4Pack velocity;
 	typedef void* (*GetVelocityFunc)(Entity* ent, void* velo);
 	static auto fn = (GetVelocityFunc)GetFuncRva(0x234c180);
 	fn(this, &velocity);
 	return velocity;
 }
 
-MyVec3Float Entity::GetAngularVelocity()
+MyVec3Pack Entity::GetAngularVelocity()
 {
 	static auto fn = (void* (*)(Entity * ent, void* veloOut))GetFuncRva(0x23628b0);
-	MyVec3Double velo;
+	MyVec3 velo;
 	fn(this, &velo);
-	MyVec3Float velo3 = { (float)velo.x, (float)velo.y, (float)velo.z };
+	MyVec3Pack velo3 = { (float)velo.x, (float)velo.y, (float)velo.z };
 	return velo3;
 }
 
@@ -201,29 +201,6 @@ void* TryReadPtr(void** ptr) {
 	__except (EXCEPTION_EXECUTE_HANDLER) {
 		return nullptr;
 	}
-}
-
-AIManagerGame* AIManagerGame::Instance()
-{
-	static void** ptr = (void**)GetAddressFromRva(0x7be0d38);
-	if (!ptr)
-		return nullptr;
-
-	static AIManagerGame* instance = nullptr;
-	if (instance == nullptr)
-		instance = (AIManagerGame*)TryReadPtr(ptr);
-
-	return instance;
-}
-
-Entity** AIManagerGame::GetEntityArray()
-{
-	return (Entity**)((byte*)this + 0xc98d8);
-}
-
-int AIManagerGame::GetEntityCount()
-{
-	return *(int*)((byte*)this + 0xc98d0);
 }
 
 uint32_t(*g_GetRTTITypeSize)(const RTTI* type) = 0;

@@ -377,7 +377,6 @@ exit /b 0</Command>
     <ClInclude Include="DecimaNative.h" />
     <ClInclude Include="DevDebug.h" />
     <ClInclude Include="dsdc_header.h" />
-    <ClInclude Include="E:\SteamLibrary\steamapps\common\DEATH STRANDING DIRECTORS CUT\LuaGameBindings.h" />
     <ClInclude Include="EntityList.hpp" />
     <ClInclude Include="extern\decima-native\Array.h" />
     <ClInclude Include="extern\decima-native\FileDevice.h" />
@@ -389,7 +388,6 @@ exit /b 0</Command>
     <ClInclude Include="extern\decima-native\RTTIObject.h" />
     <ClInclude Include="extern\decima-native\RTTIRefObject.h" />
     <ClInclude Include="extern\decima-native\String.h" />
-    <ClInclude Include="extern\decima-native\UUID.h" />
     <ClInclude Include="extern\decima-native\XUtil.h" />
     <ClInclude Include="extern\imgui\backends\imgui_impl_dx12.h" />
     <ClInclude Include="extern\imgui\backends\imgui_impl_win32.h" />
@@ -410,6 +408,7 @@ exit /b 0</Command>
     <ClInclude Include="json.hpp" />
     <ClInclude Include="LoaderConfig.h" />
     <ClInclude Include="Logger.h" />
+    <ClInclude Include="LuaBindingPrivate.h" />
     <ClInclude Include="LuaModEntry.h" />
     <ClInclude Include="LuaModManagementOverlay.h" />
     <ClInclude Include="LuaModManager.h" />
@@ -455,6 +454,7 @@ exit /b 0</Command>
     <ClCompile Include="INIReader.cpp" />
     <ClCompile Include="LoaderConfig.cpp" />
     <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="LuaBindingPrivate.cpp" />
     <ClCompile Include="LuaModEntry.cpp" />
     <ClCompile Include="LuaModManagementOverlay.cpp" />
     <ClCompile Include="LuaModManager.cpp" />

@@ -150,9 +150,6 @@
     <ClInclude Include="extern\decima-native\String.h">
       <Filter>Source Files\decima-native</Filter>
     </ClInclude>
-    <ClInclude Include="extern\decima-native\UUID.h">
-      <Filter>Source Files\decima-native</Filter>
-    </ClInclude>
     <ClInclude Include="extern\decima-native\XUtil.h">
       <Filter>Source Files\decima-native</Filter>
     </ClInclude>
@@ -198,7 +195,7 @@
     <ClInclude Include="GameAPIExporterOverlay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\SteamLibrary\steamapps\common\DEATH STRANDING DIRECTORS CUT\LuaGameBindings.h">
+    <ClInclude Include="LuaBindingPrivate.h">
       <Filter>Source Files\LuaMod</Filter>
     </ClInclude>
     <ClInclude Include="GameAPIGenerated.h">
@@ -333,6 +330,9 @@
       <Filter>Source Files\LuaMod</Filter>
     </ClCompile>
     <ClCompile Include="GameAPIExporterOverlay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaBindingPrivate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

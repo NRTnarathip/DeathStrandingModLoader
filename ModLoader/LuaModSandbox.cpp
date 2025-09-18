@@ -1,7 +1,8 @@
 #include "LuaModSandbox.h"
-#include "DecimaNative.h"
 #include "utils.h"
 #include "LuaModFunctionAPI.h"
+#include "LuaBindingPrivate.h"
+#include "DecimaNative.h"
 
 std::vector<LuaModLog::OnLuaNativeLogCallback_t> LuaModLog::g_onLuaLogCallbacks;
 
@@ -75,16 +76,15 @@ namespace LuaNative {
 	}
 }
 
-
 void LuaModSandbox::CreateNewEnvrionment()
 {
 	// enable libs
-	m_solState.open_libraries(sol::lib::base, sol::lib::math,
+	m_lua.open_libraries(sol::lib::base, sol::lib::math,
 		sol::lib::table, sol::lib::string);
 
 
 	// Default API
-	m_solState.set_function("Log", [this](sol::variadic_args args) {
+	m_lua.set_function("Log", [this](sol::variadic_args args) {
 		auto logResult = LuaNative::LuaLog(args);
 		m_modLog.Push(logResult);
 		for (auto& callback : LuaModLog::g_onLuaLogCallbacks) {
@@ -92,20 +92,20 @@ void LuaModSandbox::CreateNewEnvrionment()
 		}
 
 		});
-	m_solState.set_function("Import", [this](std::string filePath) {
+	m_lua.set_function("Import", [this](std::string filePath) {
 		this->LuaImport(filePath);
 		});
-	m_solState.set_function("Await", sol::yielding(LuaAwait));
-	m_solState.set_function("CreateThread", [this](sol::function fn) {
+	m_lua.set_function("Await", sol::yielding(LuaAwait));
+	m_lua.set_function("CreateThread", [this](sol::function fn) {
 		this->LuaCreateThread(fn);
 		});
 
 	// Alias
-	m_solState["Wait"] = m_solState["Await"];
+	m_lua["Wait"] = m_lua["Await"];
 
 
 	// Setup Game API
-	m_solState.set_function("GetLocalPlayer", LuaNative::GetLocalPlayer);
+	LuaBindingPrivate::BindingAllFunction(m_lua);
 }
 
 void LuaModSandbox::LuaImport(std::string path)
@@ -156,7 +156,7 @@ bool LuaModSandbox::RunMainCodeOnce(std::string code)
 		this->m_code = code;
 		SetNewStatus(LuaModStatus::Running);
 		log("try run sol::script()..");
-		m_solState.script(code);
+		m_lua.script(code);
 		log("run sol::script() successfully");
 	}
 	catch (const sol::error& e) {
@@ -277,7 +277,7 @@ void LuaModSandbox::LuaCreateThread(sol::function fnBody)
 	log("try lua CreateThread...");
 	m_threadNewList.emplace_back(std::make_unique<LuaThreadCoroutine>());
 	auto t = m_threadNewList.back().get();
-	t->thread = sol::thread::create(m_solState.lua_state());
+	t->thread = sol::thread::create(m_lua.lua_state());
 	t->co = sol::coroutine(t->thread.state(), fnBody);
 	log("created lua thread: %d", t->id);
 }

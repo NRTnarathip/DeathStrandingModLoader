@@ -3,6 +3,6 @@
 
 struct MoverComponent : public EntityComponent
 {
-	MyVec3Float GetVelocity();
+	MyVec3Pack GetVelocity();
 };
 

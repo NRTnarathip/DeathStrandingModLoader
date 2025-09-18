@@ -111,8 +111,6 @@ enum class MyReadFileStatus : uint32_t
 	FileCorrupted = 17
 };
 
-
-
 struct ArchiveFileEntry;
 struct ArchiveChunkEntry;
 // size 0x40
@@ -127,16 +125,6 @@ public:
 	MyVector fileEntryVector; // 0x20 -> 0x2F
 	MyVector chunkEntryVector; // 0x30 -> 0x37
 };
-
-struct MyStringWrapper {
-	uint64_t length;
-	//MyString string;
-};
-
-
-#define FIELD(type, name, offset, prev) \
-    char _pad_##name[offset - prev]; \
-    type name
 
 struct ResourceReaderHandle {
 	LONGLONG someValue; //0x0
@@ -198,39 +186,44 @@ struct MyUUID {
 	bool IsEmpty();
 	static bool IsEmptyString(std::string string);
 };
+#define GGUUID MyUUID 
 
-struct MyVec3Double {
+// size 24
+struct MyVec3 {
 	double x, y, z;
 };
-struct MyVec3Float {
+#define Vec3 MyVec3
+
+// size 16
+struct MyVec3Pack {
 	float x, y, z;
 };
-struct MyVec4Double : MyVec3Double {
+#define Vec3Pack MyVec3Pack
+
+// size 32
+struct MyVec4 : MyVec3 {
 	double w;
 };
-struct MyVec4Float : MyVec3Float {
+#define Vec4 MyVec4
+
+// size 20
+struct MyVec4Pack : MyVec3Pack {
 	float w;
 };
-#define MyVec3 MyVec3Double
-#define MyVec3Pack MyVec3Float
-#define MyVec4 MyVec4Double
-#define MyVec4Pack MyVec4Float
-#define Vec3 MyVec3Double
-#define Vec3Pack MyVec3Float
-#define Vec4 MyVec4Double
-#define Vec4Pack MyVec4Float
+#define Vec4Pack MyVec4Pack
 
 // size 36bit
 struct MyRotMatrix {
-	MyVec3Float Col0;
-	MyVec3Float Col1;
-	MyVec3Float Col2;
+	MyVec3Pack Col0;
+	MyVec3Pack Col1;
+	MyVec3Pack Col2;
 };
+#define RotMatrix MyRotMatrix
 
 //size 60bit
 struct WorldTransform {
 	MyVec3 position; // size 24bit
-	MyRotMatrix rotation; // size 36bit
+	RotMatrix rotation; // size 36bit
 };
 
 namespace Flags {
@@ -315,8 +308,8 @@ struct Entity {
 
 	// function
 	const char* GetName();
-	MyVec4Float GetVelocity();
-	MyVec3Float GetAngularVelocity();
+	MyVec4Pack GetVelocity();
+	MyVec3Pack GetAngularVelocity();
 	float GetLinearSpeed();
 	Array<const EntityComponent*>* GetAllComponent();
 	Entity* GetParent();
@@ -330,33 +323,6 @@ struct Entity {
 	float GetHealth();
 	float GetMaxHealth();
 };
-
-class ControlledEntity : RTTIObject {
-
-};
-class Humanoid : ControlledEntity {
-
-};
-class DSPlayerEntity : Humanoid {
-	// vtable:  0x3d7d0d8
-	// vfunc 0: 0x2711b40
-	// vfunc 1: 0x2700280
-};
-
-struct CameraEntity {
-	// vtable:  0x3d198e8
-	// vfunc 0: 0x242daf0
-	// vfunc 1: 0x242c2d0
-};
-
-class AIManagerGame {
-public:
-	static AIManagerGame* Instance();
-
-	Entity** GetEntityArray();
-	int GetEntityCount();
-};
-
 
 struct ExportedSymbolMember {
 	enum class MemberKind : uint32_t
@@ -422,5 +388,62 @@ assert_offset(ExportedSymbolGroup, mMembers, 0x18);
 assert_offset(ExportedSymbolGroup, mDependencies, 0x28);
 assert_size(ExportedSymbolGroup, 0x38);
 
-
 const char* TryGetRTTIName(const RTTI* o);
+
+struct Mat44 {
+	Vec4 Col0;
+	Vec4 Col2;
+	Vec4 Col3;
+	Vec4 Col4;
+};
+assert_size(Mat44, 32 * 4);
+
+struct MySoundShape {
+
+};
+
+#undef SoundShape
+#define SoundShape MySoundShape
+
+#undef Array_uint64
+#define Array_uint64 Array<uint64_t>
+
+#undef Array_uint
+#define Array_uint Array<uint32_t>
+
+struct XpMultiplier {};
+struct AttackEventTag {};
+
+struct MyQuat {
+	float x, y, z, w;
+};
+#undef Quat
+#define Quat MyQuat
+
+#undef EntityLifetimeProxy
+struct MyEntityLifetimeProxy {};
+#define EntityLifetimeProxy MyEntityLifetimeProxy
+
+struct MyWString {};
+#undef WString
+#define WString MyWString
+
+struct LocalizerVariable {};
+#undef Array_LocalizerVariabl
+#define Array_LocalizerVariable Array<LocalizerVariable>
+
+struct MyLocalizedText {};
+#undef LocalizedText
+#define LocalizedText MyLocalizedText
+
+
+struct MyPlayer {};
+#define Player MyPlayer
+
+struct MyEDSEvaluationType {};
+#define EDSEvaluationType MyEDSEvaluationType
+
+struct MyController {};
+#define Controller MyController
+
+struct AttackEventLink {};

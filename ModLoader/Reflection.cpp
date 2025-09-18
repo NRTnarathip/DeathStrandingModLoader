@@ -299,3 +299,19 @@ std::string FunctionType::BuildParamSignatures()
 	sig = sig.substr(0, sig.size() - 2);
 	return sig;
 }
+
+uint32_t SignatureType::GetTypeSize()
+{
+	if (m_typeSize != -1)
+		return m_typeSize;
+
+	// unknow type size
+	if (rtti == nullptr) {
+		m_typeSize = 0;
+		return m_typeSize;
+	}
+
+	// load by RTTI
+	m_typeSize = GetRTTITypeSize(rtti);
+	return m_typeSize;
+}

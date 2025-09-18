@@ -206,12 +206,12 @@ MyVec3 RotationMatrixToEuler(MyRotMatrix& rotMatrix)
 	return euler;
 }
 
-void DrawVec3(const char* label, MyVec3Float vec) {
+void DrawVec3(const char* label, MyVec3Pack vec) {
 	float arr[] = { vec.x, vec.y, vec.z };
 	ImGui::InputFloat3(label, arr);
 }
-void DrawVec3(const char* label, MyVec3Double vec) {
-	DrawVec3(label, MyVec3Float{ (float)vec.x, (float)vec.y, (float)vec.z });
+void DrawVec3(const char* label, MyVec3 vec) {
+	DrawVec3(label, MyVec3Pack{ (float)vec.x, (float)vec.y, (float)vec.z });
 }
 void CopyToClipboard(const void* ptr) {
 	if (ptr == nullptr)
