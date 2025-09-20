@@ -3,9 +3,9 @@
 #include "LuaModFunctionAPI.h"
 #include "LuaBindingPrivate.h"
 #include "DecimaNative.h"
+#include "LuaMathBinding.h"
 
 std::vector<LuaModLog::OnLuaNativeLogCallback_t> LuaModLog::g_onLuaLogCallbacks;
-
 
 namespace LuaNative {
 
@@ -75,7 +75,6 @@ namespace LuaNative {
 		return result;
 	}
 }
-
 void LuaModSandbox::CreateNewEnvrionment()
 {
 	// enable libs
@@ -105,7 +104,10 @@ void LuaModSandbox::CreateNewEnvrionment()
 
 
 	// Setup Game API
-	LuaBindingPrivate::BindingAllFunction(m_lua);
+	log("try binding GameAPI for lua...");
+	LuaBindingPrivate::Bind(m_lua);
+	LuaMathBinding::Bind(m_lua);
+	log("success to binding GameAPI lua");
 }
 
 void LuaModSandbox::LuaImport(std::string path)

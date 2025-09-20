@@ -4,8 +4,6 @@
 #include <functional>
 #include <iterator>
 
-#include "Offsets.h"
-
 template<typename T, bool Const, typename PtrType = std::conditional_t<Const, const T*, T*>>
 class ArrayIterator {
 public:
@@ -67,7 +65,6 @@ public:
 	~Array() {
 		for (auto& item : *this)
 			item.~T();
-		//Offsets::CallID<"gMemFree", void(*)(void*)>(mEntries);
 		delete(mEntries);
 		mCount = 0;
 		mCapacity = 0;

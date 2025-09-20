@@ -1,6 +1,8 @@
 #pragma once
 #include <sol/sol.hpp>
 
-struct LuaBindingPrivate {
+class LuaMathBinding {
+public:
 	static void Bind(sol::state& lua);
 };
+

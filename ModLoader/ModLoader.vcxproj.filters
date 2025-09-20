@@ -201,6 +201,12 @@
     <ClInclude Include="GameAPIGenerated.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="extern\decima-native\GGUUID.h">
+      <Filter>Source Files\decima-native</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaMathBinding.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -333,6 +339,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LuaBindingPrivate.cpp">
+      <Filter>Source Files\LuaMod</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\decima-native\GGUUID.cpp">
+      <Filter>Source Files\decima-native</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaMathBinding.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

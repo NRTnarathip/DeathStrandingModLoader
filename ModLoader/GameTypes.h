@@ -12,8 +12,10 @@
 #include <unordered_set>
 #include <decima-native/RTTI.h>
 #include <decima-native/RTTIObject.h>
+#include <decima-native/RTTIRefObject.h>
 #include <decima-native/Array.h>
 #include <decima-native/String.h>
+#include <decima-native/GGUUID.h>
 
 #define assert_offset(struct_type, member, expected_offset) \
     static_assert(offsetof(struct_type, member) == expected_offset, \
@@ -180,17 +182,29 @@ struct EntityComponentContainer {
 	Array<const EntityComponent*> Components;
 };
 
-struct MyUUID {
-	uint8_t uuid[16];
-	std::string ToString();
-	bool IsEmpty();
-	static bool IsEmptyString(std::string string);
-};
-#define GGUUID MyUUID 
 
+#include <cmath>
 // size 24
 struct MyVec3 {
-	double x, y, z;
+	double x = 0;
+	double y = 0;
+	double z = 0;
+	MyVec3() {}
+	MyVec3(double _x, double _y, double _z) : x(_x), y(_y), z(_z) {}
+	double GetMagnitude() const {
+		return sqrt((x * x) + (y * y) + (z * z));
+	}
+	MyVec3 GetNormalize() {
+		double mag = GetMagnitude();
+		MyVec3 n{};
+		// Avoid division by zero
+		if (mag > 0.00001) {
+			n.x = x / mag;
+			n.y = y / mag;
+			n.z = z / mag;
+		}
+		return n;
+	}
 };
 #define Vec3 MyVec3
 
@@ -260,7 +274,7 @@ public:
 	{
 		uint32_t m_RefCount;			// 0x0
 		String m_CorePath;				// 0x8
-		MyUUID m_UUID;					// 0x10
+		GGUUID m_UUID;					// 0x10
 		uint64_t m_Unknown20;			// 0x20
 		void* m_Manager;	// 0x28
 		Ref<RTTIRefObject> m_Ref;		// 0x30
@@ -290,7 +304,7 @@ struct Entity {
 
 	// fields
 	void** vtable; // 0x0
-	MyUUID uuid; // 0x8 -> 0x18
+	GGUUID uuid; // 0x8 -> 0x18
 	void* weakPtrList; // 0x18 -> 0x20;
 	byte gap0x20_0x60[0x60 - 0x20];
 	RTTIObject* EntityRep; // 0x60
@@ -308,7 +322,7 @@ struct Entity {
 
 	// function
 	const char* GetName();
-	MyVec4Pack GetVelocity();
+	Vec3 GetVelocity();
 	MyVec3Pack GetAngularVelocity();
 	float GetLinearSpeed();
 	Array<const EntityComponent*>* GetAllComponent();
@@ -323,6 +337,8 @@ struct Entity {
 	float GetHealth();
 	float GetMaxHealth();
 };
+
+struct Player : public Entity {};
 
 struct ExportedSymbolMember {
 	enum class MemberKind : uint32_t
@@ -396,54 +412,143 @@ struct Mat44 {
 	Vec4 Col3;
 	Vec4 Col4;
 };
-assert_size(Mat44, 32 * 4);
+assert_size(Mat44, 128);
 
-struct MySoundShape {
-
-};
-
-#undef SoundShape
-#define SoundShape MySoundShape
-
-#undef Array_uint64
-#define Array_uint64 Array<uint64_t>
-
-#undef Array_uint
-#define Array_uint Array<uint32_t>
-
-struct XpMultiplier {};
-struct AttackEventTag {};
-
-struct MyQuat {
+struct Quat {
 	float x, y, z, w;
 };
-#undef Quat
-#define Quat MyQuat
-
-#undef EntityLifetimeProxy
-struct MyEntityLifetimeProxy {};
-#define EntityLifetimeProxy MyEntityLifetimeProxy
-
-struct MyWString {};
-#undef WString
-#define WString MyWString
-
-struct LocalizerVariable {};
-#undef Array_LocalizerVariabl
-#define Array_LocalizerVariable Array<LocalizerVariable>
-
-struct MyLocalizedText {};
-#undef LocalizedText
-#define LocalizedText MyLocalizedText
-
-
-struct MyPlayer {};
-#define Player MyPlayer
-
-struct MyEDSEvaluationType {};
-#define EDSEvaluationType MyEDSEvaluationType
-
-struct MyController {};
-#define Controller MyController
 
 struct AttackEventLink {};
+
+struct LocalizerVariable {};
+
+struct LocalizedText {};
+#define LocalizedText LocalizedText
+
+struct AttackEventTag {};
+struct Array_cptr_AttackEventTag {};
+#define Array_cptr_AttackEventTag Array_cptr_AttackEventTag
+
+typedef uint64_t uint64;
+typedef uint32_t uint;
+
+enum class EDSEvaluationType {};
+
+struct SoundShape {};
+#define SoundShape SoundShape
+
+struct XpMultiplier {};
+struct FRGBAColor {};
+#define FRGBAColor FRGBAColor
+
+#define Quat Quat
+
+struct Controller {};
+
+struct WString {};
+#define WString WString
+
+struct EnvelopeData {};
+#define EnvelopeData EnvelopeData
+
+struct AnnotationResource {};
+
+struct BoundingBox3 {};
+
+struct TagProperty {};
+
+struct DestructibilityPart {};
+#define DestructibilityPart DestructibilityPart
+
+struct QuestResource {};
+#define QuestResource QuestResource
+
+struct AIGroup {};
+#define AIGroup AIGroup
+
+struct HtnSymbol {};
+#define HtnSymbol HtnSymbol
+
+struct StreamingTileStateResource {};
+#define StreamingTileStateResource StreamingTileStateResource
+
+struct EntityComponentResource {};
+#define EntityComponentResource EntityComponentResource
+
+struct CameraModeResource {};
+#define CameraModeResource CameraModeResource
+
+struct Route {};
+#define Route Route
+
+struct PropertyContainerResource {};
+#define PropertyContainerResource PropertyContainerResource
+
+struct PropertyContainer {};
+#define PropertyContainer PropertyContainer
+
+struct AIDefendAreaSet {};
+#define AIDefendAreaSet AIDefendAreaSet
+
+struct EnumFactEntry {};
+#define EnumFactEntry EnumFactEntry
+
+struct DSAirplaneGameActor {};
+#define DSAirplaneGameActor DSAirplaneGameActor
+
+struct AIAttack {};
+#define AIAttack AIAttack
+
+struct DSPlayerPadCheckBoxes {};
+#define DSPlayerPadCheckBoxes DSPlayerPadCheckBoxes
+
+struct ActiveStatesQueue {};
+#define ActiveStatesQueue ActiveStatesQueue
+
+struct JointID {};
+#define JointID JointID
+
+struct PoseID {};
+#define PoseID PoseID
+
+struct SkeletonAnimationEventPayload {};
+#define SkeletonAnimationEventPayload SkeletonAnimationEventPayload
+
+struct PBDGraphUpdateArgs {};
+#define PBDGraphUpdateArgs PBDGraphUpdateArgs
+
+struct WorldDataTile {};
+#define WorldDataTile WorldDataTile
+
+struct SentenceResource {};
+#define SentenceResource SentenceResource
+
+struct UDSEventSetUintStat {};
+#define UDSEventSetUintStat UDSEventSetUintStat
+
+struct UDSEventSetIntStat {};
+#define UDSEventSetIntStat UDSEventSetIntStat
+
+struct UDSEventSetFloatStat {};
+#define UDSEventSetFloatStat UDSEventSetFloatStat
+
+struct DSMissionSafeConditionResource {};
+struct DSMissionSpeedConditionResource {};
+struct DSMissionServiceConditionResource {};
+struct DSMissionBaggageWeightConditionResource {};
+struct DSMissionBaggageCountConditionResource {};
+struct DSMissionHouseResourceList {};
+#define DSMissionSafeConditionResource DSMissionSafeConditionResource
+#define DSMissionHouseResourceList DSMissionHouseResourceList
+#define DSMissionSpeedConditionResource DSMissionSpeedConditionResource
+#define DSMissionServiceConditionResource DSMissionServiceConditionResource
+#define DSMissionBaggageWeightConditionResource DSMissionBaggageWeightConditionResource
+#define DSMissionBaggageCountConditionResource DSMissionBaggageCountConditionResource
+
+struct UDSEventMechanicUse {};
+#define UDSEventMechanicUse UDSEventMechanicUse
+
+struct DSMissionResourceList {};
+#define DSMissionResourceList DSMissionResourceList
+struct DSHouseholdInfoResource {};
+#define DSHouseholdInfoResource DSHouseholdInfoResource

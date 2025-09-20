@@ -35,7 +35,7 @@ struct EntityList {
 	}
 
 	Entity* get(std::string uuid) {
-		if (MyUUID::IsEmptyString(uuid))
+		if (GGUUID::IsEmptyString(uuid))
 			return nullptr;
 
 		if (lookupByUUID.find(uuid) != lookupByUUID.end())

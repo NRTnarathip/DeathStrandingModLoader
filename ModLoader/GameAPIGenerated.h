@@ -4087,7 +4087,6 @@ enum class EDSPlaySentenceNodePriority : char {
     RobotVoiceLow = 2,
 };
 
-#include "DecimaNative.h"
 // Define All Class Here!
 struct RetractingPartsComponent {
     // members
@@ -15850,228 +15849,12 @@ struct HUDLogicGroupResource {
 
 // Sol2 lua binding all class & functions
 static void BindingFunctions(sol::state& lua) {
-    lua.new_usertype<RetractingPartsComponent>("RetractingPartsComponent",
-        "AbortRetractingParts", &RetractingPartsComponent::AbortRetractingParts,
-        "StartRetractingParts", &RetractingPartsComponent::StartRetractingParts,
-        "RegisterRetractingPartEntity", &RetractingPartsComponent::RegisterRetractingPartEntity
-    );
-    lua.new_usertype<DSGameState>("DSGameState",
-        "IsPauseMusic", &DSGameState::IsPauseMusic,
-        "IsStoppingGameEventLoose", &DSGameState::IsStoppingGameEventLoose,
-        "CalcUnsaveReason", &DSGameState::CalcUnsaveReason,
-        "GetGameState2", &DSGameState::GetGameState2,
-        "IsStoppingGameEvent", &DSGameState::IsStoppingGameEvent,
-        "CalcAutosaveRequestUnsaveReason", &DSGameState::CalcAutosaveRequestUnsaveReason,
-        "SetGameState", &DSGameState::SetGameState
-    );
+    // Map all usertype with member instance only!!
     lua.new_usertype<AttachToEntityMover>("AttachToEntityMover",
         "SetLocalMatrix", &AttachToEntityMover::SetLocalMatrix
     );
-    lua.new_usertype<Game>("Game",
-        "Game_BranchToMusicSection", &Game::Game_BranchToMusicSection,
-        "Game_GetMusicCurrentPreset", &Game::Game_GetMusicCurrentPreset,
-        "DSGetTitleRegion", &Game::DSGetTitleRegion,
-        "Game_SetMusicIntensity", &Game::Game_SetMusicIntensity,
-        "Game_GetGameSettings", &Game::Game_GetGameSettings,
-        "DamageEntitiesInRangeByFaction", &Game::DamageEntitiesInRangeByFaction,
-        "Game_SetMusicPreset", &Game::Game_SetMusicPreset,
-        "DSCreateSaveGameWithActivity_PlusWakeupDreamDemo", &Game::DSCreateSaveGameWithActivity_PlusWakeupDreamDemo,
-        "Game_GetGameMode", &Game::Game_GetGameMode,
-        "Game_GetGameTimeInSec", &Game::Game_GetGameTimeInSec,
-        "EntityMessage_DeconstructPlacedEntity", &Game::EntityMessage_DeconstructPlacedEntity,
-        "NotifyHackDisabled", &Game::NotifyHackDisabled,
-        "DSExistsRetrySaveData", &Game::DSExistsRetrySaveData,
-        "DSCreateSaveGameForStrideQpidArea", &Game::DSCreateSaveGameForStrideQpidArea,
-        "Game_GetMusicTiming", &Game::Game_GetMusicTiming,
-        "Game_StartAmbience", &Game::Game_StartAmbience,
-        "Game_GetMusicPresetIndex", &Game::Game_GetMusicPresetIndex,
-        "CreateSaveGame", &Game::CreateSaveGame,
-        "DSCreateSaveGame", &Game::DSCreateSaveGame,
-        "DSClearRetrySaveData", &Game::DSClearRetrySaveData,
-        "DSCreateSaveGameForRetry", &Game::DSCreateSaveGameForRetry,
-        "DSCreateSaveGameWithActivity", &Game::DSCreateSaveGameWithActivity,
-        "Game_IsDayNightCycleEnabled", &Game::Game_IsDayNightCycleEnabled,
-        "DSCreateSaveGamePlayWakeupDreamDemo", &Game::DSCreateSaveGamePlayWakeupDreamDemo,
-        "DSGetDifficulty", &Game::DSGetDifficulty,
-        "DSGetDifficultyWithoutFixMode", &Game::DSGetDifficultyWithoutFixMode,
-        "Game_SetTimeOfDay", &Game::Game_SetTimeOfDay,
-        "Game_GetTimeOfDay", &Game::Game_GetTimeOfDay,
-        "Game_EnableDayNightCycle", &Game::Game_EnableDayNightCycle,
-        "Game_StopAmbience", &Game::Game_StopAmbience
-    );
-    lua.new_usertype<DSGameBaggageListItem>("DSGameBaggageListItem",
-        "GetRarity", &DSGameBaggageListItem::GetRarity,
-        "GetContentsDamageType", &DSGameBaggageListItem::GetContentsDamageType,
-        "GetCaseDurability", &DSGameBaggageListItem::GetCaseDurability,
-        "GetContentsDurability", &DSGameBaggageListItem::GetContentsDurability,
-        "GetBaggageCaseType", &DSGameBaggageListItem::GetBaggageCaseType,
-        "GetBaggageWeight", &DSGameBaggageListItem::GetBaggageWeight,
-        "GetVolumeType", &DSGameBaggageListItem::GetVolumeType
-    );
-    lua.new_usertype<ShaderVariableComponent>("ShaderVariableComponent",
-        "AnimateShaderVariable", &ShaderVariableComponent::AnimateShaderVariable,
-        "SetShaderVariableVec3", &ShaderVariableComponent::SetShaderVariableVec3,
-        "SetShaderVariableFloat", &ShaderVariableComponent::SetShaderVariableFloat
-    );
-    lua.new_usertype<RagdollComponent>("RagdollComponent",
-        "RagdollDriven", &RagdollComponent::RagdollDriven,
-        "SetContraintsProperties", &RagdollComponent::SetContraintsProperties,
-        "RequestRagdollActivation", &RagdollComponent::RequestRagdollActivation,
-        "SetBodiesProperties", &RagdollComponent::SetBodiesProperties,
-        "RagdollMotorDriven", &RagdollComponent::RagdollMotorDriven,
-        "RagdollDrivenDefault", &RagdollComponent::RagdollDrivenDefault,
-        "ApplySoftKeyFrame", &RagdollComponent::ApplySoftKeyFrame,
-        "ApplyHardKeyFrame", &RagdollComponent::ApplyHardKeyFrame,
-        "IsRagdollAcquired", &RagdollComponent::IsRagdollAcquired
-    );
     lua.new_usertype<HumanoidMover>("HumanoidMover",
         "GetFallingHeight", &HumanoidMover::GetFallingHeight
-    );
-    lua.new_usertype<DSMissionGoalsResource>("DSMissionGoalsResource",
-        "SetShortTermGoal", &DSMissionGoalsResource::SetShortTermGoal,
-        "ShowNotificationHUD", &DSMissionGoalsResource::ShowNotificationHUD,
-        "ClearShortTermGoal", &DSMissionGoalsResource::ClearShortTermGoal,
-        "SetLongTermGoal", &DSMissionGoalsResource::SetLongTermGoal,
-        "CloseNotificationHUD", &DSMissionGoalsResource::CloseNotificationHUD,
-        "SetEpisode", &DSMissionGoalsResource::SetEpisode,
-        "ClearEpisode", &DSMissionGoalsResource::ClearEpisode,
-        "ClearLongTermGoal", &DSMissionGoalsResource::ClearLongTermGoal
-    );
-    lua.new_usertype<DSMissionProgressCommand>("DSMissionProgressCommand",
-        "CheckDSMissionProgressSimple", &DSMissionProgressCommand::CheckDSMissionProgressSimple,
-        "CheckDeliveringBaggages", &DSMissionProgressCommand::CheckDeliveringBaggages,
-        "IsMissionProgressWithTimer", &DSMissionProgressCommand::IsMissionProgressWithTimer,
-        "CheckDSMissionPerformState", &DSMissionProgressCommand::CheckDSMissionPerformState,
-        "CheckMultipleDSMissionProgress", &DSMissionProgressCommand::CheckMultipleDSMissionProgress,
-        "GetDSMissionIdFromResource", &DSMissionProgressCommand::GetDSMissionIdFromResource,
-        "CheckDSMissionProgressByDestination", &DSMissionProgressCommand::CheckDSMissionProgressByDestination,
-        "CheckDSMissionProgress", &DSMissionProgressCommand::CheckDSMissionProgress
-    );
-    lua.new_usertype<DSCameraInterface>("DSCameraInterface",
-        "SetEnableForceSubjectiveCameraMode", &DSCameraInterface::SetEnableForceSubjectiveCameraMode,
-        "GetCameraRotation", &DSCameraInterface::GetCameraRotation,
-        "SetCameraRotationHeading", &DSCameraInterface::SetCameraRotationHeading,
-        "ResetAroundCameraCollisionTriggerType", &DSCameraInterface::ResetAroundCameraCollisionTriggerType,
-        "GetCameraPosition", &DSCameraInterface::GetCameraPosition,
-        "RequestShowdownCamera", &DSCameraInterface::RequestShowdownCamera,
-        "SetStock", &DSCameraInterface::SetStock,
-        "SetCameraRotationPitch", &DSCameraInterface::SetCameraRotationPitch,
-        "RequestForceRadioCallCamera", &DSCameraInterface::RequestForceRadioCallCamera,
-        "IsForceSubjectiveCamera", &DSCameraInterface::IsForceSubjectiveCamera,
-        "StopShowdownCamera", &DSCameraInterface::StopShowdownCamera,
-        "SetAroundCameraCollisionTriggerType", &DSCameraInterface::SetAroundCameraCollisionTriggerType,
-        "RequestTargetConstrainCamera", &DSCameraInterface::RequestTargetConstrainCamera
-    );
-    lua.new_usertype<TrophySystem>("TrophySystem",
-        "SetTrophyProgressIntegerStat", &TrophySystem::SetTrophyProgressIntegerStat,
-        "SetTrophyProgressFloatStat", &TrophySystem::SetTrophyProgressFloatStat,
-        "CaptureTrophyScreenshot", &TrophySystem::CaptureTrophyScreenshot,
-        "IncrementTrophyProgressIntegerStat", &TrophySystem::IncrementTrophyProgressIntegerStat,
-        "IsTrophyUnlocked", &TrophySystem::IsTrophyUnlocked,
-        "CompletedUpconvertTrophy", &TrophySystem::CompletedUpconvertTrophy,
-        "UnlockTrophy", &TrophySystem::UnlockTrophy
-    );
-    lua.new_usertype<AttachPhysicsRagdollToHelperMover>("AttachPhysicsRagdollToHelperMover",
-        "Create", &AttachPhysicsRagdollToHelperMover::Create
-    );
-    lua.new_usertype<GraphSound>("GraphSound",
-        "GetWaveSampleRate", &GraphSound::GetWaveSampleRate,
-        "GetTimeFromContext", &GraphSound::GetTimeFromContext,
-        "GetGroupIndex", &GraphSound::GetGroupIndex,
-        "StartSineWave", &GraphSound::StartSineWave,
-        "SetEnableInstanceFilter", &GraphSound::SetEnableInstanceFilter,
-        "DrawDebugProbeFloat", &GraphSound::DrawDebugProbeFloat,
-        "WwiseExtPostEventExport", &GraphSound::WwiseExtPostEventExport,
-        "GetGlobalStateInt", &GraphSound::GetGlobalStateInt,
-        "SetHDRProperties", &GraphSound::SetHDRProperties,
-        "SelectRandomWaveResource", &GraphSound::SelectRandomWaveResource,
-        "GetTimeStep", &GraphSound::GetTimeStep,
-        "SetForceTo2D", &GraphSound::SetForceTo2D,
-        "StartWhiteNoise", &GraphSound::StartWhiteNoise,
-        "SetGlobalStateInt", &GraphSound::SetGlobalStateInt,
-        "GetGlobalStateFloat", &GraphSound::GetGlobalStateFloat,
-        "WwiseSimplePostEventExport", &GraphSound::WwiseSimplePostEventExport,
-        "GetWaveDuration", &GraphSound::GetWaveDuration,
-        "SetDisableSoundPause", &GraphSound::SetDisableSoundPause,
-        "RestartContext", &GraphSound::RestartContext,
-        "StopWave", &GraphSound::StopWave,
-        "StartWave", &GraphSound::StartWave,
-        "UpdateWave", &GraphSound::UpdateWave,
-        "GetEnvelopeData", &GraphSound::GetEnvelopeData,
-        "GetEnvelopeFromADSR", &GraphSound::GetEnvelopeFromADSR,
-        "EndContext", &GraphSound::EndContext,
-        "KeepAliveContext", &GraphSound::KeepAliveContext,
-        "SetOverrideGroup", &GraphSound::SetOverrideGroup,
-        "SetOverrideMaxAzimuthDelta", &GraphSound::SetOverrideMaxAzimuthDelta,
-        "SetPriorityModifier", &GraphSound::SetPriorityModifier,
-        "SetDisableDistanceCulling", &GraphSound::SetDisableDistanceCulling,
-        "SetGlobalStateFloat", &GraphSound::SetGlobalStateFloat,
-        "SetGlobalStateBool", &GraphSound::SetGlobalStateBool,
-        "GetGlobalStateBool", &GraphSound::GetGlobalStateBool,
-        "GlobalStateAtomicAddFloat", &GraphSound::GlobalStateAtomicAddFloat,
-        "GlobalStateAtomicAddInt", &GraphSound::GlobalStateAtomicAddInt,
-        "WwisePostEventExport", &GraphSound::WwisePostEventExport,
-        "SetMusicPlayerCutscenePauseExport", &GraphSound::SetMusicPlayerCutscenePauseExport,
-        "SetMusicPlayerCutsceneResumeExport", &GraphSound::SetMusicPlayerCutsceneResumeExport
-    );
-    lua.new_usertype<DSRoad>("DSRoad",
-        "SetDSRoadStatus", &DSRoad::SetDSRoadStatus,
-        "DSStopAndStartRecordingRouteTrackingByPlaceIdWithNotUpdateWorldData", &DSRoad::DSStopAndStartRecordingRouteTrackingByPlaceIdWithNotUpdateWorldData,
-        "DSStopAndStartRecordingRouteTrackingByPlaceId", &DSRoad::DSStopAndStartRecordingRouteTrackingByPlaceId,
-        "SetUseCheckpointIndexList", &DSRoad::SetUseCheckpointIndexList,
-        "IsBuildingNationalRoute", &DSRoad::IsBuildingNationalRoute,
-        "SetCompletedNationalRoute", &DSRoad::SetCompletedNationalRoute,
-        "IsCompletedNationalRoute", &DSRoad::IsCompletedNationalRoute,
-        "SetDSStartRecordingMoveTracking", &DSRoad::SetDSStartRecordingMoveTracking,
-        "RequestRebuildNationalRoute", &DSRoad::RequestRebuildNationalRoute,
-        "DSStopAndStartRecordingRouteTracking", &DSRoad::DSStopAndStartRecordingRouteTracking,
-        "SetDSFinishRecordingMoveTracking", &DSRoad::SetDSFinishRecordingMoveTracking,
-        "AddLocalTrackingLogFromData", &DSRoad::AddLocalTrackingLogFromData,
-        "TriggerNationalRoadUpdateCheck", &DSRoad::TriggerNationalRoadUpdateCheck,
-        "RequestTrackingLogMarge", &DSRoad::RequestTrackingLogMarge,
-        "RequestTrackingLogMargeByName", &DSRoad::RequestTrackingLogMargeByName,
-        "CheckFixedTrackingLogLevelUp", &DSRoad::CheckFixedTrackingLogLevelUp,
-        "SetStaticRoadVisible", &DSRoad::SetStaticRoadVisible,
-        "IsIncludedLevel2InLastPath", &DSRoad::IsIncludedLevel2InLastPath,
-        "DebugSetForceRoadVisible", &DSRoad::DebugSetForceRoadVisible
-    );
-    lua.new_usertype<DSMissionLogicBlock>("DSMissionLogicBlock",
-        "GetConditionResouceList", &DSMissionLogicBlock::GetConditionResouceList,
-        "GetLogicBlocks", &DSMissionLogicBlock::GetLogicBlocks,
-        "GetLogicType", &DSMissionLogicBlock::GetLogicType,
-        "GetAchievementConditionNum", &DSMissionLogicBlock::GetAchievementConditionNum,
-        "GetConditionFactList", &DSMissionLogicBlock::GetConditionFactList
-    );
-    lua.new_usertype<DSMissionLogicCommand>("DSMissionLogicCommand",
-        "DEBUG_RequestDSMissionStartPremium", &DSMissionLogicCommand::DEBUG_RequestDSMissionStartPremium,
-        "DispResult1", &DSMissionLogicCommand::DispResult1,
-        "RequestDSMissionStart", &DSMissionLogicCommand::RequestDSMissionStart,
-        "SendMissionMessageSimple", &DSMissionLogicCommand::SendMissionMessageSimple,
-        "FastTravel", &DSMissionLogicCommand::FastTravel,
-        "DispResultEvaluation", &DSMissionLogicCommand::DispResultEvaluation,
-        "SendMissionSceneMessageImmediately", &DSMissionLogicCommand::SendMissionSceneMessageImmediately,
-        "ChangeArea", &DSMissionLogicCommand::ChangeArea,
-        "GameOver", &DSMissionLogicCommand::GameOver,
-        "GetElapsedDayLastFastTravel", &DSMissionLogicCommand::GetElapsedDayLastFastTravel,
-        "RequestDSMissionCancelSilent", &DSMissionLogicCommand::RequestDSMissionCancelSilent,
-        "ForceFinishAutoDeliveryLight", &DSMissionLogicCommand::ForceFinishAutoDeliveryLight,
-        "ActivateRange", &DSMissionLogicCommand::ActivateRange,
-        "DispTotalResult", &DSMissionLogicCommand::DispTotalResult,
-        "DispResult2", &DSMissionLogicCommand::DispResult2,
-        "AllDispResult", &DSMissionLogicCommand::AllDispResult,
-        "ReturnToPRForCliffMemories", &DSMissionLogicCommand::ReturnToPRForCliffMemories,
-        "GoOutFromPRForCliffMemories", &DSMissionLogicCommand::GoOutFromPRForCliffMemories,
-        "DebugSetPlayerSpawnLocatorUUID", &DSMissionLogicCommand::DebugSetPlayerSpawnLocatorUUID,
-        "GetGameOverMissionID", &DSMissionLogicCommand::GetGameOverMissionID,
-        "GetGameOverReason", &DSMissionLogicCommand::GetGameOverReason,
-        "GetCurrentArea", &DSMissionLogicCommand::GetCurrentArea,
-        "SendMissionMessage", &DSMissionLogicCommand::SendMissionMessage,
-        "GetSamMissionProgressFact", &DSMissionLogicCommand::GetSamMissionProgressFact,
-        "RequestDSMissionFail", &DSMissionLogicCommand::RequestDSMissionFail,
-        "RequestDSMissionSuccess", &DSMissionLogicCommand::RequestDSMissionSuccess
-    );
-    lua.new_usertype<FocusTargetComponentResource>("FocusTargetComponentResource",
-        "CheckEntityVulnerabilities", &FocusTargetComponentResource::CheckEntityVulnerabilities
     );
     lua.new_usertype<AIHTNPlannerDaemonPerchPoints>("AIHTNPlannerDaemonPerchPoints",
         "AddPerchPoint", &AIHTNPlannerDaemonPerchPoints::AddPerchPoint,
@@ -16083,116 +15866,8 @@ static void BindingFunctions(sol::state& lua) {
         "Activate", &StaggerStateComponent::Activate,
         "CanActivate", &StaggerStateComponent::CanActivate
     );
-    lua.new_usertype<DSWeather>("DSWeather",
-        "GetRainyCondition", &DSWeather::GetRainyCondition,
-        "SetForecastTypeOfRegion", &DSWeather::SetForecastTypeOfRegion,
-        "SetForecastTypeOfRegionDirect", &DSWeather::SetForecastTypeOfRegionDirect,
-        "SetWeatherOfRegion", &DSWeather::SetWeatherOfRegion,
-        "SetForecastTypeOfRegionDirectEx", &DSWeather::SetForecastTypeOfRegionDirectEx,
-        "ResetForecastTime", &DSWeather::ResetForecastTime,
-        "CheckArea", &DSWeather::CheckArea,
-        "SetStartControlFlags", &DSWeather::SetStartControlFlags,
-        "GetRainyConditionFromMap", &DSWeather::GetRainyConditionFromMap
-    );
     lua.new_usertype<ZiplineDetectionComponent>("ZiplineDetectionComponent",
         "ZiplineAtPosition", &ZiplineDetectionComponent::ZiplineAtPosition
-    );
-    lua.new_usertype<DSCatcher>("DSCatcher",
-        "IsInAnnihilationAreaWithArea", &DSCatcher::IsInAnnihilationAreaWithArea,
-        "GetIntState", &DSCatcher::GetIntState,
-        "IsInAnnihilationArea", &DSCatcher::IsInAnnihilationArea,
-        "RemoveAnnihilationArea", &DSCatcher::RemoveAnnihilationArea,
-        "NotifySimpleControlCommand", &DSCatcher::NotifySimpleControlCommand,
-        "GetNotifyIdentifier", &DSCatcher::GetNotifyIdentifier,
-        "AnnihilationProgress", &DSCatcher::AnnihilationProgress,
-        "CatcherWhaleControlCommand", &DSCatcher::CatcherWhaleControlCommand,
-        "GetActiveCatcherEntity", &DSCatcher::GetActiveCatcherEntity,
-        "SetScriptVariableCommand", &DSCatcher::SetScriptVariableCommand,
-        "CheckCatcherNotifyFlags", &DSCatcher::CheckCatcherNotifyFlags
-    );
-    lua.new_usertype<DSUINodeGraphBindings>("DSUINodeGraphBindings",
-        "IgnoreOnceWeightHUDRequest", &DSUINodeGraphBindings::IgnoreOnceWeightHUDRequest,
-        "ShowPrototypeSubtitle", &DSUINodeGraphBindings::ShowPrototypeSubtitle,
-        "EnableMarkerLocator", &DSUINodeGraphBindings::EnableMarkerLocator,
-        "WeaponSelectorHasPageChangeByCategory", &DSUINodeGraphBindings::WeaponSelectorHasPageChangeByCategory,
-        "FadeInScreen", &DSUINodeGraphBindings::FadeInScreen,
-        "DisableMarkerLocator", &DSUINodeGraphBindings::DisableMarkerLocator,
-        "HideTutorialTelopWithHash", &DSUINodeGraphBindings::HideTutorialTelopWithHash,
-        "ClearAllInfoLog", &DSUINodeGraphBindings::ClearAllInfoLog,
-        "IsShowTutorialTelop", &DSUINodeGraphBindings::IsShowTutorialTelop,
-        "SetLoadingScreenNumber", &DSUINodeGraphBindings::SetLoadingScreenNumber,
-        "SetUnlockUIFlag", &DSUINodeGraphBindings::SetUnlockUIFlag,
-        "ShowInfoLog", &DSUINodeGraphBindings::ShowInfoLog,
-        "ShowHiggsFightGaugeHUD", &DSUINodeGraphBindings::ShowHiggsFightGaugeHUD,
-        "HideOperationGuide", &DSUINodeGraphBindings::HideOperationGuide,
-        "ClearLowPriorityInfoLog", &DSUINodeGraphBindings::ClearLowPriorityInfoLog,
-        "CheckDSUIFadeState", &DSUINodeGraphBindings::CheckDSUIFadeState,
-        "RequestShowStaffTelop", &DSUINodeGraphBindings::RequestShowStaffTelop,
-        "RemoveInfoLogFromQueue", &DSUINodeGraphBindings::RemoveInfoLogFromQueue,
-        "GetLastMissionIdsFromMissionTelop", &DSUINodeGraphBindings::GetLastMissionIdsFromMissionTelop,
-        "HideDeviceMapTutorialRoute", &DSUINodeGraphBindings::HideDeviceMapTutorialRoute,
-        "SetBBPodCustomizeActionIconNewMark", &DSUINodeGraphBindings::SetBBPodCustomizeActionIconNewMark,
-        "IsProfileKBDActionToggleGrabEnable", &DSUINodeGraphBindings::IsProfileKBDActionToggleGrabEnable,
-        "IsProfileGamePadActionToggleGrabEnable", &DSUINodeGraphBindings::IsProfileGamePadActionToggleGrabEnable,
-        "ShowDeviceMapTutorialRoute", &DSUINodeGraphBindings::ShowDeviceMapTutorialRoute,
-        "HideTimerHUD", &DSUINodeGraphBindings::HideTimerHUD,
-        "IsPrivateRoomTerminalNew", &DSUINodeGraphBindings::IsPrivateRoomTerminalNew,
-        "IsPrivateRoomBBPodNew", &DSUINodeGraphBindings::IsPrivateRoomBBPodNew,
-        "IsPrivateRoomUniformNew", &DSUINodeGraphBindings::IsPrivateRoomUniformNew,
-        "IsPrivateRoomBackpackNew", &DSUINodeGraphBindings::IsPrivateRoomBackpackNew,
-        "IsDeliveryMenuPrivateRoomNewMarkForUniform", &DSUINodeGraphBindings::IsDeliveryMenuPrivateRoomNewMarkForUniform,
-        "IsDeliveryMenuPrivateRoomNewMarkForBackpack", &DSUINodeGraphBindings::IsDeliveryMenuPrivateRoomNewMarkForBackpack,
-        "RequestOpenCureGaugeMenu", &DSUINodeGraphBindings::RequestOpenCureGaugeMenu,
-        "IsOdradekDemoOnceSetting", &DSUINodeGraphBindings::IsOdradekDemoOnceSetting,
-        "IgnoreWeightHUDRequestTimer", &DSUINodeGraphBindings::IgnoreWeightHUDRequestTimer,
-        "IsFunctionPressed", &DSUINodeGraphBindings::IsFunctionPressed,
-        "IsProfileDandlingTypeMotionSensor", &DSUINodeGraphBindings::IsProfileDandlingTypeMotionSensor,
-        "IsCompassShown", &DSUINodeGraphBindings::IsCompassShown,
-        "CheckUIMenuSoundCategoy", &DSUINodeGraphBindings::CheckUIMenuSoundCategoy,
-        "GetLoadingScreenNumber", &DSUINodeGraphBindings::GetLoadingScreenNumber,
-        "SetDeviceMapZoomScale", &DSUINodeGraphBindings::SetDeviceMapZoomScale,
-        "CheckRepairMenuInfoResult", &DSUINodeGraphBindings::CheckRepairMenuInfoResult,
-        "HideAllMissionTelopHUD", &DSUINodeGraphBindings::HideAllMissionTelopHUD,
-        "RequestAimHUDDemo", &DSUINodeGraphBindings::RequestAimHUDDemo,
-        "CheckDSUIFadeColor", &DSUINodeGraphBindings::CheckDSUIFadeColor,
-        "DSUIStringFormat", &DSUINodeGraphBindings::DSUIStringFormat,
-        "ShowLandmarkTelop", &DSUINodeGraphBindings::ShowLandmarkTelop,
-        "RequestUnlockFunctionDialog", &DSUINodeGraphBindings::RequestUnlockFunctionDialog,
-        "FadeOutScreen", &DSUINodeGraphBindings::FadeOutScreen,
-        "UnSetUnlockUIFlag", &DSUINodeGraphBindings::UnSetUnlockUIFlag,
-        "CheckMissionListDialogMissionId", &DSUINodeGraphBindings::CheckMissionListDialogMissionId,
-        "ShowOperationGuideWithPosition", &DSUINodeGraphBindings::ShowOperationGuideWithPosition,
-        "ShowOperationGuide", &DSUINodeGraphBindings::ShowOperationGuide,
-        "ShowCommonTelop", &DSUINodeGraphBindings::ShowCommonTelop,
-        "HideAllTelop", &DSUINodeGraphBindings::HideAllTelop,
-        "HideTelop", &DSUINodeGraphBindings::HideTelop,
-        "ShowTutorialTelop", &DSUINodeGraphBindings::ShowTutorialTelop,
-        "ShowMusicTelopFromId", &DSUINodeGraphBindings::ShowMusicTelopFromId,
-        "ShowMusicTelop", &DSUINodeGraphBindings::ShowMusicTelop,
-        "RestoreLandmarkTelop", &DSUINodeGraphBindings::RestoreLandmarkTelop,
-        "RequestBackupAndHideLandmarkTelop", &DSUINodeGraphBindings::RequestBackupAndHideLandmarkTelop,
-        "DebugSetLevelUpMenuInfoResult", &DSUINodeGraphBindings::DebugSetLevelUpMenuInfoResult,
-        "CheckLevelUpMenuInfoResult", &DSUINodeGraphBindings::CheckLevelUpMenuInfoResult,
-        "DebugSetBaggageMenuInfoResult", &DSUINodeGraphBindings::DebugSetBaggageMenuInfoResult,
-        "CheckBaggageMenuInfoResult", &DSUINodeGraphBindings::CheckBaggageMenuInfoResult,
-        "GetLocalizedTextFromResource", &DSUINodeGraphBindings::GetLocalizedTextFromResource
-    );
-    lua.new_usertype<DSQpidUnitCommand>("DSQpidUnitCommand",
-        "EqualQpidStateById", &DSQpidUnitCommand::EqualQpidStateById,
-        "SetQpidLevelUpEventToTerminalOperation", &DSQpidUnitCommand::SetQpidLevelUpEventToTerminalOperation,
-        "ChangeQpidStateById", &DSQpidUnitCommand::ChangeQpidStateById,
-        "CheckCanChangeQpidStateById", &DSQpidUnitCommand::CheckCanChangeQpidStateById,
-        "HasQpid", &DSQpidUnitCommand::HasQpid,
-        "ChangeQpidBandWidthLevelById", &DSQpidUnitCommand::ChangeQpidBandWidthLevelById,
-        "GetQpidIdPlayerInside", &DSQpidUnitCommand::GetQpidIdPlayerInside,
-        "EqualQpidState", &DSQpidUnitCommand::EqualQpidState,
-        "ForceUpdateQpid", &DSQpidUnitCommand::ForceUpdateQpid,
-        "DebugChangeAllQpidState", &DSQpidUnitCommand::DebugChangeAllQpidState,
-        "ChangeQpidBandWidthLevel", &DSQpidUnitCommand::ChangeQpidBandWidthLevel,
-        "ChangeQpidState", &DSQpidUnitCommand::ChangeQpidState,
-        "CheckQpidStateById", &DSQpidUnitCommand::CheckQpidStateById,
-        "CheckQpidState", &DSQpidUnitCommand::CheckQpidState,
-        "DebugQpidOpenAll", &DSQpidUnitCommand::DebugQpidOpenAll
     );
     lua.new_usertype<MorphemeAnimationGraphInstance>("MorphemeAnimationGraphInstance",
         "GetInputPose", &MorphemeAnimationGraphInstance::GetInputPose
@@ -16206,14 +15881,6 @@ static void BindingFunctions(sol::state& lua) {
         "SetLocalMatrix", &EffectComponent::SetLocalMatrix,
         "SetLightIntensityMultiplier", &EffectComponent::SetLightIntensityMultiplier,
         "SetLightColor", &EffectComponent::SetLightColor
-    );
-    lua.new_usertype<SoundComponent>("SoundComponent",
-        "SetSoundInstanceParameterInt", &SoundComponent::SetSoundInstanceParameterInt,
-        "SetParameterBoolByName", &SoundComponent::SetParameterBoolByName,
-        "SetSoundInstanceParameterFloat", &SoundComponent::SetSoundInstanceParameterFloat,
-        "SetParameterIntByName", &SoundComponent::SetParameterIntByName,
-        "SetParameterFloatByName", &SoundComponent::SetParameterFloatByName,
-        "SetSoundInstanceParameterBool", &SoundComponent::SetSoundInstanceParameterBool
     );
     lua.new_usertype<DSWeaponAimArc>("DSWeaponAimArc",
         "SetRotationZFromDirection", &DSWeaponAimArc::SetRotationZFromDirection
@@ -16231,113 +15898,32 @@ static void BindingFunctions(sol::state& lua) {
         "SetDestructibilityPartShootable", &Destructibility::SetDestructibilityPartShootable,
         "SetDestructibilityTagShootable", &Destructibility::SetDestructibilityTagShootable,
         "KillPartsWithTag", &Destructibility::KillPartsWithTag,
-        "CountPartsWithTag", &Destructibility::CountPartsWithTag,
-        "GetPartHealth", &Destructibility::GetPartHealth,
         "GetPart", &Destructibility::GetPart,
         "EnablePart", &Destructibility::EnablePart
     );
-    lua.new_usertype<DSParkingMenuInfo>("DSParkingMenuInfo",
-        "HasVacantParking", &DSParkingMenuInfo::HasVacantParking,
-        "GetVehicleOnParkingLift", &DSParkingMenuInfo::GetVehicleOnParkingLift,
-        "DespawnVehicleSelectedInRace", &DSParkingMenuInfo::DespawnVehicleSelectedInRace,
-        "SpawnVehicleSelectedInRace", &DSParkingMenuInfo::SpawnVehicleSelectedInRace,
-        "SendUpdateRaceRecordLike", &DSParkingMenuInfo::SendUpdateRaceRecordLike,
-        "CheckParkingMenuInfoResult", &DSParkingMenuInfo::CheckParkingMenuInfoResult,
-        "GetStoringVehicleToParking", &DSParkingMenuInfo::GetStoringVehicleToParking,
-        "GetLeavingVehicleFromParking", &DSParkingMenuInfo::GetLeavingVehicleFromParking,
-        "RegisterUsedVehicleInRace", &DSParkingMenuInfo::RegisterUsedVehicleInRace,
-        "SendVehicleUsedInRaceLike", &DSParkingMenuInfo::SendVehicleUsedInRaceLike,
-        "SpawnVehicleSelectedInParking", &DSParkingMenuInfo::SpawnVehicleSelectedInParking,
-        "StoreVehicleToParking", &DSParkingMenuInfo::StoreVehicleToParking,
-        "LockParkingLift", &DSParkingMenuInfo::LockParkingLift,
-        "HasEnoughVacantParking", &DSParkingMenuInfo::HasEnoughVacantParking
-    );
     lua.new_usertype<DSCameraModeBase>("DSCameraModeBase",
         "GetViewHeadingSpeed", &DSCameraModeBase::GetViewHeadingSpeed
-    );
-    lua.new_usertype<DSEnvironmentManagerNodes>("DSEnvironmentManagerNodes",
-        "BeginBlackSamGameOver", &DSEnvironmentManagerNodes::BeginBlackSamGameOver,
-        "EndBlackSamGameOver", &DSEnvironmentManagerNodes::EndBlackSamGameOver,
-        "CreateKnotSpaceEntity", &DSEnvironmentManagerNodes::CreateKnotSpaceEntity,
-        "DeleteKnotSpaceEntity", &DSEnvironmentManagerNodes::DeleteKnotSpaceEntity
     );
     lua.new_usertype<TalkComponent>("TalkComponent",
         "PlaySentenceGroup", &TalkComponent::PlaySentenceGroup,
         "IsTalking", &TalkComponent::IsTalking,
         "PlaySentence", &TalkComponent::PlaySentence,
-        "Say", &TalkComponent::Say,
-        "GetOutputLevel", &TalkComponent::GetOutputLevel
+        "Say", &TalkComponent::Say
     );
     lua.new_usertype<DSPlayerEntity>("DSPlayerEntity",
-        "CartIsInTarSwamp", &DSPlayerEntity::CartIsInTarSwamp,
-        "GetPlayerParameterWorldTransform", &DSPlayerEntity::GetPlayerParameterWorldTransform,
-        "GetPlayerParameterFloat", &DSPlayerEntity::GetPlayerParameterFloat,
-        "GetPlayerParameterWorldPosition", &DSPlayerEntity::GetPlayerParameterWorldPosition,
         "IsPlayerWaterSprashFrame", &DSPlayerEntity::IsPlayerWaterSprashFrame,
-        "IsPlayerLeftLegFrost", &DSPlayerEntity::IsPlayerLeftLegFrost,
-        "CartGameActorIdToEntity", &DSPlayerEntity::CartGameActorIdToEntity,
-        "GetLocalDSPlayerEntity", &DSPlayerEntity::GetLocalDSPlayerEntity,
         "ApplyInventorySetting", &DSPlayerEntity::ApplyInventorySetting,
-        "ClearBBStressInfoFromHoloCutscene", &DSPlayerEntity::ClearBBStressInfoFromHoloCutscene,
-        "GetPlayerParameterInt", &DSPlayerEntity::GetPlayerParameterInt,
         "IsPlayerMudSplashFrame", &DSPlayerEntity::IsPlayerMudSplashFrame,
-        "ResetPlayerNail", &DSPlayerEntity::ResetPlayerNail,
-        "GetBBAffectionLevel", &DSPlayerEntity::GetBBAffectionLevel,
-        "SetBBPodBlackRequested", &DSPlayerEntity::SetBBPodBlackRequested,
-        "GetPlayerParameterVec3", &DSPlayerEntity::GetPlayerParameterVec3,
-        "GetPlayerParameterBool", &DSPlayerEntity::GetPlayerParameterBool,
-        "RecoveryAffectionPointForM00590", &DSPlayerEntity::RecoveryAffectionPointForM00590,
-        "PlayAkukanVoice", &DSPlayerEntity::PlayAkukanVoice,
-        "SetVoicedAlmostThere", &DSPlayerEntity::SetVoicedAlmostThere,
-        "ResetPlayerFrost", &DSPlayerEntity::ResetPlayerFrost,
-        "IsPlayerRightLegFrost", &DSPlayerEntity::IsPlayerRightLegFrost,
-        "IsPlayerHandFrost", &DSPlayerEntity::IsPlayerHandFrost,
-        "IsPlayerFrost", &DSPlayerEntity::IsPlayerFrost,
         "IsPlayerBloodSplashFrame", &DSPlayerEntity::IsPlayerBloodSplashFrame,
         "IsPlayerTarrySplashFrame", &DSPlayerEntity::IsPlayerTarrySplashFrame
     );
-    lua.new_usertype<AnimationNodeProceduralLook>("AnimationNodeProceduralLook",
-        "UpdateProceduralLookInstance", &AnimationNodeProceduralLook::UpdateProceduralLookInstance
-    );
-    lua.new_usertype<DSResidentsBasicNode>("DSResidentsBasicNode",
-        "SetAlreadyDeliveryAtHousehold", &DSResidentsBasicNode::SetAlreadyDeliveryAtHousehold,
-        "CalcFriendshipLevel", &DSResidentsBasicNode::CalcFriendshipLevel,
-        "AddFriendshipFromMissionID", &DSResidentsBasicNode::AddFriendshipFromMissionID,
-        "GetFirendshipOfHousehold", &DSResidentsBasicNode::GetFirendshipOfHousehold,
-        "GetHouseholdByNameHash", &DSResidentsBasicNode::GetHouseholdByNameHash,
-        "IsMemberOfBridgesOfHousehold", &DSResidentsBasicNode::IsMemberOfBridgesOfHousehold,
-        "GetFirendshipOfHouseholdByMissionID", &DSResidentsBasicNode::GetFirendshipOfHouseholdByMissionID,
-        "GetCalculationFriendshipLevelTH", &DSResidentsBasicNode::GetCalculationFriendshipLevelTH,
-        "GetHouseholdThatRequestedMissionByMissionID", &DSResidentsBasicNode::GetHouseholdThatRequestedMissionByMissionID,
-        "SetFriendshipFromDShouseholdInfoResource", &DSResidentsBasicNode::SetFriendshipFromDShouseholdInfoResource,
-        "GetFriendshipMaxLevel", &DSResidentsBasicNode::GetFriendshipMaxLevel,
-        "GetHouseholdByTerminalId", &DSResidentsBasicNode::GetHouseholdByTerminalId,
-        "SetForceFirendshipOfHouseholdByGGUUID", &DSResidentsBasicNode::SetForceFirendshipOfHouseholdByGGUUID,
-        "GetFloatFriendshipLevel", &DSResidentsBasicNode::GetFloatFriendshipLevel,
-        "IsAlreadyDeliveryAtHousehold", &DSResidentsBasicNode::IsAlreadyDeliveryAtHousehold,
-        "GetFirendshipOfHouseholdByNameHash", &DSResidentsBasicNode::GetFirendshipOfHouseholdByNameHash
-    );
     lua.new_usertype<PlayerParkourComponent>("PlayerParkourComponent",
         "GetCurrentAnnotation", &PlayerParkourComponent::GetCurrentAnnotation
-    );
-    lua.new_usertype<AIUsableComponent>("AIUsableComponent",
-        "ImmediateAttach", &AIUsableComponent::ImmediateAttach
-    );
-    lua.new_usertype<DSDebugEntryCommand>("DSDebugEntryCommand",
-        "DebugEntryConnectRoad", &DSDebugEntryCommand::DebugEntryConnectRoad,
-        "DebugEntryIsNilUUID", &DSDebugEntryCommand::DebugEntryIsNilUUID,
-        "DebugEntrySetUUID", &DSDebugEntryCommand::DebugEntrySetUUID,
-        "DebugNilUUID", &DSDebugEntryCommand::DebugNilUUID,
-        "DebugEntryGetUUID", &DSDebugEntryCommand::DebugEntryGetUUID,
-        "DebugEntryGetInt", &DSDebugEntryCommand::DebugEntryGetInt,
-        "DebugEntrySetInt", &DSDebugEntryCommand::DebugEntrySetInt,
-        "DebugIsNilUUID", &DSDebugEntryCommand::DebugIsNilUUID
     );
     lua.new_usertype<FocusComponent>("FocusComponent",
         "SetEntityPatrolPathTagged", &FocusComponent::SetEntityPatrolPathTagged,
         "IsScanningFocusAlert", &FocusComponent::IsScanningFocusAlert,
         "SetTrackingPathTagged", &FocusComponent::SetTrackingPathTagged,
-        "GetFocusAlertState", &FocusComponent::GetFocusAlertState,
         "ClearTaggedObjects", &FocusComponent::ClearTaggedObjects,
         "SetEntityTagged", &FocusComponent::SetEntityTagged,
         "GetAllFocusAlertSignalPositionsInRange", &FocusComponent::GetAllFocusAlertSignalPositionsInRange,
@@ -16346,73 +15932,6 @@ static void BindingFunctions(sol::state& lua) {
         "SetFocusModeActive", &FocusComponent::SetFocusModeActive,
         "CanActivateFocusMode", &FocusComponent::CanActivateFocusMode,
         "IsFocusModeActive", &FocusComponent::IsFocusModeActive
-    );
-    lua.new_usertype<DSMissionInfo>("DSMissionInfo",
-        "IsDisableFriendshipResult", &DSMissionInfo::IsDisableFriendshipResult,
-        "IsLostPersonalObjectMission", &DSMissionInfo::IsLostPersonalObjectMission,
-        "IsNoDelivery", &DSMissionInfo::IsNoDelivery,
-        "GetDeliveryCountRate", &DSMissionInfo::GetDeliveryCountRate,
-        "IsAutomation", &DSMissionInfo::IsAutomation,
-        "GetEvaluationType", &DSMissionInfo::GetEvaluationType,
-        "IsSupplyMission", &DSMissionInfo::IsSupplyMission,
-        "GetElapsedTime", &DSMissionInfo::GetElapsedTime,
-        "GetBaggageDamageMinRate", &DSMissionInfo::GetBaggageDamageMinRate,
-        "GetHouseholdInfoResourceOfTheClient", &DSMissionInfo::GetHouseholdInfoResourceOfTheClient,
-        "IsCheckStartAndGoalDeliveryPointInfo", &DSMissionInfo::IsCheckStartAndGoalDeliveryPointInfo,
-        "IsEnableDistanceMeasurementMission", &DSMissionInfo::IsEnableDistanceMeasurementMission,
-        "GetMovingDistanceXY", &DSMissionInfo::GetMovingDistanceXY,
-        "GetMissionCategory", &DSMissionInfo::GetMissionCategory,
-        "GetDeliveryCount", &DSMissionInfo::GetDeliveryCount,
-        "IsDeliveryBBPod", &DSMissionInfo::IsDeliveryBBPod,
-        "GetLowestDifficulty", &DSMissionInfo::GetLowestDifficulty,
-        "GetStartToGoalPointDistance", &DSMissionInfo::GetStartToGoalPointDistance,
-        "GetMovingDistanceXYZ", &DSMissionInfo::GetMovingDistanceXYZ,
-        "GetMovingDistanceXYRate", &DSMissionInfo::GetMovingDistanceXYRate,
-        "GetGoalDeliveryPointPosition", &DSMissionInfo::GetGoalDeliveryPointPosition,
-        "GetStartDeliveryPointPosition", &DSMissionInfo::GetStartDeliveryPointPosition,
-        "GetClearMinTime", &DSMissionInfo::GetClearMinTime,
-        "GetMinCountBaggage", &DSMissionInfo::GetMinCountBaggage,
-        "GetSpecialReportOnPlace", &DSMissionInfo::GetSpecialReportOnPlace,
-        "GetElapsedTimeRate", &DSMissionInfo::GetElapsedTimeRate,
-        "GetDeliveredTotalMinWeightBaggage", &DSMissionInfo::GetDeliveredTotalMinWeightBaggage,
-        "GetDeliveredTotalMaxWeightBaggage", &DSMissionInfo::GetDeliveredTotalMaxWeightBaggage,
-        "GetDeliveredTotalWeightRateBaggage", &DSMissionInfo::GetDeliveredTotalWeightRateBaggage,
-        "GetDeliveredTotalWeightBaggage", &DSMissionInfo::GetDeliveredTotalWeightBaggage,
-        "GetDeliveryMaxCount", &DSMissionInfo::GetDeliveryMaxCount,
-        "GetTotalDeliveryBaggageDamageRate", &DSMissionInfo::GetTotalDeliveryBaggageDamageRate,
-        "GetReward2", &DSMissionInfo::GetReward2,
-        "IsLostObjectMission", &DSMissionInfo::IsLostObjectMission,
-        "IsPremium", &DSMissionInfo::IsPremium,
-        "IsDynamicMission", &DSMissionInfo::IsDynamicMission,
-        "IsOnlineMission", &DSMissionInfo::IsOnlineMission,
-        "IsSimpleMissionOfStatic", &DSMissionInfo::IsSimpleMissionOfStatic,
-        "IsSimpleMission", &DSMissionInfo::IsSimpleMission,
-        "IsChiralMission", &DSMissionInfo::IsChiralMission,
-        "GetMissionId", &DSMissionInfo::GetMissionId
-    );
-    lua.new_usertype<DSMisionEvaluationCommand>("DSMisionEvaluationCommand",
-        "IsEnableTotalWeightBonusFromMissionInfoStack", &DSMisionEvaluationCommand::IsEnableTotalWeightBonusFromMissionInfoStack,
-        "GetSpecialReportTotalBaggageDamage", &DSMisionEvaluationCommand::GetSpecialReportTotalBaggageDamage,
-        "GetAccessingTerminalPosition", &DSMisionEvaluationCommand::GetAccessingTerminalPosition,
-        "GetSpecialReportRouteExploration", &DSMisionEvaluationCommand::GetSpecialReportRouteExploration,
-        "GetSupplyMissionInfo", &DSMisionEvaluationCommand::GetSupplyMissionInfo,
-        "GetSpecialReportReachd", &DSMisionEvaluationCommand::GetSpecialReportReachd,
-        "CheckNonDeliveryBaggageForStaticMission", &DSMisionEvaluationCommand::CheckNonDeliveryBaggageForStaticMission,
-        "IsEnableTotalWeightBonusFromBaggageUnit", &DSMisionEvaluationCommand::IsEnableTotalWeightBonusFromBaggageUnit,
-        "GetOnlineLostBaggageDriftingParam", &DSMisionEvaluationCommand::GetOnlineLostBaggageDriftingParam,
-        "IsEnableTotalWeightBonusFromMissionInfoStackAndBaggageUnit", &DSMisionEvaluationCommand::IsEnableTotalWeightBonusFromMissionInfoStackAndBaggageUnit,
-        "GetSpecialReportRouteNotExploration", &DSMisionEvaluationCommand::GetSpecialReportRouteNotExploration,
-        "FindBaggageStartAndGoalByStaticMissionBaggageResource", &DSMisionEvaluationCommand::FindBaggageStartAndGoalByStaticMissionBaggageResource,
-        "DistanceFromStartPointToEndPoint", &DSMisionEvaluationCommand::DistanceFromStartPointToEndPoint,
-        "GetBaggageListItemWasteBBPod", &DSMisionEvaluationCommand::GetBaggageListItemWasteBBPod,
-        "CompareAndRecordAtShortestDistance", &DSMisionEvaluationCommand::CompareAndRecordAtShortestDistance,
-        "GetDSTraceEnable", &DSMisionEvaluationCommand::GetDSTraceEnable,
-        "GetAutoDeliveryEndPosition", &DSMisionEvaluationCommand::GetAutoDeliveryEndPosition,
-        "FindBaggageStartAndGoalByBaggage2", &DSMisionEvaluationCommand::FindBaggageStartAndGoalByBaggage2,
-        "GetBaggageSpecialReport", &DSMisionEvaluationCommand::GetBaggageSpecialReport,
-        "GetSpecialReportContentsDamage", &DSMisionEvaluationCommand::GetSpecialReportContentsDamage,
-        "GetSpecialReportTotalDelivery", &DSMisionEvaluationCommand::GetSpecialReportTotalDelivery,
-        "GetSpecialReportRouteDeviation", &DSMisionEvaluationCommand::GetSpecialReportRouteDeviation
     );
     lua.new_usertype<Model>("Model",
         "ChangeModelPart", &Model::ChangeModelPart,
@@ -16426,53 +15945,12 @@ static void BindingFunctions(sol::state& lua) {
         "SetTrackingEnabled", &QuestInstance::SetTrackingEnabled,
         "IsQuestPaused", &QuestInstance::IsQuestPaused,
         "GetResource", &QuestInstance::GetResource,
-        "ProgressQuest", &QuestInstance::ProgressQuest,
         "IsQuestTracked", &QuestInstance::IsQuestTracked,
         "SetQuestTracked", &QuestInstance::SetQuestTracked,
         "SetQuestPaused", &QuestInstance::SetQuestPaused
     );
-    lua.new_usertype<DSMissionOpenList>("DSMissionOpenList",
-        "GetOpenState", &DSMissionOpenList::GetOpenState,
-        "GetOpenResourceList", &DSMissionOpenList::GetOpenResourceList
-    );
-    lua.new_usertype<DsMuleMissionCommand>("DsMuleMissionCommand",
-        "Mule_DontTakeAwayShoes", &DsMuleMissionCommand::Mule_DontTakeAwayShoes,
-        "MuleCP_ForceSetCPPhase", &DsMuleMissionCommand::MuleCP_ForceSetCPPhase,
-        "Mule_AddMissionClearCountForResurrect", &DsMuleMissionCommand::Mule_AddMissionClearCountForResurrect,
-        "Mule_IsExistCautionOrNoticeMule", &DsMuleMissionCommand::Mule_IsExistCautionOrNoticeMule,
-        "Mule_RemovePersonalMissionBaggages", &DsMuleMissionCommand::Mule_RemovePersonalMissionBaggages,
-        "MuleCP_DisableCPAndAllsMembers", &DsMuleMissionCommand::MuleCP_DisableCPAndAllsMembers,
-        "Mule_StillExistDeadBodyBecomingGazer", &DsMuleMissionCommand::Mule_StillExistDeadBodyBecomingGazer,
-        "Mule_SetIgnoreDeadMuleMoveArea", &DsMuleMissionCommand::Mule_SetIgnoreDeadMuleMoveArea,
-        "Mule_RemoveDeadMules", &DsMuleMissionCommand::Mule_RemoveDeadMules,
-        "Mule_ResetOutsideCPAreaPosition", &DsMuleMissionCommand::Mule_ResetOutsideCPAreaPosition,
-        "Mule_RemoveDeadMulesByBridges", &DsMuleMissionCommand::Mule_RemoveDeadMulesByBridges,
-        "Mule_IsExistAlertMule", &DsMuleMissionCommand::Mule_IsExistAlertMule,
-        "MuleCP_CheckPlayerInMuleArea", &DsMuleMissionCommand::MuleCP_CheckPlayerInMuleArea,
-        "MuleCP_SetKeepCaution", &DsMuleMissionCommand::MuleCP_SetKeepCaution,
-        "MuleCP_IsExitMuleInCamera", &DsMuleMissionCommand::MuleCP_IsExitMuleInCamera,
-        "Mule_MoveMulesOnElevator", &DsMuleMissionCommand::Mule_MoveMulesOnElevator,
-        "MuleCP_IsExtinction", &DsMuleMissionCommand::MuleCP_IsExtinction,
-        "Mule_ResetFriendlyMuleByAccessingTerminal", &DsMuleMissionCommand::Mule_ResetFriendlyMuleByAccessingTerminal,
-        "MuleCP_BgmMute", &DsMuleMissionCommand::MuleCP_BgmMute,
-        "Mule_GetMuleTypeByEntity", &DsMuleMissionCommand::Mule_GetMuleTypeByEntity,
-        "Mule_InCollisionTrigger", &DsMuleMissionCommand::Mule_InCollisionTrigger,
-        "Mule_ChangeWeapon", &DsMuleMissionCommand::Mule_ChangeWeapon,
-        "MuleCP_CheckPlayerInMuleAreaByLocator", &DsMuleMissionCommand::MuleCP_CheckPlayerInMuleAreaByLocator,
-        "Mule_ResetAllMulesByAreaChange", &DsMuleMissionCommand::Mule_ResetAllMulesByAreaChange,
-        "Mule_ResetAndResurrectAllMulesByMissionChange", &DsMuleMissionCommand::Mule_ResetAndResurrectAllMulesByMissionChange,
-        "Mule_RemoveAllMulesFromWorld", &DsMuleMissionCommand::Mule_RemoveAllMulesFromWorld,
-        "Mule_ResetCPMulesAIOnly", &DsMuleMissionCommand::Mule_ResetCPMulesAIOnly,
-        "Mule_ResetCPMulesByMissionChange", &DsMuleMissionCommand::Mule_ResetCPMulesByMissionChange,
-        "MuleCP_DisableCPRaderCheck", &DsMuleMissionCommand::MuleCP_DisableCPRaderCheck,
-        "Mule_ResetAllMulesByMissionChange", &DsMuleMissionCommand::Mule_ResetAllMulesByMissionChange,
-        "Mule_SetMissionBaggage", &DsMuleMissionCommand::Mule_SetMissionBaggage,
-        "Mule_GetMinDistanceBetweenBaggage", &DsMuleMissionCommand::Mule_GetMinDistanceBetweenBaggage,
-        "Mule_GetMinDistanceBetweenPlayer", &DsMuleMissionCommand::Mule_GetMinDistanceBetweenPlayer
-    );
     lua.new_usertype<Humanoid>("Humanoid",
         "IsFiring", &Humanoid::IsFiring,
-        "IsParkouring", &Humanoid::IsParkouring,
         "IsInStealth", &Humanoid::IsInStealth,
         "IsZipLining", &Humanoid::IsZipLining,
         "IsLanding", &Humanoid::IsLanding,
@@ -16491,7 +15969,6 @@ static void BindingFunctions(sol::state& lua) {
         "IsUsingPlayerTool", &Humanoid::IsUsingPlayerTool,
         "IsSprinting", &Humanoid::IsSprinting,
         "IsSlidingToUseLocation", &Humanoid::IsSlidingToUseLocation,
-        "IsKnockedDown", &Humanoid::IsKnockedDown,
         "SetStance", &Humanoid::SetStance,
         "GetTimeSinceLastDamage", &Humanoid::GetTimeSinceLastDamage,
         "IsAiming", &Humanoid::IsAiming,
@@ -16504,12 +15981,6 @@ static void BindingFunctions(sol::state& lua) {
         "IsCrouching", &Humanoid::IsCrouching,
         "SetQuietFootSteps", &Humanoid::SetQuietFootSteps
     );
-    lua.new_usertype<DebugTool>("DebugTool",
-        "sDrawSphere", &DebugTool::sDrawSphere,
-        "sGetDebugName", &DebugTool::sGetDebugName,
-        "sDrawLine", &DebugTool::sDrawLine,
-        "sDrawOrientedBoundingBox", &DebugTool::sDrawOrientedBoundingBox
-    );
     lua.new_usertype<PlayerGame>("PlayerGame",
         "GetHostileAliveEntityCount", &PlayerGame::GetHostileAliveEntityCount,
         "IsLookingAtPosition", &PlayerGame::IsLookingAtPosition,
@@ -16521,8 +15992,6 @@ static void BindingFunctions(sol::state& lua) {
         "SwitchPlayerCharacter", &PlayerGame::SwitchPlayerCharacter,
         "ShowObjectivesSummary", &PlayerGame::ShowObjectivesSummary,
         "GetJoystickOrientation", &PlayerGame::GetJoystickOrientation,
-        "GetJoystickMoveInput", &PlayerGame::GetJoystickMoveInput,
-        "GetJoystickLookInput", &PlayerGame::GetJoystickLookInput,
         "GetFriendlyAlivePlayerCount", &PlayerGame::GetFriendlyAlivePlayerCount,
         "IsAnyJoystickButtonFunctionActive", &PlayerGame::IsAnyJoystickButtonFunctionActive
     );
@@ -16530,159 +15999,13 @@ static void BindingFunctions(sol::state& lua) {
         "GetPlayerHealthSettings", &GameSettings::GetPlayerHealthSettings,
         "GetHealthRegenerationSettings", &GameSettings::GetHealthRegenerationSettings
     );
-    lua.new_usertype<HitReactions>("HitReactions",
-        "ModifySeverityDecay", &HitReactions::ModifySeverityDecay,
-        "ResetHitReactionByDamage", &HitReactions::ResetHitReactionByDamage,
-        "ModifyReactionDuration", &HitReactions::ModifyReactionDuration,
-        "ModifyReactionThreshold", &HitReactions::ModifyReactionThreshold
-    );
     lua.new_usertype<FactMusicPreset>("FactMusicPreset",
         "GetPresetName", &FactMusicPreset::GetPresetName,
-        "GetInfo", &FactMusicPreset::GetInfo,
         "GetFactValue", &FactMusicPreset::GetFactValue,
         "GetExitPresetName", &FactMusicPreset::GetExitPresetName
     );
-    lua.new_usertype<DSMissionEvaluationDataRecord>("DSMissionEvaluationDataRecord",
-        "GetLike", &DSMissionEvaluationDataRecord::GetLike,
-        "GetGreaterThan", &DSMissionEvaluationDataRecord::GetGreaterThan,
-        "GetRewardRank", &DSMissionEvaluationDataRecord::GetRewardRank
-    );
-    lua.new_usertype<DSMissionReward2>("DSMissionReward2",
-        "GetNeedBaggageDamageRateForPremium", &DSMissionReward2::GetNeedBaggageDamageRateForPremium,
-        "FindBaggageCountConditionResource", &DSMissionReward2::FindBaggageCountConditionResource,
-        "FindBaggageWeightConditionResource", &DSMissionReward2::FindBaggageWeightConditionResource,
-        "GetClearMinTime", &DSMissionReward2::GetClearMinTime,
-        "IsEnableSpecialReportLand", &DSMissionReward2::IsEnableSpecialReportLand,
-        "GetEvaluationDataTableTotalBaggageDamage", &DSMissionReward2::GetEvaluationDataTableTotalBaggageDamage,
-        "GetNeedBaggageWeightForPremium", &DSMissionReward2::GetNeedBaggageWeightForPremium,
-        "IsRouteEvaluation", &DSMissionReward2::IsRouteEvaluation,
-        "FindServiceConditionResource", &DSMissionReward2::FindServiceConditionResource,
-        "GetCustomSpecialReportFromIndex", &DSMissionReward2::GetCustomSpecialReportFromIndex,
-        "GetEvaluationType", &DSMissionReward2::GetEvaluationType,
-        "FindSpeedConditionResource", &DSMissionReward2::FindSpeedConditionResource,
-        "GetEvaluationDataTableRouteDeviation", &DSMissionReward2::GetEvaluationDataTableRouteDeviation,
-        "GetBaseLike", &DSMissionReward2::GetBaseLike,
-        "GetCustomSpecialReportsLength", &DSMissionReward2::GetCustomSpecialReportsLength,
-        "GetPlayerMinDamage", &DSMissionReward2::GetPlayerMinDamage,
-        "IsEnableSpecialReportDelicateDelivery", &DSMissionReward2::IsEnableSpecialReportDelicateDelivery,
-        "GetBaggageDamageMinRate", &DSMissionReward2::GetBaggageDamageMinRate,
-        "GetMinWeightBaggage", &DSMissionReward2::GetMinWeightBaggage,
-        "GetMinCountBaggage", &DSMissionReward2::GetMinCountBaggage,
-        "GetNeedClearTimeForPremium", &DSMissionReward2::GetNeedClearTimeForPremium,
-        "GetNeedBaggageCountForPremium", &DSMissionReward2::GetNeedBaggageCountForPremium,
-        "FindConditionResource", &DSMissionReward2::FindConditionResource,
-        "FindSafetyConditionResource", &DSMissionReward2::FindSafetyConditionResource
-    );
     lua.new_usertype<DamageTypeResource>("DamageTypeResource",
         "IsKindOfDamage", &DamageTypeResource::IsKindOfDamage
-    );
-    lua.new_usertype<DSPlayerSystem>("DSPlayerSystem",
-        "RecoverOrSupplyShoes", &DSPlayerSystem::RecoverOrSupplyShoes,
-        "SetPlayerPadMask", &DSPlayerSystem::SetPlayerPadMask,
-        "SetShoesForcibly", &DSPlayerSystem::SetShoesForcibly,
-        "GetBloodAllPaintValue", &DSPlayerSystem::GetBloodAllPaintValue,
-        "GetTarSpherePaintValue", &DSPlayerSystem::GetTarSpherePaintValue,
-        "PlayerVehicleIsOnRoad", &DSPlayerSystem::PlayerVehicleIsOnRoad,
-        "OpenHandcuffDevice", &DSPlayerSystem::OpenHandcuffDevice,
-        "OverrideReturnFromKnotSpaceSequence", &DSPlayerSystem::OverrideReturnFromKnotSpaceSequence,
-        "AddOnlyPaintRecordToFootForM00030", &DSPlayerSystem::AddOnlyPaintRecordToFootForM00030,
-        "SetOdradekStateAfterSequence", &DSPlayerSystem::SetOdradekStateAfterSequence,
-        "SetHiggsPhase3Transform", &DSPlayerSystem::SetHiggsPhase3Transform,
-        "AddSuitPartsToInventorySetting", &DSPlayerSystem::AddSuitPartsToInventorySetting,
-        "ClearInventorySetting", &DSPlayerSystem::ClearInventorySetting,
-        "ResetOverrideBlackSamPointGroupName", &DSPlayerSystem::ResetOverrideBlackSamPointGroupName,
-        "StartGhostAction", &DSPlayerSystem::StartGhostAction,
-        "SetAmountOfWaterInBottle", &DSPlayerSystem::SetAmountOfWaterInBottle,
-        "GetBBAffectionPoint", &DSPlayerSystem::GetBBAffectionPoint,
-        "PopWorldTransform", &DSPlayerSystem::PopWorldTransform,
-        "PopWorldTransformAtEndOfSequence", &DSPlayerSystem::PopWorldTransformAtEndOfSequence,
-        "GetBaggageInfo", &DSPlayerSystem::GetBaggageInfo,
-        "SetStateAfterSequence", &DSPlayerSystem::SetStateAfterSequence,
-        "RecoverBattery", &DSPlayerSystem::RecoverBattery,
-        "CreateCryptobiosisOfReturningFromKnotSpace", &DSPlayerSystem::CreateCryptobiosisOfReturningFromKnotSpace,
-        "StartSignboardCheck", &DSPlayerSystem::StartSignboardCheck,
-        "StartConstructionCheck", &DSPlayerSystem::StartConstructionCheck,
-        "ActivateAdrenalinMode", &DSPlayerSystem::ActivateAdrenalinMode,
-        "SetChiralCrystalCount", &DSPlayerSystem::SetChiralCrystalCount,
-        "OpenTerminalTopMenuAtLastTerminal", &DSPlayerSystem::OpenTerminalTopMenuAtLastTerminal,
-        "AddWeapon", &DSPlayerSystem::AddWeapon,
-        "RegisterActionIconInfo", &DSPlayerSystem::RegisterActionIconInfo,
-        "PlayPlayerVoice", &DSPlayerSystem::PlayPlayerVoice,
-        "RequestBBPodBagCry", &DSPlayerSystem::RequestBBPodBagCry,
-        "GetGameActorIdOfPlayerVehicle", &DSPlayerSystem::GetGameActorIdOfPlayerVehicle,
-        "EndConstructionCheck", &DSPlayerSystem::EndConstructionCheck,
-        "GetBareFootDamage", &DSPlayerSystem::GetBareFootDamage,
-        "ApplyInventorySetting", &DSPlayerSystem::ApplyInventorySetting,
-        "SetOverrideBlackSamPointGroupName", &DSPlayerSystem::SetOverrideBlackSamPointGroupName,
-        "RemoveWeapon", &DSPlayerSystem::RemoveWeapon,
-        "GetNailDamage", &DSPlayerSystem::GetNailDamage,
-        "AddSuitParts", &DSPlayerSystem::AddSuitParts,
-        "UnequipAccessories", &DSPlayerSystem::UnequipAccessories,
-        "RequestMoveTo", &DSPlayerSystem::RequestMoveTo,
-        "EquipEquipment", &DSPlayerSystem::EquipEquipment,
-        "FloatAndMovePlayer", &DSPlayerSystem::FloatAndMovePlayer,
-        "DebugPlaySequenceOfReturningFromKnotSpace", &DSPlayerSystem::DebugPlaySequenceOfReturningFromKnotSpace,
-        "UnregisterActionIconInfo", &DSPlayerSystem::UnregisterActionIconInfo,
-        "SetBBAffectionPointForDebugEntry", &DSPlayerSystem::SetBBAffectionPointForDebugEntry,
-        "ResetHoodAndBalloon", &DSPlayerSystem::ResetHoodAndBalloon,
-        "GetMudsSpherePaintValue", &DSPlayerSystem::GetMudsSpherePaintValue,
-        "GetBloodSpherePaintValue", &DSPlayerSystem::GetBloodSpherePaintValue,
-        "GetMudsAllPaintValue", &DSPlayerSystem::GetMudsAllPaintValue,
-        "GetTarAllPaintValue", &DSPlayerSystem::GetTarAllPaintValue,
-        "IsHadItem", &DSPlayerSystem::IsHadItem,
-        "GetMudsPaintValue", &DSPlayerSystem::GetMudsPaintValue,
-        "GetTarPaintValue", &DSPlayerSystem::GetTarPaintValue,
-        "GetBloodPaintValue", &DSPlayerSystem::GetBloodPaintValue,
-        "IsHadEquipment", &DSPlayerSystem::IsHadEquipment,
-        "GetOdradekBodyEntity", &DSPlayerSystem::GetOdradekBodyEntity,
-        "IsEquippedEquipment", &DSPlayerSystem::IsEquippedEquipment,
-        "EndSignboardCheck", &DSPlayerSystem::EndSignboardCheck,
-        "ReadyCryptobiosisOfReturningFromKnotSpace", &DSPlayerSystem::ReadyCryptobiosisOfReturningFromKnotSpace,
-        "ResetPlayerPadMask", &DSPlayerSystem::ResetPlayerPadMask,
-        "SendDSPlayerMessage", &DSPlayerSystem::SendDSPlayerMessage,
-        "ActivateOdradek", &DSPlayerSystem::ActivateOdradek,
-        "AddItemToInventorySetting", &DSPlayerSystem::AddItemToInventorySetting,
-        "EndGhostAction", &DSPlayerSystem::EndGhostAction,
-        "ClearHighPrioReturnTransformAfterAnnihilationAttack", &DSPlayerSystem::ClearHighPrioReturnTransformAfterAnnihilationAttack,
-        "SetHighPrioReturnTransformAfterAnnihilationAttack", &DSPlayerSystem::SetHighPrioReturnTransformAfterAnnihilationAttack,
-        "ClearPaint", &DSPlayerSystem::ClearPaint,
-        "GetOdradekArmEntity", &DSPlayerSystem::GetOdradekArmEntity,
-        "GetPlayerInfo", &DSPlayerSystem::GetPlayerInfo,
-        "RemoveOdradekReactionPoint", &DSPlayerSystem::RemoveOdradekReactionPoint,
-        "AddOdradekReactionPoint", &DSPlayerSystem::AddOdradekReactionPoint,
-        "PlayerGetFloorMaterialTypeResource", &DSPlayerSystem::PlayerGetFloorMaterialTypeResource,
-        "RideOffVehicleForcibly", &DSPlayerSystem::RideOffVehicleForcibly,
-        "DidGoodActionForBBFromSpecifiedEntity", &DSPlayerSystem::DidGoodActionForBBFromSpecifiedEntity,
-        "DidGoodActionForBBFromScript", &DSPlayerSystem::DidGoodActionForBBFromScript,
-        "PrepareToDeliverMama", &DSPlayerSystem::PrepareToDeliverMama,
-        "UnregisterMissionMessageEvent", &DSPlayerSystem::UnregisterMissionMessageEvent,
-        "RegisterMissionMessageEvent", &DSPlayerSystem::RegisterMissionMessageEvent,
-        "AddChiralCrystalCount", &DSPlayerSystem::AddChiralCrystalCount,
-        "SetInitialState", &DSPlayerSystem::SetInitialState,
-        "RecoverFull", &DSPlayerSystem::RecoverFull,
-        "SetShoesLifeByRate", &DSPlayerSystem::SetShoesLifeByRate,
-        "SetShoesLife", &DSPlayerSystem::SetShoesLife,
-        "SetBBStressByRate", &DSPlayerSystem::SetBBStressByRate,
-        "SetDeath", &DSPlayerSystem::SetDeath,
-        "AddAmmoToInventorySetting", &DSPlayerSystem::AddAmmoToInventorySetting,
-        "PushWorldTransform", &DSPlayerSystem::PushWorldTransform,
-        "DoesHaveBaggage", &DSPlayerSystem::DoesHaveBaggage,
-        "AddWeaponToInventorySetting", &DSPlayerSystem::AddWeaponToInventorySetting
-    );
-    lua.new_usertype<DSMissionSystem>("DSMissionSystem",
-        "GetDeliveryPointInfoResources", &DSMissionSystem::GetDeliveryPointInfoResources,
-        "KillOverrideEvaluationActingType", &DSMissionSystem::KillOverrideEvaluationActingType,
-        "FindMissionInfoFromId", &DSMissionSystem::FindMissionInfoFromId
-    );
-    lua.new_usertype<DispensableEntityManager>("DispensableEntityManager",
-        "RemoveDispensableEntitiesInTrigger", &DispensableEntityManager::RemoveDispensableEntitiesInTrigger,
-        "RemoveDispensableEntities", &DispensableEntityManager::RemoveDispensableEntities
-    );
-    lua.new_usertype<DSDebugPrintString>("DSDebugPrintString",
-        "PrintString", &DSDebugPrintString::PrintString
-    );
-    lua.new_usertype<DSMissionCheckCommand>("DSMissionCheckCommand",
-        "HasTimerMission", &DSMissionCheckCommand::HasTimerMission
     );
     lua.new_usertype<AIDirectableAgent>("AIDirectableAgent",
         "AddAreaRestriction", &AIDirectableAgent::AddAreaRestriction,
@@ -16700,26 +16023,10 @@ static void BindingFunctions(sol::state& lua) {
         "HTNFactAddWorldPosition", &AIDirectableAgent::HTNFactAddWorldPosition,
         "HTNFactAddObject", &AIDirectableAgent::HTNFactAddObject,
         "HTNFactAddHtnSymbol", &AIDirectableAgent::HTNFactAddHtnSymbol,
-        "HTNFactAddSymbols", &AIDirectableAgent::HTNFactAddSymbols,
-        "HTNFactAddSymbol", &AIDirectableAgent::HTNFactAddSymbol,
         "HTNFactAddInt", &AIDirectableAgent::HTNFactAddInt,
         "HTNFactEndList", &AIDirectableAgent::HTNFactEndList,
         "HTNFactBeginList", &AIDirectableAgent::HTNFactBeginList,
         "HTNFactBegin", &AIDirectableAgent::HTNFactBegin
-    );
-    lua.new_usertype<NodeGraph>("NodeGraph",
-        "AlertWithName", &NodeGraph::AlertWithName,
-        "MarkBeginNode", &NodeGraph::MarkBeginNode,
-        "OnStateMachineStateTransition", &NodeGraph::OnStateMachineStateTransition,
-        "IsProfiling", &NodeGraph::IsProfiling,
-        "MarkEndNode", &NodeGraph::MarkEndNode,
-        "FlushIntermediateOutputProbes", &NodeGraph::FlushIntermediateOutputProbes,
-        "OnStateMachineStateProbe", &NodeGraph::OnStateMachineStateProbe,
-        "Alert", &NodeGraph::Alert,
-        "Trace", &NodeGraph::Trace,
-        "Assert", &NodeGraph::Assert,
-        "GetObjectUUID", &NodeGraph::GetObjectUUID,
-        "InstantiateRTTI", &NodeGraph::InstantiateRTTI
     );
     lua.new_usertype<DSFixedGunGameActorLocator>("DSFixedGunGameActorLocator",
         "DestroyFixedGun", &DSFixedGunGameActorLocator::DestroyFixedGun,
@@ -16727,92 +16034,20 @@ static void BindingFunctions(sol::state& lua) {
         "ShowFixedGun", &DSFixedGunGameActorLocator::ShowFixedGun,
         "HideFixedGun", &DSFixedGunGameActorLocator::HideFixedGun
     );
-    lua.new_usertype<UDSSystem>("UDSSystem",
-        "SetFloatStat", &UDSSystem::SetFloatStat,
-        "MechanicUse", &UDSSystem::MechanicUse,
-        "SetIntStat", &UDSSystem::SetIntStat,
-        "SetTrophyUintStat", &UDSSystem::SetTrophyUintStat,
-        "SetTrophyFloatStat", &UDSSystem::SetTrophyFloatStat,
-        "SetTrophyIntStat", &UDSSystem::SetTrophyIntStat,
-        "SetUintStat", &UDSSystem::SetUintStat
-    );
     lua.new_usertype<AnimationManager>("AnimationManager",
-        "InitFloatAnimationVariable", &AnimationManager::InitFloatAnimationVariable,
         "TriggerBoolAnimationVariable", &AnimationManager::TriggerBoolAnimationVariable,
         "SetFloatAnimationVariable", &AnimationManager::SetFloatAnimationVariable,
         "GetFloatAnimationVariable", &AnimationManager::GetFloatAnimationVariable,
         "GetVec4AnimationVariable", &AnimationManager::GetVec4AnimationVariable,
-        "GetAnimationTagID", &AnimationManager::GetAnimationTagID,
         "SetBoolAnimationVariable", &AnimationManager::SetBoolAnimationVariable,
-        "InitVec4AnimationVariable", &AnimationManager::InitVec4AnimationVariable,
-        "InitBoolAnimationVariable", &AnimationManager::InitBoolAnimationVariable,
         "SetVec4AnimationVariable", &AnimationManager::SetVec4AnimationVariable,
         "GetVec3AnimationVariable", &AnimationManager::GetVec3AnimationVariable,
         "SetVec3AnimationVariable", &AnimationManager::SetVec3AnimationVariable,
-        "InitVec3AnimationVariable", &AnimationManager::InitVec3AnimationVariable,
         "GetBoolAnimationVariable", &AnimationManager::GetBoolAnimationVariable,
-        "IsEventActive", &AnimationManager::IsEventActive,
-        "GetAnimationEventID", &AnimationManager::GetAnimationEventID,
         "IsTagActive", &AnimationManager::IsTagActive
-    );
-    lua.new_usertype<EnvironmentSoundManager>("EnvironmentSoundManager",
-        "GetSpawnedInstanceCount", &EnvironmentSoundManager::GetSpawnedInstanceCount,
-        "SpawnSoundUpdate", &EnvironmentSoundManager::SpawnSoundUpdate,
-        "SetSpawnedSoundIntParameter", &EnvironmentSoundManager::SetSpawnedSoundIntParameter,
-        "SetSpawnedSoundBoolParameter", &EnvironmentSoundManager::SetSpawnedSoundBoolParameter,
-        "SetSpawnedSoundFloatParameter", &EnvironmentSoundManager::SetSpawnedSoundFloatParameter,
-        "SetSpawnedSoundPressureLevel", &EnvironmentSoundManager::SetSpawnedSoundPressureLevel
-    );
-    lua.new_usertype<DsGameActorCommand>("DsGameActorCommand",
-        "DSGetGameActorIDByEntity", &DsGameActorCommand::DSGetGameActorIDByEntity,
-        "DSGetGameActorLocatorID", &DsGameActorCommand::DSGetGameActorLocatorID,
-        "DSIsEqualGameActorType", &DsGameActorCommand::DSIsEqualGameActorType,
-        "DSGetGameActorLodState", &DsGameActorCommand::DSGetGameActorLodState,
-        "DSGetGameActorPosition", &DsGameActorCommand::DSGetGameActorPosition,
-        "DSGetGameActorTransform", &DsGameActorCommand::DSGetGameActorTransform,
-        "DSGetGameActorEntity", &DsGameActorCommand::DSGetGameActorEntity,
-        "DSGetGameActorIDByLocatorUUID", &DsGameActorCommand::DSGetGameActorIDByLocatorUUID
-    );
-    lua.new_usertype<DSBaggage2>("DSBaggage2",
-        "GetAmountRate", &DSBaggage2::GetAmountRate,
-        "GetMissionId", &DSBaggage2::GetMissionId,
-        "GetBaggageCaseType", &DSBaggage2::GetBaggageCaseType,
-        "GetBaggageWeight", &DSBaggage2::GetBaggageWeight,
-        "GetVolumeType", &DSBaggage2::GetVolumeType,
-        "GetContentsLifeRate", &DSBaggage2::GetContentsLifeRate,
-        "GetCatalogItemRarity", &DSBaggage2::GetCatalogItemRarity,
-        "GetContentsDamageType", &DSBaggage2::GetContentsDamageType,
-        "GetListItem", &DSBaggage2::GetListItem,
-        "IsDelicate", &DSBaggage2::IsDelicate,
-        "GetCoatingLifeRate", &DSBaggage2::GetCoatingLifeRate
-    );
-    lua.new_usertype<DSDeliveryPointInfoResource>("DSDeliveryPointInfoResource",
-        "GetWorldPosition", &DSDeliveryPointInfoResource::GetWorldPosition,
-        "GetSpecialReportOnPlace", &DSDeliveryPointInfoResource::GetSpecialReportOnPlace
-    );
-    lua.new_usertype<PlayerOutfitComponent>("PlayerOutfitComponent",
-        "SetFacePaint", &PlayerOutfitComponent::SetFacePaint,
-        "SetPlayerOutfit", &PlayerOutfitComponent::SetPlayerOutfit,
-        "SetShaderEffect", &PlayerOutfitComponent::SetShaderEffect,
-        "ApplyPlayerOutfitPart", &PlayerOutfitComponent::ApplyPlayerOutfitPart,
-        "ApplyPlayerOutfit", &PlayerOutfitComponent::ApplyPlayerOutfit
     );
     lua.new_usertype<RopeManagerComponent>("RopeManagerComponent",
         "Connect", &RopeManagerComponent::Connect
-    );
-    lua.new_usertype<DSDataLibraryBasicNode>("DSDataLibraryBasicNode",
-        "DSPauseMusicPlayer", &DSDataLibraryBasicNode::DSPauseMusicPlayer,
-        "DSIsPausedMusicPlayer", &DSDataLibraryBasicNode::DSIsPausedMusicPlayer,
-        "DSStopMusicPlayer", &DSDataLibraryBasicNode::DSStopMusicPlayer,
-        "DSIsOpenTips", &DSDataLibraryBasicNode::DSIsOpenTips,
-        "IsRaceBgmSelectForSound", &DSDataLibraryBasicNode::IsRaceBgmSelectForSound,
-        "DSGetMusicPlayerPlayingMusicId", &DSDataLibraryBasicNode::DSGetMusicPlayerPlayingMusicId,
-        "DSResumeMusicPlayer", &DSDataLibraryBasicNode::DSResumeMusicPlayer,
-        "DSGetTrackIdFromResource", &DSDataLibraryBasicNode::DSGetTrackIdFromResource,
-        "DSOpenMusicPlayerTrack", &DSDataLibraryBasicNode::DSOpenMusicPlayerTrack,
-        "DSReserveNextLoadingTips", &DSDataLibraryBasicNode::DSReserveNextLoadingTips,
-        "DSOpenTipsByList", &DSDataLibraryBasicNode::DSOpenTipsByList,
-        "DSOpenTips", &DSDataLibraryBasicNode::DSOpenTips
     );
     lua.new_usertype<AudioPlayerComponent>("AudioPlayerComponent",
         "PlayAudioLog", &AudioPlayerComponent::PlayAudioLog
@@ -16824,26 +16059,6 @@ static void BindingFunctions(sol::state& lua) {
         "GetPosition", &WorldNode::GetPosition,
         "GetOrientation", &WorldNode::GetOrientation,
         "GetWorldTransform", &WorldNode::GetWorldTransform
-    );
-    lua.new_usertype<GameModule>("GameModule",
-        "GetGameMovie", &GameModule::GetGameMovie,
-        "IsNewGamePlus", &GameModule::IsNewGamePlus,
-        "IsGameLoading", &GameModule::IsGameLoading,
-        "SetForceExtendedLoadingStateCheck", &GameModule::SetForceExtendedLoadingStateCheck,
-        "RequestWaitForAutobot", &GameModule::RequestWaitForAutobot,
-        "ClearObserverPositionOverride", &GameModule::ClearObserverPositionOverride,
-        "FadeInAfterSkippingSequence", &GameModule::FadeInAfterSkippingSequence,
-        "ReserveForceExtendedLoadingStateCheck", &GameModule::ReserveForceExtendedLoadingStateCheck,
-        "SetLoadingPauseEnabled", &GameModule::SetLoadingPauseEnabled,
-        "IsDLCEnabled", &GameModule::IsDLCEnabled,
-        "SetObserverPositionOverride", &GameModule::SetObserverPositionOverride,
-        "GetTileBasedStreamingStrategy", &GameModule::GetTileBasedStreamingStrategy,
-        "ReloadLastSaveGame", &GameModule::ReloadLastSaveGame,
-        "QuitGame", &GameModule::QuitGame
-    );
-    lua.new_usertype<CrowdSpawnManager>("CrowdSpawnManager",
-        "ForceCrowdHighLod", &CrowdSpawnManager::ForceCrowdHighLod,
-        "IsInHighLod", &CrowdSpawnManager::IsInHighLod
     );
     lua.new_usertype<AIBehaviorGroup>("AIBehaviorGroup",
         "GetMember", &AIBehaviorGroup::GetMember,
@@ -16858,107 +16073,19 @@ static void BindingFunctions(sol::state& lua) {
         "AddMember", &AIBehaviorGroup::AddMember,
         "GetAI", &AIBehaviorGroup::GetAI
     );
-    lua.new_usertype<VoiceComponent>("VoiceComponent",
-        "SetVoice", &VoiceComponent::SetVoice
-    );
     lua.new_usertype<CoreTelemetryService>("CoreTelemetryService",
         "PostEvent", &CoreTelemetryService::PostEvent,
-        "CreateTelemetryEvent", &CoreTelemetryService::CreateTelemetryEvent,
-        "GetTelemetryService", &CoreTelemetryService::GetTelemetryService
-    );
-    lua.new_usertype<DSCliffMissionCommand>("DSCliffMissionCommand",
-        "Cliff_SetAlertPhaseOnlySummonWarriorInfo", &DSCliffMissionCommand::Cliff_SetAlertPhaseOnlySummonWarriorInfo,
-        "Cliff_GetEscapeCount", &DSCliffMissionCommand::Cliff_GetEscapeCount,
-        "Cliff_SetSearchPointByLostWarrior", &DSCliffMissionCommand::Cliff_SetSearchPointByLostWarrior,
-        "Cliff_SetSummonWarriorInfo", &DSCliffMissionCommand::Cliff_SetSummonWarriorInfo,
-        "Cliff_RequestRollCall", &DSCliffMissionCommand::Cliff_RequestRollCall,
-        "Cliff_RequestSummonWarriors", &DSCliffMissionCommand::Cliff_RequestSummonWarriors,
-        "Cliff_SetShowCompassMaker", &DSCliffMissionCommand::Cliff_SetShowCompassMaker,
-        "Cliff_SetNextBattlePoint", &DSCliffMissionCommand::Cliff_SetNextBattlePoint,
-        "Cliff_OverwriteBattlePointInfo", &DSCliffMissionCommand::Cliff_OverwriteBattlePointInfo
-    );
-    lua.new_usertype<DSCatcherManagerCommand>("DSCatcherManagerCommand",
-        "GetActiveCatcherHealth", &DSCatcherManagerCommand::GetActiveCatcherHealth,
-        "GetDemoEntity", &DSCatcherManagerCommand::GetDemoEntity
+        "CreateTelemetryEvent", &CoreTelemetryService::CreateTelemetryEvent
     );
     lua.new_usertype<DSDeliveredMemoryChipArgs>("DSDeliveredMemoryChipArgs",
         "GetLikeValue", &DSDeliveredMemoryChipArgs::GetLikeValue,
         "GetBridgesMember", &DSDeliveredMemoryChipArgs::GetBridgesMember
     );
-    lua.new_usertype<AIPerchMarker>("AIPerchMarker",
-        "IncreaseReservedForScript", &AIPerchMarker::IncreaseReservedForScript,
-        "DecreaseReservedForScript", &AIPerchMarker::DecreaseReservedForScript
-    );
-    lua.new_usertype<OpenMenuSystem>("OpenMenuSystem",
-        "EnableMenuPage", &OpenMenuSystem::EnableMenuPage,
-        "DisableMenuPage", &OpenMenuSystem::DisableMenuPage
-    );
-    lua.new_usertype<DSPlayRecordBasicNode>("DSPlayRecordBasicNode",
-        "ResetAccumulatePlayerDamage", &DSPlayRecordBasicNode::ResetAccumulatePlayerDamage,
-        "GetTotalMovingDistance", &DSPlayRecordBasicNode::GetTotalMovingDistance,
-        "AddStayPrivateRoomNum", &DSPlayRecordBasicNode::AddStayPrivateRoomNum,
-        "ResetDSMissionPlayLog", &DSPlayRecordBasicNode::ResetDSMissionPlayLog,
-        "GetComprehensiveEvaluation", &DSPlayRecordBasicNode::GetComprehensiveEvaluation,
-        "GetEvaluationPreviousServiceRank", &DSPlayRecordBasicNode::GetEvaluationPreviousServiceRank,
-        "GetUserPlayMissionDeltaTimeSeconds", &DSPlayRecordBasicNode::GetUserPlayMissionDeltaTimeSeconds,
-        "GetUserPlayInGameTimeSeconds", &DSPlayRecordBasicNode::GetUserPlayInGameTimeSeconds,
-        "AddDeathCountForBridgeLink", &DSPlayRecordBasicNode::AddDeathCountForBridgeLink,
-        "AddToiletBigNum", &DSPlayRecordBasicNode::AddToiletBigNum,
-        "AddToiletSmallNum", &DSPlayRecordBasicNode::AddToiletSmallNum,
-        "AddShowerNum", &DSPlayRecordBasicNode::AddShowerNum,
-        "AddDiscoveredOnsenNum", &DSPlayRecordBasicNode::AddDiscoveredOnsenNum,
-        "GetUserPlayInGameDeltaTimeSeconds", &DSPlayRecordBasicNode::GetUserPlayInGameDeltaTimeSeconds,
-        "GetUserPlayMissionTimeSeconds", &DSPlayRecordBasicNode::GetUserPlayMissionTimeSeconds,
-        "GetUserPlayAbsoluteDeltaTimeSeconds", &DSPlayRecordBasicNode::GetUserPlayAbsoluteDeltaTimeSeconds,
-        "GetUserPlayAbsoluteTimeSeconds", &DSPlayRecordBasicNode::GetUserPlayAbsoluteTimeSeconds,
-        "TimeLapseAtPrivateRoom", &DSPlayRecordBasicNode::TimeLapseAtPrivateRoom,
-        "GetComprehensiveEvaluationLevel", &DSPlayRecordBasicNode::GetComprehensiveEvaluationLevel
-    );
     lua.new_usertype<AIContextHintResource>("AIContextHintResource",
         "GetHintSymbol", &AIContextHintResource::GetHintSymbol
     );
-    lua.new_usertype<DSMissionTerminalCommand>("DSMissionTerminalCommand",
-        "DeliveryPointIdToUUID", &DSMissionTerminalCommand::DeliveryPointIdToUUID,
-        "CheckEntrustToNoDemo", &DSMissionTerminalCommand::CheckEntrustToNoDemo,
-        "GetMissionBonusInfo", &DSMissionTerminalCommand::GetMissionBonusInfo,
-        "CheckDeliveryToNoDemo", &DSMissionTerminalCommand::CheckDeliveryToNoDemo,
-        "RemoveDeadbodyBagForCrematorium", &DSMissionTerminalCommand::RemoveDeadbodyBagForCrematorium,
-        "AddMissionBonusToBuffer", &DSMissionTerminalCommand::AddMissionBonusToBuffer,
-        "GetAccessingTerminalId", &DSMissionTerminalCommand::GetAccessingTerminalId,
-        "CanOrderMissionAtDeliveryPoint", &DSMissionTerminalCommand::CanOrderMissionAtDeliveryPoint,
-        "HasCanDeliveryBaggage", &DSMissionTerminalCommand::HasCanDeliveryBaggage,
-        "SetStarMarkBonus", &DSMissionTerminalCommand::SetStarMarkBonus,
-        "AddSimpleBonusToBuffer", &DSMissionTerminalCommand::AddSimpleBonusToBuffer
-    );
     lua.new_usertype<BulletTimeComponent>("BulletTimeComponent",
         "IsInBulletTime", &BulletTimeComponent::IsInBulletTime
-    );
-    lua.new_usertype<DsHiggsGraphCommand>("DsHiggsGraphCommand",
-        "Higgs_SetInitialPhase", &DsHiggsGraphCommand::Higgs_SetInitialPhase
-    );
-    lua.new_usertype<DSMailBasicNode>("DSMailBasicNode",
-        "RequestAllMailRecive", &DSMailBasicNode::RequestAllMailRecive,
-        "FindMailStatus", &DSMailBasicNode::FindMailStatus,
-        "RequestMailSending", &DSMailBasicNode::RequestMailSending
-    );
-    lua.new_usertype<DSMissionMiscCommand>("DSMissionMiscCommand",
-        "NotifyStartSequenceToFillGap", &DSMissionMiscCommand::NotifyStartSequenceToFillGap,
-        "DSNotifyEndSequence", &DSMissionMiscCommand::DSNotifyEndSequence,
-        "DSNotifyEndInGameSequence", &DSMissionMiscCommand::DSNotifyEndInGameSequence,
-        "DSNotifyStartInGameSequence", &DSMissionMiscCommand::DSNotifyStartInGameSequence,
-        "GetHeartmanRoomBlackBoardFromCpp", &DSMissionMiscCommand::GetHeartmanRoomBlackBoardFromCpp,
-        "DisposalOnlineMissionsInTargetCPArea", &DSMissionMiscCommand::DisposalOnlineMissionsInTargetCPArea,
-        "RequestLoadingScreen", &DSMissionMiscCommand::RequestLoadingScreen,
-        "SwitchSection", &DSMissionMiscCommand::SwitchSection,
-        "NotifyStayPrivateRoom", &DSMissionMiscCommand::NotifyStayPrivateRoom,
-        "NotifyDirectIntoPrivateRoom", &DSMissionMiscCommand::NotifyDirectIntoPrivateRoom,
-        "NotifyBossBattle", &DSMissionMiscCommand::NotifyBossBattle,
-        "NotifyBeatBoss", &DSMissionMiscCommand::NotifyBeatBoss,
-        "SetHeartmanRoomBlackBoard", &DSMissionMiscCommand::SetHeartmanRoomBlackBoard,
-        "SetPrivateRoomBlackBoard", &DSMissionMiscCommand::SetPrivateRoomBlackBoard,
-        "GetPrivateRoomBlackBoardFromCpp", &DSMissionMiscCommand::GetPrivateRoomBlackBoardFromCpp,
-        "ChangePathRecordStraightMode", &DSMissionMiscCommand::ChangePathRecordStraightMode,
-        "DSNotifyStartSequence", &DSMissionMiscCommand::DSNotifyStartSequence
     );
     lua.new_usertype<Inventory>("Inventory",
         "GetItemAmount", &Inventory::GetItemAmount,
@@ -16966,43 +16093,6 @@ static void BindingFunctions(sol::state& lua) {
         "GetItems", &Inventory::GetItems,
         "RemoveAllItems", &Inventory::RemoveAllItems,
         "AddItem", &Inventory::AddItem
-    );
-    lua.new_usertype<AttachToHelperPositionMover>("AttachToHelperPositionMover",
-        "Create", &AttachToHelperPositionMover::Create
-    );
-    lua.new_usertype<DSBaggage2Manager>("DSBaggage2Manager",
-        "PutNuclearToBackpackOrField", &DSBaggage2Manager::PutNuclearToBackpackOrField,
-        "GetNoDraggedCartInCollisionTrigger", &DSBaggage2Manager::GetNoDraggedCartInCollisionTrigger,
-        "SetAreaChangeInfo", &DSBaggage2Manager::SetAreaChangeInfo,
-        "MoveBaggageToPlayer", &DSBaggage2Manager::MoveBaggageToPlayer,
-        "CreateBaggage", &DSBaggage2Manager::CreateBaggage,
-        "AddBaggagesToTemporaryList", &DSBaggage2Manager::AddBaggagesToTemporaryList,
-        "PlaceTemporaryListBaggagesAroundPlayer", &DSBaggage2Manager::PlaceTemporaryListBaggagesAroundPlayer,
-        "ClearTemporaryList", &DSBaggage2Manager::ClearTemporaryList,
-        "DeleteBaggage", &DSBaggage2Manager::DeleteBaggage,
-        "ExtractBaggageInfo", &DSBaggage2Manager::ExtractBaggageInfo,
-        "MoveBaggagesWithTerminalShelf", &DSBaggage2Manager::MoveBaggagesWithTerminalShelf,
-        "DoesExistBaggageWithName", &DSBaggage2Manager::DoesExistBaggageWithName,
-        "GetBaggagesInRange", &DSBaggage2Manager::GetBaggagesInRange,
-        "GetBaggageParameterBool", &DSBaggage2Manager::GetBaggageParameterBool,
-        "SetBaggageUnrealizedAreaUntilPlayerLeave", &DSBaggage2Manager::SetBaggageUnrealizedAreaUntilPlayerLeave,
-        "PlaceTemporaryListBaggagesAroundPosition", &DSBaggage2Manager::PlaceTemporaryListBaggagesAroundPosition,
-        "AddBaggageToTemporaryList", &DSBaggage2Manager::AddBaggageToTemporaryList,
-        "DeleteDeliveredBaggages", &DSBaggage2Manager::DeleteDeliveredBaggages,
-        "MoveDeliveredBaggagesWithTerminalShelf", &DSBaggage2Manager::MoveDeliveredBaggagesWithTerminalShelf,
-        "AddBaggageToPlayer", &DSBaggage2Manager::AddBaggageToPlayer,
-        "GetMaterialCountFromBaggageActorIdArray", &DSBaggage2Manager::GetMaterialCountFromBaggageActorIdArray,
-        "SetFirstCursorBaggage", &DSBaggage2Manager::SetFirstCursorBaggage,
-        "GetDistanceFromBaggageToPlayer", &DSBaggage2Manager::GetDistanceFromBaggageToPlayer,
-        "GetBaggagesInTerminalArea", &DSBaggage2Manager::GetBaggagesInTerminalArea,
-        "GetBaggagesInCollisionTrigger", &DSBaggage2Manager::GetBaggagesInCollisionTrigger,
-        "CreateAndAddBaggageToDeliveryPoint", &DSBaggage2Manager::CreateAndAddBaggageToDeliveryPoint,
-        "AddBaggageToDeliveryPoint", &DSBaggage2Manager::AddBaggageToDeliveryPoint,
-        "BreakBaggage", &DSBaggage2Manager::BreakBaggage,
-        "GetGameActorIdFromBaggageName", &DSBaggage2Manager::GetGameActorIdFromBaggageName,
-        "GetAllBaggages", &DSBaggage2Manager::GetAllBaggages,
-        "CreateAndAddBaggageToPlayer", &DSBaggage2Manager::CreateAndAddBaggageToPlayer,
-        "AddBaggageToPlayerByGameActorId", &DSBaggage2Manager::AddBaggageToPlayerByGameActorId
     );
     lua.new_usertype<MortallyWoundedComponent>("MortallyWoundedComponent",
         "IsMortallyWounded", &MortallyWoundedComponent::IsMortallyWounded,
@@ -17032,85 +16122,10 @@ static void BindingFunctions(sol::state& lua) {
         "IsEntityTagged", &FocusTargetComponent::IsEntityTagged,
         "IsEntityBeingScanned", &FocusTargetComponent::IsEntityBeingScanned
     );
-    lua.new_usertype<DSMissionSpecialReportResource>("DSMissionSpecialReportResource",
-        "IsRewardLike", &DSMissionSpecialReportResource::IsRewardLike,
-        "IsMissionMenuViewForcedDisable", &DSMissionSpecialReportResource::IsMissionMenuViewForcedDisable,
-        "GetDataTablesByThreshold", &DSMissionSpecialReportResource::GetDataTablesByThreshold,
-        "GetEvaluationType", &DSMissionSpecialReportResource::GetEvaluationType,
-        "GetDataTablesByDeliveryPoint", &DSMissionSpecialReportResource::GetDataTablesByDeliveryPoint,
-        "GetCustomParam02", &DSMissionSpecialReportResource::GetCustomParam02,
-        "GetCustomParam01", &DSMissionSpecialReportResource::GetCustomParam01,
-        "GetMissionEvaluationDataTable", &DSMissionSpecialReportResource::GetMissionEvaluationDataTable,
-        "IsMissionMenuView", &DSMissionSpecialReportResource::IsMissionMenuView,
-        "IsMissionCondition", &DSMissionSpecialReportResource::IsMissionCondition,
-        "GetSpecialReportHash", &DSMissionSpecialReportResource::GetSpecialReportHash,
-        "GetRewardLike", &DSMissionSpecialReportResource::GetRewardLike
-    );
-    lua.new_usertype<SpawnSetupNonPlaceholder>("SpawnSetupNonPlaceholder",
-        "WasSpawnedThroughSpawnSetup", &SpawnSetupNonPlaceholder::WasSpawnedThroughSpawnSetup
-    );
-    lua.new_usertype<GCore>("GCore",
-        "Sound_UpdateSounds", &GCore::Sound_UpdateSounds,
-        "Sound_GetSoundComponentUniqueID", &GCore::Sound_GetSoundComponentUniqueID,
-        "Sound_AddSound", &GCore::Sound_AddSound,
-        "Sound_PlayOneShotSound", &GCore::Sound_PlayOneShotSound,
-        "Sound_ActivateSoundMixState", &GCore::Sound_ActivateSoundMixState,
-        "Sound_PlayOneShotSoundWithOffset", &GCore::Sound_PlayOneShotSoundWithOffset,
-        "Sound_CreateSound", &GCore::Sound_CreateSound,
-        "Sound_UpdateSound", &GCore::Sound_UpdateSound,
-        "Sound_SetRelativePosition", &GCore::Sound_SetRelativePosition,
-        "Sound_FlushSounds", &GCore::Sound_FlushSounds,
-        "Sound_GetFloatParameterHandle", &GCore::Sound_GetFloatParameterHandle,
-        "Sound_SetFloatParameter", &GCore::Sound_SetFloatParameter,
-        "Sound_GetIntParameterHandle", &GCore::Sound_GetIntParameterHandle,
-        "Sound_SetIntParameter", &GCore::Sound_SetIntParameter,
-        "Sound_GetBoolParameterHandle", &GCore::Sound_GetBoolParameterHandle,
-        "Sound_SetBoolParameter", &GCore::Sound_SetBoolParameter,
-        "Sound_SetListenerTransform", &GCore::Sound_SetListenerTransform,
-        "IntersectSweptSphere", &GCore::IntersectSweptSphere,
-        "IntersectSphere", &GCore::IntersectSphere,
-        "CalculateWaterDepth", &GCore::CalculateWaterDepth,
-        "IntersectLine", &GCore::IntersectLine,
-        "EntityImpactEffect", &GCore::EntityImpactEffect,
-        "Dismount", &GCore::Dismount
-    );
-    lua.new_usertype<DefendAreaUserComponent>("DefendAreaUserComponent",
-        "SetDefendAreaSet", &DefendAreaUserComponent::SetDefendAreaSet
-    );
-    lua.new_usertype<GraphProperty>("GraphProperty",
-        "HasTagInResource", &GraphProperty::HasTagInResource,
-        "SetInt", &GraphProperty::SetInt,
-        "SetBool", &GraphProperty::SetBool,
-        "GetEntityInstance", &GraphProperty::GetEntityInstance,
-        "SetFloat", &GraphProperty::SetFloat,
-        "GetBool", &GraphProperty::GetBool,
-        "GetWorldPosition", &GraphProperty::GetWorldPosition,
-        "GetFloat", &GraphProperty::GetFloat,
-        "GetVec3", &GraphProperty::GetVec3,
-        "GetInt", &GraphProperty::GetInt,
-        "SetEntityInstance", &GraphProperty::SetEntityInstance,
-        "SetVec3", &GraphProperty::SetVec3,
-        "SetWorldPosition", &GraphProperty::SetWorldPosition
-    );
-    lua.new_usertype<DSMissioDebugUnlockAllItemsCommand>("DSMissioDebugUnlockAllItemsCommand",
-        "UnlockAllItems", &DSMissioDebugUnlockAllItemsCommand::UnlockAllItems
-    );
     lua.new_usertype<Throwable>("Throwable",
         "SetThrower", &Throwable::SetThrower,
         "GetThrower", &Throwable::GetThrower,
         "GetTargetPosition", &Throwable::GetTargetPosition
-    );
-    lua.new_usertype<WorldData>("WorldData",
-        "ScaleToRange", &WorldData::ScaleToRange,
-        "SampleVec3AtWorldPosition", &WorldData::SampleVec3AtWorldPosition,
-        "SampleFloatAtWorldPosition", &WorldData::SampleFloatAtWorldPosition,
-        "SampleVec4AtWorldPosition", &WorldData::SampleVec4AtWorldPosition,
-        "SampleAtWorldPosition", &WorldData::SampleAtWorldPosition,
-        "SampleFloatAtWorldPositionImmediate", &WorldData::SampleFloatAtWorldPositionImmediate,
-        "SampleWithinTile", &WorldData::SampleWithinTile,
-        "SampleFloatWithinTile", &WorldData::SampleFloatWithinTile,
-        "GetWorldDataTileForPosition", &WorldData::GetWorldDataTileForPosition,
-        "GetDataType", &WorldData::GetDataType
     );
     lua.new_usertype<CountdownTimer>("CountdownTimer",
         "SetBlinkStartTime", &CountdownTimer::SetBlinkStartTime,
@@ -17128,186 +16143,25 @@ static void BindingFunctions(sol::state& lua) {
         "CraftRecipeForFree", &CraftingComponent::CraftRecipeForFree,
         "UnlockRecipe", &CraftingComponent::UnlockRecipe
     );
-    lua.new_usertype<DSMissionConditionResourceBase>("DSMissionConditionResourceBase",
-        "GetMinCountBaggage", &DSMissionConditionResourceBase::GetMinCountBaggage,
-        "GetCumulativeMinDamage", &DSMissionConditionResourceBase::GetCumulativeMinDamage,
-        "GetSpecialReport", &DSMissionConditionResourceBase::GetSpecialReport,
-        "GetConditionType", &DSMissionConditionResourceBase::GetConditionType,
-        "GetMaxDonationCount", &DSMissionConditionResourceBase::GetMaxDonationCount,
-        "GetEvaluationDataTable", &DSMissionConditionResourceBase::GetEvaluationDataTable,
-        "GetBaggageDamageMinRate", &DSMissionConditionResourceBase::GetBaggageDamageMinRate,
-        "GetMinDistance", &DSMissionConditionResourceBase::GetMinDistance,
-        "GetClearMinTime", &DSMissionConditionResourceBase::GetClearMinTime,
-        "GetMinWeightBaggage", &DSMissionConditionResourceBase::GetMinWeightBaggage
-    );
-    lua.new_usertype<FactDatabase>("FactDatabase",
-        "GetVec3Fact", &FactDatabase::GetVec3Fact,
-        "GetFloatFactWithUUID", &FactDatabase::GetFloatFactWithUUID,
-        "GetVec3FactWithUUID", &FactDatabase::GetVec3FactWithUUID,
-        "GetBooleanFact", &FactDatabase::GetBooleanFact,
-        "GetBooleanFactWithUUID", &FactDatabase::GetBooleanFactWithUUID,
-        "SetFloatFact", &FactDatabase::SetFloatFact,
-        "SetEnumFact", &FactDatabase::SetEnumFact,
-        "GetEnumFact", &FactDatabase::GetEnumFact,
-        "SetVec3Fact", &FactDatabase::SetVec3Fact,
-        "SetFactContextPersistent", &FactDatabase::SetFactContextPersistent,
-        "IncrementIntegerFact", &FactDatabase::IncrementIntegerFact,
-        "GetEnumFactWithUUID", &FactDatabase::GetEnumFactWithUUID,
-        "SetBooleanFact", &FactDatabase::SetBooleanFact,
-        "SetIntegerFact", &FactDatabase::SetIntegerFact,
-        "GetIntegerFactWithUUID", &FactDatabase::GetIntegerFactWithUUID,
-        "GetIntegerFact", &FactDatabase::GetIntegerFact,
-        "IncrementFloatFact", &FactDatabase::IncrementFloatFact,
-        "GetFloatFact", &FactDatabase::GetFloatFact
-    );
-    lua.new_usertype<DSMissionEventTimerCommand>("DSMissionEventTimerCommand",
-        "ManualBootupMissionEventTimer", &DSMissionEventTimerCommand::ManualBootupMissionEventTimer,
-        "SetMissionEventTimerPurposeTextByLocalizedText", &DSMissionEventTimerCommand::SetMissionEventTimerPurposeTextByLocalizedText,
-        "FixVisibleTimerFromDSMissionID", &DSMissionEventTimerCommand::FixVisibleTimerFromDSMissionID,
-        "ManualStopMissionEventTimer", &DSMissionEventTimerCommand::ManualStopMissionEventTimer,
-        "ShowMissionEventTimer", &DSMissionEventTimerCommand::ShowMissionEventTimer,
-        "ResetMissionEventTimer", &DSMissionEventTimerCommand::ResetMissionEventTimer,
-        "AllVisiblePopupTimer", &DSMissionEventTimerCommand::AllVisiblePopupTimer,
-        "GetCurPlayTimeSecondsF", &DSMissionEventTimerCommand::GetCurPlayTimeSecondsF,
-        "SetCurTimeSecondsF", &DSMissionEventTimerCommand::SetCurTimeSecondsF,
-        "HideMissionEventTimer", &DSMissionEventTimerCommand::HideMissionEventTimer,
-        "PauseMissionEventTimer", &DSMissionEventTimerCommand::PauseMissionEventTimer,
-        "StartMissionEventTimer", &DSMissionEventTimerCommand::StartMissionEventTimer
-    );
-    lua.new_usertype<DSAnyEventStateCommand>("DSAnyEventStateCommand",
-        "SetEventState", &DSAnyEventStateCommand::SetEventState,
-        "UnsetEventStateHash", &DSAnyEventStateCommand::UnsetEventStateHash,
-        "GetEventStateHash", &DSAnyEventStateCommand::GetEventStateHash,
-        "SetEventStateHash", &DSAnyEventStateCommand::SetEventStateHash
-    );
-    lua.new_usertype<DSMissionLogicMiscCommand>("DSMissionLogicMiscCommand",
-        "StaticMissionIdToUUID", &DSMissionLogicMiscCommand::StaticMissionIdToUUID,
-        "PreparationBeforeCutscene", &DSMissionLogicMiscCommand::PreparationBeforeCutscene,
-        "DSIsCombatMuleOrBT", &DSMissionLogicMiscCommand::DSIsCombatMuleOrBT,
-        "ResetGameOverCountForHospitality", &DSMissionLogicMiscCommand::ResetGameOverCountForHospitality,
-        "GetGameOverCountForHospitality", &DSMissionLogicMiscCommand::GetGameOverCountForHospitality,
-        "CanStartCutscene", &DSMissionLogicMiscCommand::CanStartCutscene,
-        "SetMissionGlobalVariable", &DSMissionLogicMiscCommand::SetMissionGlobalVariable,
-        "GetMissionGlobalVariable", &DSMissionLogicMiscCommand::GetMissionGlobalVariable,
-        "DSHasBeenRelocateBaggage", &DSMissionLogicMiscCommand::DSHasBeenRelocateBaggage,
-        "DSGetCurrentDate", &DSMissionLogicMiscCommand::DSGetCurrentDate,
-        "IsBirthdayToday", &DSMissionLogicMiscCommand::IsBirthdayToday,
-        "SetMissionMessageEnabled", &DSMissionLogicMiscCommand::SetMissionMessageEnabled
-    );
-    lua.new_usertype<DSMissionBaggageNodeCommand>("DSMissionBaggageNodeCommand",
-        "IsIncludeBaggageListItemInMission", &DSMissionBaggageNodeCommand::IsIncludeBaggageListItemInMission,
-        "DeliveryBaggageForDontDeliveryMission", &DSMissionBaggageNodeCommand::DeliveryBaggageForDontDeliveryMission,
-        "GetBaggageAttribute", &DSMissionBaggageNodeCommand::GetBaggageAttribute
-    );
     lua.new_usertype<CollisionTrigger>("CollisionTrigger",
-        "IsInTrigger", &CollisionTrigger::IsInTrigger,
         "GetWorldTransform", &CollisionTrigger::GetWorldTransform
     );
     lua.new_usertype<DSGraphServiceReturnValue>("DSGraphServiceReturnValue",
         "SetInt", &DSGraphServiceReturnValue::SetInt,
         "SetMessageNameHash", &DSGraphServiceReturnValue::SetMessageNameHash
     );
-    lua.new_usertype<DSDeliveryBotEntity>("DSDeliveryBotEntity",
-        "GameActorIdToEntity", &DSDeliveryBotEntity::GameActorIdToEntity,
-        "EntityToGameActorId", &DSDeliveryBotEntity::EntityToGameActorId,
-        "IsDeliveryBot", &DSDeliveryBotEntity::IsDeliveryBot
-    );
     lua.new_usertype<TileBasedStreamingStrategyInstance>("TileBasedStreamingStrategyInstance",
         "SetHighestLODLevel", &TileBasedStreamingStrategyInstance::SetHighestLODLevel,
-        "ConvertToTileCoordinates", &TileBasedStreamingStrategyInstance::ConvertToTileCoordinates,
         "HintTileState", &TileBasedStreamingStrategyInstance::HintTileState,
         "SetTileState", &TileBasedStreamingStrategyInstance::SetTileState,
         "GetTileState", &TileBasedStreamingStrategyInstance::GetTileState
     );
-    lua.new_usertype<QuestSystem>("QuestSystem",
-        "GetQuest", &QuestSystem::GetQuest,
-        "CanStartQuest", &QuestSystem::CanStartQuest,
-        "SetAllQuestsPaused", &QuestSystem::SetAllQuestsPaused,
-        "DisableQuest", &QuestSystem::DisableQuest,
-        "RevertQuest", &QuestSystem::RevertQuest,
-        "GetTrackedQuest", &QuestSystem::GetTrackedQuest,
-        "AbandonMerchantJobs", &QuestSystem::AbandonMerchantJobs,
-        "ShowQuestNotification", &QuestSystem::ShowQuestNotification,
-        "EnableQuest", &QuestSystem::EnableQuest
-    );
-    lua.new_usertype<DSRadioNodeGraphBindings>("DSRadioNodeGraphBindings",
-        "RandomlySelectSentenceHavingSpecificVoiceName", &DSRadioNodeGraphBindings::RandomlySelectSentenceHavingSpecificVoiceName,
-        "RaiseAbortEvent2", &DSRadioNodeGraphBindings::RaiseAbortEvent2,
-        "RaiseEvent", &DSRadioNodeGraphBindings::RaiseEvent,
-        "RaiseEvent2", &DSRadioNodeGraphBindings::RaiseEvent2,
-        "PlaySentence", &DSRadioNodeGraphBindings::PlaySentence,
-        "RaiseAbortEvent", &DSRadioNodeGraphBindings::RaiseAbortEvent
-    );
     lua.new_usertype<CharacterProgressionComponent>("CharacterProgressionComponent",
         "GetLevel", &CharacterProgressionComponent::GetLevel,
-        "AddXp", &CharacterProgressionComponent::AddXp,
         "SetCurrentLevel", &CharacterProgressionComponent::SetCurrentLevel,
         "HasPerkLevel", &CharacterProgressionComponent::HasPerkLevel,
         "AddPerkLevel", &CharacterProgressionComponent::AddPerkLevel,
         "AddPerkPoints", &CharacterProgressionComponent::AddPerkPoints
-    );
-    lua.new_usertype<DSConstructionPointManager>("DSConstructionPointManager",
-        "ForceConstructionLevelupStart", &DSConstructionPointManager::ForceConstructionLevelupStart,
-        "SetCustomizeHoloSpawnPosition", &DSConstructionPointManager::SetCustomizeHoloSpawnPosition,
-        "AddMissionConstructableArea", &DSConstructionPointManager::AddMissionConstructableArea,
-        "GetConstructionPointTotalNecessaryMaterials", &DSConstructionPointManager::GetConstructionPointTotalNecessaryMaterials,
-        "GetUUIDHash", &DSConstructionPointManager::GetUUIDHash,
-        "GetConstructionPointLevel", &DSConstructionPointManager::GetConstructionPointLevel,
-        "GetDeliveryPointTypeString", &DSConstructionPointManager::GetDeliveryPointTypeString,
-        "GetConstructionUsabilityFromEntity", &DSConstructionPointManager::GetConstructionUsabilityFromEntity,
-        "RemoveConstructionsInArea", &DSConstructionPointManager::RemoveConstructionsInArea,
-        "SetConstructionPointTransform", &DSConstructionPointManager::SetConstructionPointTransform,
-        "SendCommandToDeliveryPoint", &DSConstructionPointManager::SendCommandToDeliveryPoint,
-        "AllowConstructionInfologInPrivateroom", &DSConstructionPointManager::AllowConstructionInfologInPrivateroom,
-        "CallGimmickActionByConstruction", &DSConstructionPointManager::CallGimmickActionByConstruction,
-        "GetConstructionAvailableFromEntity", &DSConstructionPointManager::GetConstructionAvailableFromEntity,
-        "GetAccessingConstructionPointId", &DSConstructionPointManager::GetAccessingConstructionPointId,
-        "SetActiveAllConstructions", &DSConstructionPointManager::SetActiveAllConstructions,
-        "ClearAccessingConstruction", &DSConstructionPointManager::ClearAccessingConstruction,
-        "SetIntruderCheckerActivation", &DSConstructionPointManager::SetIntruderCheckerActivation,
-        "IntToConstructionPointCategory", &DSConstructionPointManager::IntToConstructionPointCategory,
-        "SetActiveCPAreaConstructions", &DSConstructionPointManager::SetActiveCPAreaConstructions,
-        "RemoveGimmickLocatorFromConstruction", &DSConstructionPointManager::RemoveGimmickLocatorFromConstruction,
-        "GetConstructionPointState", &DSConstructionPointManager::GetConstructionPointState,
-        "GetConstructionPointPosition", &DSConstructionPointManager::GetConstructionPointPosition,
-        "CreateConstruction", &DSConstructionPointManager::CreateConstruction,
-        "ConstructioTypeToCategory", &DSConstructionPointManager::ConstructioTypeToCategory,
-        "SearchConstructionIDsWithPosition", &DSConstructionPointManager::SearchConstructionIDsWithPosition,
-        "GetConstructionPointCategory", &DSConstructionPointManager::GetConstructionPointCategory,
-        "CallGimmickActionByConstructionEntity", &DSConstructionPointManager::CallGimmickActionByConstructionEntity,
-        "SearchConstructionPointEntityByInfo", &DSConstructionPointManager::SearchConstructionPointEntityByInfo,
-        "GetRoadHashByConstructionId", &DSConstructionPointManager::GetRoadHashByConstructionId,
-        "ForceConstructionLevelupComplete", &DSConstructionPointManager::ForceConstructionLevelupComplete,
-        "GetConstructionConfig", &DSConstructionPointManager::GetConstructionConfig,
-        "GetOverrideOverHeadHoloIndexFromEntity", &DSConstructionPointManager::GetOverrideOverHeadHoloIndexFromEntity,
-        "GetNearestConstructionPointId", &DSConstructionPointManager::GetNearestConstructionPointId,
-        "SetConstructionLevel", &DSConstructionPointManager::SetConstructionLevel,
-        "SetBaggagesToStatic", &DSConstructionPointManager::SetBaggagesToStatic,
-        "SetActiveAreaConstructions", &DSConstructionPointManager::SetActiveAreaConstructions,
-        "PutConstructionsInTar", &DSConstructionPointManager::PutConstructionsInTar,
-        "SetGimmickLocatorToConstruction", &DSConstructionPointManager::SetGimmickLocatorToConstruction,
-        "RestoreLastStrandingConstructions", &DSConstructionPointManager::RestoreLastStrandingConstructions,
-        "StartLastStrandingConstructions", &DSConstructionPointManager::StartLastStrandingConstructions,
-        "SetAccessingConstruction", &DSConstructionPointManager::SetAccessingConstruction,
-        "GetUsableQpidBandwidth", &DSConstructionPointManager::GetUsableQpidBandwidth,
-        "SetConstructionUsableFromEntity", &DSConstructionPointManager::SetConstructionUsableFromEntity,
-        "MoveBaggagesToSafePlace", &DSConstructionPointManager::MoveBaggagesToSafePlace,
-        "GetAccessingConstructionPointEntity", &DSConstructionPointManager::GetAccessingConstructionPointEntity,
-        "GetConstructionPointFrontAccessTransform", &DSConstructionPointManager::GetConstructionPointFrontAccessTransform,
-        "GetConstructionCategoryTotalNecessaryMaterials", &DSConstructionPointManager::GetConstructionCategoryTotalNecessaryMaterials,
-        "GetConstructionPointNecessaryMaterialsToNextLevel", &DSConstructionPointManager::GetConstructionPointNecessaryMaterialsToNextLevel,
-        "GetConstructionPointOnlineInfo", &DSConstructionPointManager::GetConstructionPointOnlineInfo,
-        "RemoveMissionConstructableArea", &DSConstructionPointManager::RemoveMissionConstructableArea,
-        "SendCommandToDeliveryId", &DSConstructionPointManager::SendCommandToDeliveryId,
-        "SetPrivateRoomEventGraph", &DSConstructionPointManager::SetPrivateRoomEventGraph
-    );
-    lua.new_usertype<DSSceneCommand>("DSSceneCommand",
-        "DSGetScenePosition", &DSSceneCommand::DSGetScenePosition,
-        "DSGetSceneTerminalId", &DSSceneCommand::DSGetSceneTerminalId,
-        "DSIsEqualOriginalScene", &DSSceneCommand::DSIsEqualOriginalScene,
-        "DSGetSceneHashValue1", &DSSceneCommand::DSGetSceneHashValue1,
-        "DSGetSceneHashValue0", &DSSceneCommand::DSGetSceneHashValue0,
-        "DSSendCustomSceneMessage", &DSSceneCommand::DSSendCustomSceneMessage
     );
     lua.new_usertype<AIBehaviorGroupMemberComponent>("AIBehaviorGroupMemberComponent",
         "GetAIGroup", &AIBehaviorGroupMemberComponent::GetAIGroup,
@@ -17316,19 +16170,11 @@ static void BindingFunctions(sol::state& lua) {
     lua.new_usertype<RopeComponent>("RopeComponent",
         "GetRopeLifeTimeLeft", &RopeComponent::GetRopeLifeTimeLeft
     );
-    lua.new_usertype<DSIntruderDetectorComponent>("DSIntruderDetectorComponent",
-        "IsThereAnyIntruder", &DSIntruderDetectorComponent::IsThereAnyIntruder
-    );
     lua.new_usertype<Mover>("Mover",
         "ApplyLocalImpulse", &Mover::ApplyLocalImpulse,
         "ApplyAngularLocalImpulse", &Mover::ApplyAngularLocalImpulse,
         "ApplyAngularImpulse", &Mover::ApplyAngularImpulse,
         "ApplyImpulse", &Mover::ApplyImpulse
-    );
-    lua.new_usertype<DSCatalogueListItemCommand>("DSCatalogueListItemCommand",
-        "GetDynamicOfflineBaggageGameActorIdFromMissionId", &DSCatalogueListItemCommand::GetDynamicOfflineBaggageGameActorIdFromMissionId,
-        "ExtractBaggageListItemInfo", &DSCatalogueListItemCommand::ExtractBaggageListItemInfo,
-        "GetBaggageListItemByName", &DSCatalogueListItemCommand::GetBaggageListItemByName
     );
     lua.new_usertype<InventoryItem>("InventoryItem",
         "GetDisplayName", &InventoryItem::GetDisplayName,
@@ -17340,62 +16186,12 @@ static void BindingFunctions(sol::state& lua) {
         "GetInventoryItemEntity", &InventoryItem::GetInventoryItemEntity,
         "GetInventoryItemResource", &InventoryItem::GetInventoryItemResource
     );
-    lua.new_usertype<VehicleEntity>("VehicleEntity",
-        "EntityToGameActorId", &VehicleEntity::EntityToGameActorId,
-        "GameActorIdToEntity", &VehicleEntity::GameActorIdToEntity,
-        "GetBoolRequest", &VehicleEntity::GetBoolRequest,
-        "GetLastVehicleFromParking", &VehicleEntity::GetLastVehicleFromParking,
-        "RequestSetForceLowLODAll", &VehicleEntity::RequestSetForceLowLODAll,
-        "GetLastInVehicleFromTrigger", &VehicleEntity::GetLastInVehicleFromTrigger,
-        "MoveObjectsToSafePositions", &VehicleEntity::MoveObjectsToSafePositions,
-        "GetLastInVehicleFromNearestTrigger", &VehicleEntity::GetLastInVehicleFromNearestTrigger,
-        "SetRequest", &VehicleEntity::SetRequest,
-        "GetVehicleLife", &VehicleEntity::GetVehicleLife,
-        "GetAllVehiclesInNearestTrigger", &VehicleEntity::GetAllVehiclesInNearestTrigger,
-        "VehicleInOutTrigger", &VehicleEntity::VehicleInOutTrigger,
-        "MoveObjectsToSafePlace", &VehicleEntity::MoveObjectsToSafePlace,
-        "MoveVehicleOrCartToSafePlace", &VehicleEntity::MoveVehicleOrCartToSafePlace,
-        "SetForceSpeedScale", &VehicleEntity::SetForceSpeedScale,
-        "SetOverrideInCutscene", &VehicleEntity::SetOverrideInCutscene,
-        "IsDriving", &VehicleEntity::IsDriving,
-        "GetVehicleType", &VehicleEntity::GetVehicleType
-    );
     lua.new_usertype<BuddyComponent>("BuddyComponent",
         "SetTeleportEnabled", &BuddyComponent::SetTeleportEnabled,
         "TeleportBuddy", &BuddyComponent::TeleportBuddy
     );
     lua.new_usertype<EnumFact>("EnumFact",
         "GetValueIndex", &EnumFact::GetValueIndex
-    );
-    lua.new_usertype<AIManagerGame>("AIManagerGame",
-        "GetPlayerIsBeingHeard", &AIManagerGame::GetPlayerIsBeingHeard,
-        "GetPlayerThreatLevel", &AIManagerGame::GetPlayerThreatLevel,
-        "IsPlayerCurrentlyIdentified", &AIManagerGame::IsPlayerCurrentlyIdentified,
-        "GetSearchTimeFactorForPlayer", &AIManagerGame::GetSearchTimeFactorForPlayer,
-        "GetPlayerLastBeingSeenTimestamp", &AIManagerGame::GetPlayerLastBeingSeenTimestamp,
-        "GetPlayerThreatLevelFactor", &AIManagerGame::GetPlayerThreatLevelFactor,
-        "IsPlayerCurrentlyIdentifiedByHumanoid", &AIManagerGame::IsPlayerCurrentlyIdentifiedByHumanoid,
-        "GetEntitiesInRadius", &AIManagerGame::GetEntitiesInRadius,
-        "IsPlayerCurrentlyIdentifiedByRobot", &AIManagerGame::IsPlayerCurrentlyIdentifiedByRobot,
-        "GetCombatSituationSummaryForThreat", &AIManagerGame::GetCombatSituationSummaryForThreat,
-        "GetPlayerVisualThreatLevel", &AIManagerGame::GetPlayerVisualThreatLevel,
-        "GetPlayerHasBeenReported", &AIManagerGame::GetPlayerHasBeenReported,
-        "GetPlayerLastBeingHeardTimestamp", &AIManagerGame::GetPlayerLastBeingHeardTimestamp,
-        "GetPlayerIsInAntiStealth", &AIManagerGame::GetPlayerIsInAntiStealth,
-        "GetPlayerIsBeingSeen", &AIManagerGame::GetPlayerIsBeingSeen
-    );
-    lua.new_usertype<DsMuleManager>("DsMuleManager",
-        "CallRestoreMuleScript", &DsMuleManager::CallRestoreMuleScript,
-        "SetDbgMuleMoveSpeedScale", &DsMuleManager::SetDbgMuleMoveSpeedScale,
-        "UpdateFriendlyMuleActivationStatus", &DsMuleManager::UpdateFriendlyMuleActivationStatus,
-        "RequestMuleReinforce", &DsMuleManager::RequestMuleReinforce,
-        "MuleDirectDamageToStatus", &DsMuleManager::MuleDirectDamageToStatus,
-        "SetSequenceOnlyMule", &DsMuleManager::SetSequenceOnlyMule,
-        "RequestReinforceForEachRoute", &DsMuleManager::RequestReinforceForEachRoute,
-        "GetMuleReinforceCount", &DsMuleManager::GetMuleReinforceCount,
-        "GetMuleReinforceCountByIdentifier", &DsMuleManager::GetMuleReinforceCountByIdentifier,
-        "SetForceMuleStance", &DsMuleManager::SetForceMuleStance,
-        "ClearForceMuleStance", &DsMuleManager::ClearForceMuleStance
     );
     lua.new_usertype<WieldStowInventory>("WieldStowInventory",
         "RemoveAndStoreItems", &WieldStowInventory::RemoveAndStoreItems,
@@ -17404,39 +16200,8 @@ static void BindingFunctions(sol::state& lua) {
         "AddStoredItems", &WieldStowInventory::AddStoredItems,
         "WieldItem", &WieldStowInventory::WieldItem
     );
-    lua.new_usertype<DSWorldMapHoloComponent>("DSWorldMapHoloComponent",
-        "SetWorldMapHoloCursor", &DSWorldMapHoloComponent::SetWorldMapHoloCursor,
-        "SetWorldMapHoloPlayerPositionCursor", &DSWorldMapHoloComponent::SetWorldMapHoloPlayerPositionCursor,
-        "SetWorldMapHoloPlayerCursor", &DSWorldMapHoloComponent::SetWorldMapHoloPlayerCursor,
-        "AddWorldMapHoloConnection", &DSWorldMapHoloComponent::AddWorldMapHoloConnection,
-        "AddWorldMapHoloConnectedPoint", &DSWorldMapHoloComponent::AddWorldMapHoloConnectedPoint
-    );
-    lua.new_usertype<MountableComponent>("MountableComponent",
-        "GetMounter", &MountableComponent::GetMounter,
-        "Mount", &MountableComponent::Mount
-    );
     lua.new_usertype<MounterComponent>("MounterComponent",
         "HasMounted", &MounterComponent::HasMounted
-    );
-    lua.new_usertype<DSPlayerNodeExporter>("DSPlayerNodeExporter",
-        "SetCryptbiosisCount", &DSPlayerNodeExporter::SetCryptbiosisCount,
-        "GetUsedBloodPackAmount", &DSPlayerNodeExporter::GetUsedBloodPackAmount,
-        "PlayerHelperSupplySystemEnable", &DSPlayerNodeExporter::PlayerHelperSupplySystemEnable,
-        "UnequipAccessoriesForBeach", &DSPlayerNodeExporter::UnequipAccessoriesForBeach,
-        "RecoverFullAtPrivateRoom", &DSPlayerNodeExporter::RecoverFullAtPrivateRoom,
-        "GetReturnPointTransform", &DSPlayerNodeExporter::GetReturnPointTransform,
-        "SetCryptobiosisReviveDistance", &DSPlayerNodeExporter::SetCryptobiosisReviveDistance,
-        "DisconnectCartAndPlaceAroundReturnPoint", &DSPlayerNodeExporter::DisconnectCartAndPlaceAroundReturnPoint,
-        "ResetNumCryptbiosisAroundCoral", &DSPlayerNodeExporter::ResetNumCryptbiosisAroundCoral,
-        "SetNumCryptbiosisAroundCoral", &DSPlayerNodeExporter::SetNumCryptbiosisAroundCoral,
-        "MarkToOnsen", &DSPlayerNodeExporter::MarkToOnsen,
-        "AddCryptbiosisCount", &DSPlayerNodeExporter::AddCryptbiosisCount,
-        "ResetPrivateRoomGlassesAndCap", &DSPlayerNodeExporter::ResetPrivateRoomGlassesAndCap,
-        "IsEquippedItem", &DSPlayerNodeExporter::IsEquippedItem,
-        "ResetCryptobiosisReviveDistance", &DSPlayerNodeExporter::ResetCryptobiosisReviveDistance
-    );
-    lua.new_usertype<PlayGoManager>("PlayGoManager",
-        "GetProgressAndETA", &PlayGoManager::GetProgressAndETA
     );
     lua.new_usertype<FacialAnimationComponent>("FacialAnimationComponent",
         "PlayAnimation", &FacialAnimationComponent::PlayAnimation,
@@ -17450,43 +16215,16 @@ static void BindingFunctions(sol::state& lua) {
         "GetDeadBodyGameActorIdCode", &DSDeliveredBaggageArgs::GetDeadBodyGameActorIdCode,
         "GetBaggageListItemNameCode", &DSDeliveredBaggageArgs::GetBaggageListItemNameCode
     );
-    lua.new_usertype<DsCheckStationGraphCommand>("DsCheckStationGraphCommand",
-        "CheckStation_ShowPlayerInfoMessages", &DsCheckStationGraphCommand::CheckStation_ShowPlayerInfoMessages,
-        "CheckStation_GetNonBaggageDeadBodyCount", &DsCheckStationGraphCommand::CheckStation_GetNonBaggageDeadBodyCount,
-        "CheckStation_GetInfo", &DsCheckStationGraphCommand::CheckStation_GetInfo,
-        "CheckStation_ContactScanner", &DsCheckStationGraphCommand::CheckStation_ContactScanner
-    );
-    lua.new_usertype<DSMissionBasicNode>("DSMissionBasicNode",
-        "DebugIsDebugEntryBusy", &DSMissionBasicNode::DebugIsDebugEntryBusy,
-        "GetMainMissionIdArray", &DSMissionBasicNode::GetMainMissionIdArray,
-        "IsHalflifeMissionById", &DSMissionBasicNode::IsHalflifeMissionById,
-        "DebugDelayRemoveBaggageByName", &DSMissionBasicNode::DebugDelayRemoveBaggageByName,
-        "DebugRemoveBaggageByName", &DSMissionBasicNode::DebugRemoveBaggageByName,
-        "DebugDeleteMissionBaggage", &DSMissionBasicNode::DebugDeleteMissionBaggage,
-        "DebugUpdateMissionSystem", &DSMissionBasicNode::DebugUpdateMissionSystem,
-        "DebugResetAccessingTerminal", &DSMissionBasicNode::DebugResetAccessingTerminal,
-        "DebugSetAccessingTerminal", &DSMissionBasicNode::DebugSetAccessingTerminal,
-        "GetMissionTypeById", &DSMissionBasicNode::GetMissionTypeById,
-        "RequestDispMissionStartHud", &DSMissionBasicNode::RequestDispMissionStartHud,
-        "CalcProgressMissionCountHeavy", &DSMissionBasicNode::CalcProgressMissionCountHeavy,
-        "CalcCanCancelProgressMissionCount", &DSMissionBasicNode::CalcCanCancelProgressMissionCount
-    );
     lua.new_usertype<ShaderAnimComponent>("ShaderAnimComponent",
         "SwapEntityAfterShaderAnim", &ShaderAnimComponent::SwapEntityAfterShaderAnim,
         "SwapComponentAfterShaderAnim", &ShaderAnimComponent::SwapComponentAfterShaderAnim,
-        "IsFinished", &ShaderAnimComponent::IsFinished,
         "EndShaderAnim", &ShaderAnimComponent::EndShaderAnim
     );
     lua.new_usertype<DSTerminalGraphArgs>("DSTerminalGraphArgs",
-        "GetTerminalGraphArgs", &DSTerminalGraphArgs::GetTerminalGraphArgs,
         "GetGivenChiral", &DSTerminalGraphArgs::GetGivenChiral,
         "GetParam", &DSTerminalGraphArgs::GetParam,
         "GetBonusInfoArray", &DSTerminalGraphArgs::GetBonusInfoArray,
-        "GetEvaluationInfoArray", &DSTerminalGraphArgs::GetEvaluationInfoArray,
-        "GetDeliveredMemoryChips", &DSTerminalGraphArgs::GetDeliveredMemoryChips,
-        "GetOrderedBaggages", &DSTerminalGraphArgs::GetOrderedBaggages,
-        "GetDeliveredDeadBodyBaggages", &DSTerminalGraphArgs::GetDeliveredDeadBodyBaggages,
-        "GetDeliveredBaggages", &DSTerminalGraphArgs::GetDeliveredBaggages
+        "GetEvaluationInfoArray", &DSTerminalGraphArgs::GetEvaluationInfoArray
     );
     lua.new_usertype<DSAirplaneGameActorLocator>("DSAirplaneGameActorLocator",
         "MoveAirplanePathPoint", &DSAirplaneGameActorLocator::MoveAirplanePathPoint,
@@ -17504,9 +16242,6 @@ static void BindingFunctions(sol::state& lua) {
         "DespawnAirplaneEntity", &DSAirplaneGameActorLocator::DespawnAirplaneEntity,
         "SpawnAirplaneEntity", &DSAirplaneGameActorLocator::SpawnAirplaneEntity
     );
-    lua.new_usertype<AIScanExpressionParams>("AIScanExpressionParams",
-        "GetParams", &AIScanExpressionParams::GetParams
-    );
     lua.new_usertype<AttackEventContext>("AttackEventContext",
         "GetTags", &AttackEventContext::GetTags,
         "GetTopOfHierarchy", &AttackEventContext::GetTopOfHierarchy,
@@ -17519,35 +16254,12 @@ static void BindingFunctions(sol::state& lua) {
     lua.new_usertype<AIWeaponPreference>("AIWeaponPreference",
         "GetNameSymbol", &AIWeaponPreference::GetNameSymbol
     );
-    lua.new_usertype<DSGimmickGraphCommand>("DSGimmickGraphCommand",
-        "SetInvisibleSharedGimmick", &DSGimmickGraphCommand::SetInvisibleSharedGimmick,
-        "DisableDSCheckStationAlarm", &DSGimmickGraphCommand::DisableDSCheckStationAlarm,
-        "MovePendulumGimmick", &DSGimmickGraphCommand::MovePendulumGimmick,
-        "ActivatePhysicsGimmickObjects", &DSGimmickGraphCommand::ActivatePhysicsGimmickObjects,
-        "ActivatePhysicsGimmickObjectsWithSoundEnd", &DSGimmickGraphCommand::ActivatePhysicsGimmickObjectsWithSoundEnd,
-        "SetFiringTargetWaiting", &DSGimmickGraphCommand::SetFiringTargetWaiting,
-        "NotifyGimmickSpawnMessage", &DSGimmickGraphCommand::NotifyGimmickSpawnMessage,
-        "DisableAutoDoorGimmickBaggageCheck", &DSGimmickGraphCommand::DisableAutoDoorGimmickBaggageCheck,
-        "LockAutoDoorGimmick", &DSGimmickGraphCommand::LockAutoDoorGimmick,
-        "ActivatePhysicsGimmickObjectsWithSoundStart", &DSGimmickGraphCommand::ActivatePhysicsGimmickObjectsWithSoundStart
-    );
     lua.new_usertype<DSGraphServiceArgs>("DSGraphServiceArgs",
         "GetInt", &DSGraphServiceArgs::GetInt,
         "GetMessageNameHash", &DSGraphServiceArgs::GetMessageNameHash
     );
-    lua.new_usertype<MeleeBlockComponent>("MeleeBlockComponent",
-        "IsBlocking", &MeleeBlockComponent::IsBlocking
-    );
     lua.new_usertype<AnnotationInstance>("AnnotationInstance",
         "Enable", &AnnotationInstance::Enable
-    );
-    lua.new_usertype<FastTravelSystem>("FastTravelSystem",
-        "DisableFastTravel", &FastTravelSystem::DisableFastTravel,
-        "EnableFastTravel", &FastTravelSystem::EnableFastTravel
-    );
-    lua.new_usertype<DSSleepAfterShaderAnimComponent>("DSSleepAfterShaderAnimComponent",
-        "SleepAfterShaderAnim", &DSSleepAfterShaderAnimComponent::SleepAfterShaderAnim,
-        "WakeupAndRestartShaderAnim", &DSSleepAfterShaderAnimComponent::WakeupAndRestartShaderAnim
     );
     lua.new_usertype<GestureComponent>("GestureComponent",
         "RequestGesture", &GestureComponent::RequestGesture,
@@ -17558,34 +16270,10 @@ static void BindingFunctions(sol::state& lua) {
         "StartMovie", &MovieTag::StartMovie,
         "StopMovie", &MovieTag::StopMovie
     );
-    lua.new_usertype<Application>("Application",
-        "StartGame", &Application::StartGame,
-        "LoadAlwaysLoaded", &Application::LoadAlwaysLoaded,
-        "SelectAndLoadGame", &Application::SelectAndLoadGame,
-        "ContinueLastSave", &Application::ContinueLastSave,
-        "StartCredits", &Application::StartCredits,
-        "GetApplication", &Application::GetApplication
-    );
-    lua.new_usertype<DSAmelieGestureComponent>("DSAmelieGestureComponent",
-        "RequestAmelieHandWaving", &DSAmelieGestureComponent::RequestAmelieHandWaving
-    );
-    lua.new_usertype<Math>("Math",
-        "gMatrixInverse3x4", &Math::gMatrixInverse3x4,
-        "gComposeMat44", &Math::gComposeMat44,
-        "gMayaEulerTo4x4", &Math::gMayaEulerTo4x4,
-        "gMayaGetEulerXYZ", &Math::gMayaGetEulerXYZ,
-        "gMayaDecomposeAffineMatrix", &Math::gMayaDecomposeAffineMatrix,
-        "gMayaQuatFrom4x4", &Math::gMayaQuatFrom4x4,
-        "gMayaQuatTo4x4", &Math::gMayaQuatTo4x4
-    );
     lua.new_usertype<PathMover>("PathMover",
         "SetPaused", &PathMover::SetPaused,
         "SetTime", &PathMover::SetTime,
         "SetDistance", &PathMover::SetDistance
-    );
-    lua.new_usertype<ModificationSocketComponent>("ModificationSocketComponent",
-        "SocketModificationItem", &ModificationSocketComponent::SocketModificationItem,
-        "RemoveModificationItem", &ModificationSocketComponent::RemoveModificationItem
     );
     lua.new_usertype<DSRumbleEventComponent>("DSRumbleEventComponent",
         "StopRumbleEvent", &DSRumbleEventComponent::StopRumbleEvent,
@@ -17593,9 +16281,7 @@ static void BindingFunctions(sol::state& lua) {
     );
     lua.new_usertype<WeatherSystem>("WeatherSystem",
         "ResetWeather", &WeatherSystem::ResetWeather,
-        "SetWeatherOverride", &WeatherSystem::SetWeatherOverride,
-        "GetConditions", &WeatherSystem::GetConditions,
-        "GetIndoorClimateFraction", &WeatherSystem::GetIndoorClimateFraction
+        "SetWeatherOverride", &WeatherSystem::SetWeatherOverride
     );
     lua.new_usertype<DSNpcCombatSettings>("DSNpcCombatSettings",
         "SetSceneCombatSettings", &DSNpcCombatSettings::SetSceneCombatSettings,
@@ -17603,49 +16289,7 @@ static void BindingFunctions(sol::state& lua) {
         "ResetSceneCombatSettings", &DSNpcCombatSettings::ResetSceneCombatSettings
     );
     lua.new_usertype<ExtraArmorComponent>("ExtraArmorComponent",
-        "InitExtraArmor", &ExtraArmorComponent::InitExtraArmor,
-        "GetExtraArmor", &ExtraArmorComponent::GetExtraArmor
-    );
-    lua.new_usertype<EntityPlaceHolder>("EntityPlaceHolder",
-        "GetEntity", &EntityPlaceHolder::GetEntity
-    );
-    lua.new_usertype<WwiseGroup>("WwiseGroup",
-        "WwiseSetRTPCValueByPlayingIDExport", &WwiseGroup::WwiseSetRTPCValueByPlayingIDExport,
-        "WwiseSetRTPCValueExport", &WwiseGroup::WwiseSetRTPCValueExport,
-        "WwiseIsLoadingScreenExport", &WwiseGroup::WwiseIsLoadingScreenExport,
-        "WwiseGetFootSoundToControllerSpeakerExport", &WwiseGroup::WwiseGetFootSoundToControllerSpeakerExport,
-        "WwiseSetStateExport", &WwiseGroup::WwiseSetStateExport,
-        "WwiseRtDbgPostEventByNameExport", &WwiseGroup::WwiseRtDbgPostEventByNameExport,
-        "WwiseGetControllerSpeakerEnableExport", &WwiseGroup::WwiseGetControllerSpeakerEnableExport,
-        "WwiseIsAliveExport", &WwiseGroup::WwiseIsAliveExport,
-        "WwiseRtDbgGraphSoundResourceExport", &WwiseGroup::WwiseRtDbgGraphSoundResourceExport,
-        "WwiseRtDbgUnregisterGameObjExport", &WwiseGroup::WwiseRtDbgUnregisterGameObjExport,
-        "WwiseRtDbgPostEventExport", &WwiseGroup::WwiseRtDbgPostEventExport,
-        "WwiseID_GetId", &WwiseGroup::WwiseID_GetId,
-        "WwiseSetGlobalRTPCExport", &WwiseGroup::WwiseSetGlobalRTPCExport,
-        "WwiseRtDbgSetPositionExport", &WwiseGroup::WwiseRtDbgSetPositionExport,
-        "WwiseSetObjectObstructionAndOcclusionExport", &WwiseGroup::WwiseSetObjectObstructionAndOcclusionExport,
-        "WwiseRtDbgRegisterGameObjExport", &WwiseGroup::WwiseRtDbgRegisterGameObjExport,
-        "WwiseSetEventPauseExport", &WwiseGroup::WwiseSetEventPauseExport,
-        "WwiseRtDbgPostEventWithCallbackExport", &WwiseGroup::WwiseRtDbgPostEventWithCallbackExport,
-        "WwiseGetId", &WwiseGroup::WwiseGetId,
-        "WwiseGetMasterVolumeExport", &WwiseGroup::WwiseGetMasterVolumeExport
-    );
-    lua.new_usertype<WaterInteractionSystem>("WaterInteractionSystem",
-        "AddImpact", &WaterInteractionSystem::AddImpact
-    );
-    lua.new_usertype<MenuSaveDataDialog>("MenuSaveDataDialog",
-        "DSCanSaveGame", &MenuSaveDataDialog::DSCanSaveGame,
-        "IsSaveDataLoadingOrRequested", &MenuSaveDataDialog::IsSaveDataLoadingOrRequested,
-        "SelectLoadSlot", &MenuSaveDataDialog::SelectLoadSlot,
-        "SelectSaveSlot", &MenuSaveDataDialog::SelectSaveSlot,
-        "DSSelectSaveSlot", &MenuSaveDataDialog::DSSelectSaveSlot,
-        "CanSaveGame", &MenuSaveDataDialog::CanSaveGame
-    );
-    lua.new_usertype<SnowInteractionSystem>("SnowInteractionSystem",
-        "sGetFollowPositionDeformation", &SnowInteractionSystem::sGetFollowPositionDeformation,
-        "sSetMode", &SnowInteractionSystem::sSetMode,
-        "sGetMode", &SnowInteractionSystem::sGetMode
+        "InitExtraArmor", &ExtraArmorComponent::InitExtraArmor
     );
     lua.new_usertype<AIPatrolPath>("AIPatrolPath",
         "GetMovementContext", &AIPatrolPath::GetMovementContext,
@@ -17657,26 +16301,6 @@ static void BindingFunctions(sol::state& lua) {
     );
     lua.new_usertype<ExtraHealthComponent>("ExtraHealthComponent",
         "RemoveExtraHealth", &ExtraHealthComponent::RemoveExtraHealth
-    );
-    lua.new_usertype<DsNpcGeneralCommand>("DsNpcGeneralCommand",
-        "ForceLowLodNpc", &DsNpcGeneralCommand::ForceLowLodNpc,
-        "RemoveNpcFromWorld", &DsNpcGeneralCommand::RemoveNpcFromWorld,
-        "RestartExternalAnimation", &DsNpcGeneralCommand::RestartExternalAnimation,
-        "TeleportNpc", &DsNpcGeneralCommand::TeleportNpc,
-        "AppearNpcToWorld", &DsNpcGeneralCommand::AppearNpcToWorld
-    );
-    lua.new_usertype<NPCScheduleManager>("NPCScheduleManager",
-        "CreateNPCSchedule", &NPCScheduleManager::CreateNPCSchedule
-    );
-    lua.new_usertype<DSPatrolPathManager>("DSPatrolPathManager",
-        "UpdatePatrolPathCache", &DSPatrolPathManager::UpdatePatrolPathCache,
-        "ConnectSingleNPCWithPatrolPathGroup", &DSPatrolPathManager::ConnectSingleNPCWithPatrolPathGroup,
-        "AssignPatrolPathToEntity", &DSPatrolPathManager::AssignPatrolPathToEntity,
-        "EntityQuitPatrol", &DSPatrolPathManager::EntityQuitPatrol,
-        "ClearPatrolPathCache", &DSPatrolPathManager::ClearPatrolPathCache,
-        "ConnectNPCWithPatrolPath", &DSPatrolPathManager::ConnectNPCWithPatrolPath,
-        "DisconnectNPCFromPatrolPath", &DSPatrolPathManager::DisconnectNPCFromPatrolPath,
-        "ConnectSingleNPCWithPatrolPath", &DSPatrolPathManager::ConnectSingleNPCWithPatrolPath
     );
     lua.new_usertype<ScenePrefabInstance>("ScenePrefabInstance",
         "Stop", &ScenePrefabInstance::Stop,
@@ -17690,10 +16314,6 @@ static void BindingFunctions(sol::state& lua) {
         "GetParentScene", &SceneComponent::GetParentScene,
         "GetScene", &SceneComponent::GetScene
     );
-    lua.new_usertype<ComponentLifetimeComponent>("ComponentLifetimeComponent",
-        "UnregisterComponent", &ComponentLifetimeComponent::UnregisterComponent,
-        "RegisterComponent", &ComponentLifetimeComponent::RegisterComponent
-    );
     lua.new_usertype<AIIndividualComponent>("AIIndividualComponent",
         "GetAIIndividual", &AIIndividualComponent::GetAIIndividual,
         "AlertForEntity", &AIIndividualComponent::AlertForEntity,
@@ -17706,55 +16326,19 @@ static void BindingFunctions(sol::state& lua) {
         "Deactivate", &KnockDownStateComponent::Deactivate,
         "Activate", &KnockDownStateComponent::Activate,
         "DeactivateAll", &KnockDownStateComponent::DeactivateAll,
-        "IsActive", &KnockDownStateComponent::IsActive,
         "ResetAll", &KnockDownStateComponent::ResetAll
     );
     lua.new_usertype<DamageOverTimeComponent>("DamageOverTimeComponent",
         "StartDamage", &DamageOverTimeComponent::StartDamage
     );
     lua.new_usertype<PinDownComponent>("PinDownComponent",
-        "IsPinnedDown", &PinDownComponent::IsPinnedDown,
         "StartBreakFree", &PinDownComponent::StartBreakFree
-    );
-    lua.new_usertype<HumanoidController>("HumanoidController",
-        "GetMove", &HumanoidController::GetMove
     );
     lua.new_usertype<HitReactionComponent>("HitReactionComponent",
         "ResetHitReaction", &HitReactionComponent::ResetHitReaction,
         "RemoveSeverityModifier", &HitReactionComponent::RemoveSeverityModifier,
         "ActivateReactionSet", &HitReactionComponent::ActivateReactionSet,
         "AddSeverityModifier", &HitReactionComponent::AddSeverityModifier
-    );
-    lua.new_usertype<AnimationData>("AnimationData",
-        "MakeAdditive", &AnimationData::MakeAdditive,
-        "StatesQueueEvalLogic", &AnimationData::StatesQueueEvalLogic,
-        "BlendSyncTracks", &AnimationData::BlendSyncTracks,
-        "StorePose", &AnimationData::StorePose,
-        "StatesQueueUpdateTime", &AnimationData::StatesQueueUpdateTime,
-        "BlendBuffers", &AnimationData::BlendBuffers,
-        "OutputClosestAnimation", &AnimationData::OutputClosestAnimation,
-        "PushActiveState", &AnimationData::PushActiveState,
-        "ProbeActiveStates", &AnimationData::ProbeActiveStates,
-        "ModifyJointTransform", &AnimationData::ModifyJointTransform,
-        "ExtractSyncTracksFromAnim", &AnimationData::ExtractSyncTracksFromAnim,
-        "ResolveJointID", &AnimationData::ResolveJointID,
-        "SetBranchNameHash", &AnimationData::SetBranchNameHash,
-        "PassThrough", &AnimationData::PassThrough,
-        "ResetQueueOnActivation", &AnimationData::ResetQueueOnActivation,
-        "GetTime", &AnimationData::GetTime,
-        "ComputeClosestAnimation", &AnimationData::ComputeClosestAnimation,
-        "UpdateEventMatching", &AnimationData::UpdateEventMatching,
-        "SetFrameAndTime", &AnimationData::SetFrameAndTime,
-        "BlendAnimationDataSources", &AnimationData::BlendAnimationDataSources,
-        "SampleAnimation", &AnimationData::SampleAnimation,
-        "TimeMapAnimation", &AnimationData::TimeMapAnimation,
-        "ExtractJointInfo", &AnimationData::ExtractJointInfo,
-        "CloneSyncTrackAndStretch", &AnimationData::CloneSyncTrackAndStretch,
-        "GetPose", &AnimationData::GetPose,
-        "IsAnimationEventActive", &AnimationData::IsAnimationEventActive,
-        "RemoveActiveStates", &AnimationData::RemoveActiveStates,
-        "RecycleActiveStatesQueue", &AnimationData::RecycleActiveStatesQueue,
-        "SetCurrentStateEventSpaceTimeInSMContext", &AnimationData::SetCurrentStateEventSpaceTimeInSMContext
     );
     lua.new_usertype<EntityArrayComponent>("EntityArrayComponent",
         "GetEntity", &EntityArrayComponent::GetEntity,
@@ -17770,43 +16354,11 @@ static void BindingFunctions(sol::state& lua) {
         "GetCurrCameraMode", &ThirdPersonPlayerCameraComponent::GetCurrCameraMode,
         "GetPrevCameraMode", &ThirdPersonPlayerCameraComponent::GetPrevCameraMode
     );
-    lua.new_usertype<DSEffectsNodeGraphBindings>("DSEffectsNodeGraphBindings",
-        "GetGlobalStateFloat", &DSEffectsNodeGraphBindings::GetGlobalStateFloat,
-        "IsIntersectOrientedBox", &DSEffectsNodeGraphBindings::IsIntersectOrientedBox,
-        "SetGlobalStateFloat", &DSEffectsNodeGraphBindings::SetGlobalStateFloat,
-        "SetGlobalStateBool", &DSEffectsNodeGraphBindings::SetGlobalStateBool,
-        "IsInClosestCrater", &DSEffectsNodeGraphBindings::IsInClosestCrater,
-        "DSFindClosestPoint", &DSEffectsNodeGraphBindings::DSFindClosestPoint,
-        "DSSendParticleSystemExternalSizeFromObjectCollection", &DSEffectsNodeGraphBindings::DSSendParticleSystemExternalSizeFromObjectCollection,
-        "GlobalStateAtomicAddInt", &DSEffectsNodeGraphBindings::GlobalStateAtomicAddInt,
-        "GetGlobalStateBool", &DSEffectsNodeGraphBindings::GetGlobalStateBool,
-        "SetGlobalStateInt", &DSEffectsNodeGraphBindings::SetGlobalStateInt,
-        "DSCreateImpactEffect", &DSEffectsNodeGraphBindings::DSCreateImpactEffect,
-        "IsTileEdge", &DSEffectsNodeGraphBindings::IsTileEdge,
-        "DSFindClosestPointFromObjectCollection", &DSEffectsNodeGraphBindings::DSFindClosestPointFromObjectCollection,
-        "GetGlobalStateInt", &DSEffectsNodeGraphBindings::GetGlobalStateInt,
-        "GlobalStateAtomicAddFloat", &DSEffectsNodeGraphBindings::GlobalStateAtomicAddFloat
-    );
     lua.new_usertype<DSTerminalGraphEvaluationArgs>("DSTerminalGraphEvaluationArgs",
         "GetMissionId", &DSTerminalGraphEvaluationArgs::GetMissionId,
         "GetEvaluationActingType", &DSTerminalGraphEvaluationArgs::GetEvaluationActingType,
         "GetEvaluationLength", &DSTerminalGraphEvaluationArgs::GetEvaluationLength,
-        "FindEvaluation", &DSTerminalGraphEvaluationArgs::FindEvaluation,
-        "GetSubEvaluation", &DSTerminalGraphEvaluationArgs::GetSubEvaluation,
-        "GetMainEvaluation", &DSTerminalGraphEvaluationArgs::GetMainEvaluation,
         "GetEvaluationType", &DSTerminalGraphEvaluationArgs::GetEvaluationType
-    );
-    lua.new_usertype<DSMissionAbstractTodoNodeResource>("DSMissionAbstractTodoNodeResource",
-        "RemindTodo", &DSMissionAbstractTodoNodeResource::RemindTodo,
-        "RevealTodo", &DSMissionAbstractTodoNodeResource::RevealTodo,
-        "MarkTodoAsCompleted", &DSMissionAbstractTodoNodeResource::MarkTodoAsCompleted,
-        "MarkTodoAsDiscarded", &DSMissionAbstractTodoNodeResource::MarkTodoAsDiscarded,
-        "MarkTodoAsFailed", &DSMissionAbstractTodoNodeResource::MarkTodoAsFailed
-    );
-    lua.new_usertype<DSLikeCommand>("DSLikeCommand",
-        "ReceiveLikeFromMajorMember", &DSLikeCommand::ReceiveLikeFromMajorMember,
-        "ReceiveLike", &DSLikeCommand::ReceiveLike,
-        "ReceiveLikeWithOption", &DSLikeCommand::ReceiveLikeWithOption
     );
     lua.new_usertype<ControlledEntity>("ControlledEntity",
         "GetTargetEntity", &ControlledEntity::GetTargetEntity,
@@ -17816,11 +16368,6 @@ static void BindingFunctions(sol::state& lua) {
         "IsGodMode", &ControlledEntity::IsGodMode,
         "GetController", &ControlledEntity::GetController
     );
-    lua.new_usertype<DSCreateMissionBaggageNodeCommand>("DSCreateMissionBaggageNodeCommand",
-        "RequestCreateMissionExtraBaggage", &DSCreateMissionBaggageNodeCommand::RequestCreateMissionExtraBaggage,
-        "CreateMissionBaggages", &DSCreateMissionBaggageNodeCommand::CreateMissionBaggages,
-        "CreateBonusBaggageOnShelf", &DSCreateMissionBaggageNodeCommand::CreateBonusBaggageOnShelf
-    );
     lua.new_usertype<DSTerminalGraphBonusArgs>("DSTerminalGraphBonusArgs",
         "IsStarMark", &DSTerminalGraphBonusArgs::IsStarMark,
         "IsSimpleBonus", &DSTerminalGraphBonusArgs::IsSimpleBonus,
@@ -17828,26 +16375,13 @@ static void BindingFunctions(sol::state& lua) {
         "GetBaggageListItem", &DSTerminalGraphBonusArgs::GetBaggageListItem,
         "GetMissionId", &DSTerminalGraphBonusArgs::GetMissionId
     );
-    lua.new_usertype<AIManager>("AIManager",
-        "CreateAuralStimulus", &AIManager::CreateAuralStimulus,
-        "CreateVisualStimulus", &AIManager::CreateVisualStimulus
-    );
-    lua.new_usertype<AINavMeshComponent>("AINavMeshComponent",
-        "FindPositionOnNavMeshBySettings", &AINavMeshComponent::FindPositionOnNavMeshBySettings,
-        "FindPositionOnNavMesh", &AINavMeshComponent::FindPositionOnNavMesh
-    );
     lua.new_usertype<HairModelComponent>("HairModelComponent",
         "SetHairSimProperties", &HairModelComponent::SetHairSimProperties,
         "SetHairPose", &HairModelComponent::SetHairPose
     );
-    lua.new_usertype<ConstraintComponent>("ConstraintComponent",
-        "Create", &ConstraintComponent::Create
-    );
     lua.new_usertype<SequenceNetworkInstance>("SequenceNetworkInstance",
         "IsSequenceSkipped", &SequenceNetworkInstance::IsSequenceSkipped,
-        "GetNodeTime", &SequenceNetworkInstance::GetNodeTime,
         "GetSequenceNetworkEntity", &SequenceNetworkInstance::GetSequenceNetworkEntity,
-        "ForceCameraPredictionByUUID", &SequenceNetworkInstance::ForceCameraPredictionByUUID,
         "GetEntityVariable", &SequenceNetworkInstance::GetEntityVariable,
         "ForceCameraPrediction", &SequenceNetworkInstance::ForceCameraPrediction,
         "SetEntityVariable", &SequenceNetworkInstance::SetEntityVariable,
@@ -17858,139 +16392,30 @@ static void BindingFunctions(sol::state& lua) {
         "SetRoute", &RouteMover::SetRoute,
         "SetRelativeDistance", &RouteMover::SetRelativeDistance,
         "GetRoute", &RouteMover::GetRoute,
-        "MoveAlongRoute", &RouteMover::MoveAlongRoute,
         "GetRelativeDistance", &RouteMover::GetRelativeDistance,
         "GetDistance", &RouteMover::GetDistance,
         "SetDistance", &RouteMover::SetDistance,
         "GetSpeed", &RouteMover::GetSpeed,
         "SetSpeed", &RouteMover::SetSpeed
     );
-    lua.new_usertype<DSFiringRangeNodeGraphBindings>("DSFiringRangeNodeGraphBindings",
-        "SetFiringRangeMissionInitialCarriedWeapon", &DSFiringRangeNodeGraphBindings::SetFiringRangeMissionInitialCarriedWeapon,
-        "SetFiringRangeMissionInitialItem", &DSFiringRangeNodeGraphBindings::SetFiringRangeMissionInitialItem,
-        "StartFiringRangeMissionResult", &DSFiringRangeNodeGraphBindings::StartFiringRangeMissionResult,
-        "SetStartTransform", &DSFiringRangeNodeGraphBindings::SetStartTransform,
-        "NotifyFiringRangeMissionGoal", &DSFiringRangeNodeGraphBindings::NotifyFiringRangeMissionGoal,
-        "SetFiringRangeMissionInitialSuitParts", &DSFiringRangeNodeGraphBindings::SetFiringRangeMissionInitialSuitParts,
-        "SetFiringRangeMissionInitialWeapon", &DSFiringRangeNodeGraphBindings::SetFiringRangeMissionInitialWeapon,
-        "CheckFiringRangeMissionClearCondition", &DSFiringRangeNodeGraphBindings::CheckFiringRangeMissionClearCondition,
-        "StartFiringRangeMission", &DSFiringRangeNodeGraphBindings::StartFiringRangeMission,
-        "IsFiringRangeMission", &DSFiringRangeNodeGraphBindings::IsFiringRangeMission,
-        "SetStartLocator", &DSFiringRangeNodeGraphBindings::SetStartLocator
-    );
     lua.new_usertype<DSGraphCtrlBaggageArgs>("DSGraphCtrlBaggageArgs",
         "GetBaggageGameActorIds", &DSGraphCtrlBaggageArgs::GetBaggageGameActorIds
     );
     lua.new_usertype<CurveResource>("CurveResource",
-        "GetCurveRange", &CurveResource::GetCurveRange,
-        "Evaluate", &CurveResource::Evaluate,
-        "GetCurveTangents", &CurveResource::GetCurveTangents
+        "Evaluate", &CurveResource::Evaluate
     );
     lua.new_usertype<DSOrderedBaggageArgs>("DSOrderedBaggageArgs",
         "GetBaggageListItemNameCode", &DSOrderedBaggageArgs::GetBaggageListItemNameCode
-    );
-    lua.new_usertype<StringToolsGroup>("StringToolsGroup",
-        "sFormatHelperInt64", &StringToolsGroup::sFormatHelperInt64,
-        "sFormatHelperDoubleCustomFormat", &StringToolsGroup::sFormatHelperDoubleCustomFormat,
-        "sFormatHelperFloat", &StringToolsGroup::sFormatHelperFloat,
-        "sHexToByte", &StringToolsGroup::sHexToByte,
-        "sFormatHelperDouble", &StringToolsGroup::sFormatHelperDouble,
-        "sFormatHelperFloatCustomFormat", &StringToolsGroup::sFormatHelperFloatCustomFormat,
-        "sFormatHelperUInt64", &StringToolsGroup::sFormatHelperUInt64,
-        "sFormatHelperUInt32", &StringToolsGroup::sFormatHelperUInt32,
-        "sFormatHelperInt32", &StringToolsGroup::sFormatHelperInt32,
-        "sFormatHelperUInt", &StringToolsGroup::sFormatHelperUInt,
-        "sFormatHelperInt", &StringToolsGroup::sFormatHelperInt
-    );
-    lua.new_usertype<ArtPartsData>("ArtPartsData",
-        "SetEnableModelPart", &ArtPartsData::SetEnableModelPart,
-        "IsValidModelPart", &ArtPartsData::IsValidModelPart,
-        "SetShaderVariableAsVec3", &ArtPartsData::SetShaderVariableAsVec3,
-        "SetShaderVariableAsFloat", &ArtPartsData::SetShaderVariableAsFloat
-    );
-    lua.new_usertype<DSMissionEvaluationDataTable>("DSMissionEvaluationDataTable",
-        "GetDataRecord", &DSMissionEvaluationDataTable::GetDataRecord,
-        "GetDataRecordsLength", &DSMissionEvaluationDataTable::GetDataRecordsLength,
-        "GetMinThreshold", &DSMissionEvaluationDataTable::GetMinThreshold,
-        "MaxEvaluation", &DSMissionEvaluationDataTable::MaxEvaluation,
-        "CalculationEvaluation", &DSMissionEvaluationDataTable::CalculationEvaluation,
-        "GetMaxThreshold", &DSMissionEvaluationDataTable::GetMaxThreshold,
-        "MinEvaluation", &DSMissionEvaluationDataTable::MinEvaluation
     );
     lua.new_usertype<SpawnSetup>("SpawnSetup",
         "CreateEntityFromSpawnSetup", &SpawnSetup::CreateEntityFromSpawnSetup
     );
     lua.new_usertype<SoundEnvironment>("SoundEnvironment",
-        "GetRandomSounds", &SoundEnvironment::GetRandomSounds,
-        "GetDensityAtListener", &SoundEnvironment::GetDensityAtListener,
         "GetSound", &SoundEnvironment::GetSound,
-        "GetSoundSpawnThreshold", &SoundEnvironment::GetSoundSpawnThreshold,
-        "GetSoundCount", &SoundEnvironment::GetSoundCount,
-        "GetMaxSoundsPerSpawnPoint", &SoundEnvironment::GetMaxSoundsPerSpawnPoint,
-        "GetSoundSpawnCountFactor", &SoundEnvironment::GetSoundSpawnCountFactor,
-        "SetDensity", &SoundEnvironment::SetDensity,
-        "GetDensityAtSamplePoint", &SoundEnvironment::GetDensityAtSamplePoint
-    );
-    lua.new_usertype<PlayerProfile>("PlayerProfile",
-        "Save", &PlayerProfile::Save,
-        "IsGameFinished", &PlayerProfile::IsGameFinished,
-        "SetGameFinished", &PlayerProfile::SetGameFinished
+        "SetDensity", &SoundEnvironment::SetDensity
     );
     lua.new_usertype<TetheredAmmoPileComponent>("TetheredAmmoPileComponent",
         "GetTetherState", &TetheredAmmoPileComponent::GetTetherState
-    );
-    lua.new_usertype<SoundSystem>("SoundSystem",
-        "GetSubmixOutputLevel", &SoundSystem::GetSubmixOutputLevel,
-        "OverrideReverbZone", &SoundSystem::OverrideReverbZone,
-        "GetAudioOutState", &SoundSystem::GetAudioOutState,
-        "OverrideMixZone", &SoundSystem::OverrideMixZone,
-        "GetHDRWindowSettings", &SoundSystem::GetHDRWindowSettings,
-        "SetHDRWindowSettings", &SoundSystem::SetHDRWindowSettings,
-        "GetObstructionRowStatistics", &SoundSystem::GetObstructionRowStatistics
-    );
-    lua.new_usertype<DSDeliveryPointInfoCommand>("DSDeliveryPointInfoCommand",
-        "SetDeliveryPointAvailabilityDetail", &DSDeliveryPointInfoCommand::SetDeliveryPointAvailabilityDetail,
-        "SetBonusBaggageTypeHash", &DSDeliveryPointInfoCommand::SetBonusBaggageTypeHash,
-        "SetDeliveryPointAvailability", &DSDeliveryPointInfoCommand::SetDeliveryPointAvailability,
-        "GetDeliveryPointIdFromMissionId", &DSDeliveryPointInfoCommand::GetDeliveryPointIdFromMissionId,
-        "GetTypeFromDeliveryPointInfoId", &DSDeliveryPointInfoCommand::GetTypeFromDeliveryPointInfoId,
-        "CheckDeliveryPointAvailable", &DSDeliveryPointInfoCommand::CheckDeliveryPointAvailable,
-        "GetTypeFromDeliveryPointInfo", &DSDeliveryPointInfoCommand::GetTypeFromDeliveryPointInfo
-    );
-    lua.new_usertype<DsNpcManager>("DsNpcManager",
-        "SetNpcIndividualPhase", &DsNpcManager::SetNpcIndividualPhase
-    );
-    lua.new_usertype<DSMissionOpenCondition>("DSMissionOpenCondition",
-        "GetLogicBlock", &DSMissionOpenCondition::GetLogicBlock,
-        "GetOpenLists", &DSMissionOpenCondition::GetOpenLists
-    );
-    lua.new_usertype<DSMissionOpenNode>("DSMissionOpenNode",
-        "SetTemporaryMissionOpenState", &DSMissionOpenNode::SetTemporaryMissionOpenState,
-        "OpenMissions", &DSMissionOpenNode::OpenMissions,
-        "CountCompletedMissions", &DSMissionOpenNode::CountCompletedMissions,
-        "CheckMissionOpenState", &DSMissionOpenNode::CheckMissionOpenState,
-        "CheckCompletedMissions", &DSMissionOpenNode::CheckCompletedMissions,
-        "CheckCompletedCondition", &DSMissionOpenNode::CheckCompletedCondition,
-        "SetNotAvailableMission", &DSMissionOpenNode::SetNotAvailableMission
-    );
-    lua.new_usertype<CubemapbakeOnly>("CubemapbakeOnly",
-        "GetCubemapbakeOnlyFlag", &CubemapbakeOnly::GetCubemapbakeOnlyFlag
-    );
-    lua.new_usertype<DSMissionGraphService>("DSMissionGraphService",
-        "CallOtherGraph", &DSMissionGraphService::CallOtherGraph,
-        "CallByMissionResource", &DSMissionGraphService::CallByMissionResource,
-        "CreateGraphServiceArg", &DSMissionGraphService::CreateGraphServiceArg,
-        "CallByMissionId", &DSMissionGraphService::CallByMissionId
-    );
-    lua.new_usertype<DSWeaponSystem>("DSWeaponSystem",
-        "IntToWeaponId", &DSWeaponSystem::IntToWeaponId,
-        "IsKillingAmmo", &DSWeaponSystem::IsKillingAmmo,
-        "CanUseInsideDeliveryTerminalArea", &DSWeaponSystem::CanUseInsideDeliveryTerminalArea,
-        "RefreshPrivateRoomWeaponShelf", &DSWeaponSystem::RefreshPrivateRoomWeaponShelf,
-        "IntToAmmoId", &DSWeaponSystem::IntToAmmoId,
-        "IntToSuitPartsId", &DSWeaponSystem::IntToSuitPartsId,
-        "IntToItemId", &DSWeaponSystem::IntToItemId,
-        "IntToMagazineId", &DSWeaponSystem::IntToMagazineId
     );
     lua.new_usertype<DiscoverableAreaInstance>("DiscoverableAreaInstance",
         "SetMarkedByPlayer", &DiscoverableAreaInstance::SetMarkedByPlayer
@@ -18004,38 +16429,11 @@ static void BindingFunctions(sol::state& lua) {
         "LaunchVolley", &DSShellLauncherGameActorLocator::LaunchVolley,
         "SetTargetEntity", &DSShellLauncherGameActorLocator::SetTargetEntity
     );
-    lua.new_usertype<SimplePathMover>("SimplePathMover",
-        "MoveToWorldTransform", &SimplePathMover::MoveToWorldTransform,
-        "MoveToWorldTransformOverTime", &SimplePathMover::MoveToWorldTransformOverTime
-    );
     lua.new_usertype<SpawnpointGame>("SpawnpointGame",
         "GetStartSequenceNetworkEntity", &SpawnpointGame::GetStartSequenceNetworkEntity
     );
     lua.new_usertype<EnvironmentSound>("EnvironmentSound",
-        "SetLastSpawnDistance", &EnvironmentSound::SetLastSpawnDistance,
-        "GetProperties", &EnvironmentSound::GetProperties,
-        "GetLastSpawnDistance", &EnvironmentSound::GetLastSpawnDistance
-    );
-    lua.new_usertype<DHighwaySyncControlCommand>("DHighwaySyncControlCommand",
-        "UpdateSyncControlParams", &DHighwaySyncControlCommand::UpdateSyncControlParams
-    );
-    lua.new_usertype<DSSound>("DSSound",
-        "GetCraterInfluenceOnPlayerExport", &DSSound::GetCraterInfluenceOnPlayerExport,
-        "GetAngleFromPlayerToListenerExport", &DSSound::GetAngleFromPlayerToListenerExport,
-        "IsPlayerCloseToCliffExport", &DSSound::IsPlayerCloseToCliffExport
-    );
-    lua.new_usertype<DSDeliveryBotGameActor>("DSDeliveryBotGameActor",
-        "CheckDeliveryBotAIMode", &DSDeliveryBotGameActor::CheckDeliveryBotAIMode,
-        "CheckDeliveryBotRidingAIMode", &DSDeliveryBotGameActor::CheckDeliveryBotRidingAIMode,
-        "GetDeliveryBotsInCurrentArea", &DSDeliveryBotGameActor::GetDeliveryBotsInCurrentArea,
-        "ForceVisibleDeliveryBot", &DSDeliveryBotGameActor::ForceVisibleDeliveryBot,
-        "GetAppearingDeliveryBotDistanceForCutscene", &DSDeliveryBotGameActor::GetAppearingDeliveryBotDistanceForCutscene,
-        "ForceCompleteAllDeliveries", &DSDeliveryBotGameActor::ForceCompleteAllDeliveries,
-        "StowDeliveryBot", &DSDeliveryBotGameActor::StowDeliveryBot,
-        "DeactivateDeliveryBot", &DSDeliveryBotGameActor::DeactivateDeliveryBot,
-        "ActivateDeliveryBot", &DSDeliveryBotGameActor::ActivateDeliveryBot,
-        "CheckDeliveryBotDockingLocation", &DSDeliveryBotGameActor::CheckDeliveryBotDockingLocation,
-        "IsPlayerRiding", &DSDeliveryBotGameActor::IsPlayerRiding
+        "SetLastSpawnDistance", &EnvironmentSound::SetLastSpawnDistance
     );
     lua.new_usertype<AIFaction>("AIFaction",
         "IsHostileTowards", &AIFaction::IsHostileTowards
@@ -18048,28 +16446,9 @@ static void BindingFunctions(sol::state& lua) {
         "Contains", &DamageTypeGroup::Contains
     );
     lua.new_usertype<DSCountTimerBase>("DSCountTimerBase",
-        "FindDSCountTimerFromHashCode", &DSCountTimerBase::FindDSCountTimerFromHashCode,
-        "GetDSCountTimerHashCode", &DSCountTimerBase::GetDSCountTimerHashCode,
-        "SetCurrentTimeSecondsF", &DSCountTimerBase::SetCurrentTimeSecondsF,
-        "GetCurrentTimeSecondsF", &DSCountTimerBase::GetCurrentTimeSecondsF,
         "Pause", &DSCountTimerBase::Pause,
         "Reset", &DSCountTimerBase::Reset,
         "Start", &DSCountTimerBase::Start
-    );
-    lua.new_usertype<DSOnlineMissionCommand>("DSOnlineMissionCommand",
-        "ApplyPreparationItemsForLastStranding", &DSOnlineMissionCommand::ApplyPreparationItemsForLastStranding,
-        "ApplyPreparationItemsForTarget", &DSOnlineMissionCommand::ApplyPreparationItemsForTarget
-    );
-    lua.new_usertype<WaterDetectionComponent>("WaterDetectionComponent",
-        "IsInDSWater", &WaterDetectionComponent::IsInDSWater,
-        "IsInWater", &WaterDetectionComponent::IsInWater
-    );
-    lua.new_usertype<DSSoundNodeGraphBindings>("DSSoundNodeGraphBindings",
-        "SetMusicPlayerCutscenePause", &DSSoundNodeGraphBindings::SetMusicPlayerCutscenePause,
-        "GetCutsceneSkipMute", &DSSoundNodeGraphBindings::GetCutsceneSkipMute,
-        "SetMusicPlayerCutsceneResume", &DSSoundNodeGraphBindings::SetMusicPlayerCutsceneResume,
-        "GetCutsceneSoundPlaying", &DSSoundNodeGraphBindings::GetCutsceneSoundPlaying,
-        "GetFadeStateForSound", &DSSoundNodeGraphBindings::GetFadeStateForSound
     );
     lua.new_usertype<Landmark>("Landmark",
         "IsEnabled", &Landmark::IsEnabled,
@@ -18079,37 +16458,8 @@ static void BindingFunctions(sol::state& lua) {
         "PlayMovieAndTeleport", &GameMovie::PlayMovieAndTeleport,
         "PlayMovie", &GameMovie::PlayMovie
     );
-    lua.new_usertype<DSGazerManagerCommand>("DSGazerManagerCommand",
-        "IsGazerNoticingPlayer", &DSGazerManagerCommand::IsGazerNoticingPlayer,
-        "ResetAllGazers", &DSGazerManagerCommand::ResetAllGazers,
-        "GetUUIDHashOfGazerScene", &DSGazerManagerCommand::GetUUIDHashOfGazerScene,
-        "EnableRespawnGazers", &DSGazerManagerCommand::EnableRespawnGazers
-    );
-    lua.new_usertype<AnnotationComponent>("AnnotationComponent",
-        "FindAnnotationInstanceByResourceUUID", &AnnotationComponent::FindAnnotationInstanceByResourceUUID,
-        "EnableAllAnnotations", &AnnotationComponent::EnableAllAnnotations
-    );
-    lua.new_usertype<SequenceComponent>("SequenceComponent",
-        "GetSequenceStopFrameNumber", &SequenceComponent::GetSequenceStopFrameNumber,
-        "GetSceneFromEntityBoundToSequence", &SequenceComponent::GetSceneFromEntityBoundToSequence,
-        "GetSequenceCurrentFrameNumber", &SequenceComponent::GetSequenceCurrentFrameNumber,
-        "GetSequenceNextFrameNumber", &SequenceComponent::GetSequenceNextFrameNumber
-    );
     lua.new_usertype<MeleeWeaponMode>("MeleeWeaponMode",
         "StopAttack", &MeleeWeaponMode::StopAttack
-    );
-    lua.new_usertype<DSMissionSafetyHouseCommand>("DSMissionSafetyHouseCommand",
-        "DSCallDefaultPrivateRoomGraph", &DSMissionSafetyHouseCommand::DSCallDefaultPrivateRoomGraph,
-        "IsDisableLeavePrivateRoomInfoLogs", &DSMissionSafetyHouseCommand::IsDisableLeavePrivateRoomInfoLogs,
-        "DSClearNotNeededInfoLogWhenLeavePrivateRoom", &DSMissionSafetyHouseCommand::DSClearNotNeededInfoLogWhenLeavePrivateRoom,
-        "DSTelemetryEnterPrivateRoomOnlyEVorTR", &DSMissionSafetyHouseCommand::DSTelemetryEnterPrivateRoomOnlyEVorTR,
-        "DSGetPrivateRoomDeltaTime", &DSMissionSafetyHouseCommand::DSGetPrivateRoomDeltaTime,
-        "DSWakeupHeartmanRoomState", &DSMissionSafetyHouseCommand::DSWakeupHeartmanRoomState,
-        "DSWakeupPrivateRoomStateById", &DSMissionSafetyHouseCommand::DSWakeupPrivateRoomStateById,
-        "DSWakeupPrivateRoomState", &DSMissionSafetyHouseCommand::DSWakeupPrivateRoomState
-    );
-    lua.new_usertype<CPUProfileWindow>("CPUProfileWindow",
-        "sCaptureFrames", &CPUProfileWindow::sCaptureFrames
     );
     lua.new_usertype<GrenadeTriggerComponent>("GrenadeTriggerComponent",
         "GetContactTriggerNormal", &GrenadeTriggerComponent::GetContactTriggerNormal,
@@ -18118,59 +16468,14 @@ static void BindingFunctions(sol::state& lua) {
         "GetContactTriggerModelPartIndex", &GrenadeTriggerComponent::GetContactTriggerModelPartIndex,
         "WasTriggeredByContact", &GrenadeTriggerComponent::WasTriggeredByContact
     );
-    lua.new_usertype<AttachToHelperMover>("AttachToHelperMover",
-        "Create", &AttachToHelperMover::Create
-    );
-    lua.new_usertype<ShieldComponent>("ShieldComponent",
-        "GetShieldInfo", &ShieldComponent::GetShieldInfo
-    );
-    lua.new_usertype<DSWelcomeHoloComponent>("DSWelcomeHoloComponent",
-        "StartVisibleWelcomeHolo", &DSWelcomeHoloComponent::StartVisibleWelcomeHolo,
-        "SetAnimationDistanceSetting", &DSWelcomeHoloComponent::SetAnimationDistanceSetting,
-        "SetNotEchoTargetWelcomeHolo", &DSWelcomeHoloComponent::SetNotEchoTargetWelcomeHolo,
-        "SetAnimationSyncSetWelcomeHolo", &DSWelcomeHoloComponent::SetAnimationSyncSetWelcomeHolo,
-        "StartInvisibleWelcomeHolo", &DSWelcomeHoloComponent::StartInvisibleWelcomeHolo
-    );
-    lua.new_usertype<UTFToolsGroup>("UTFToolsGroup",
-        "sDecodeUTF8", &UTFToolsGroup::sDecodeUTF8,
-        "sEncodeUTF8", &UTFToolsGroup::sEncodeUTF8
-    );
-    lua.new_usertype<DSDeliverySurveyCommand>("DSDeliverySurveyCommand",
-        "GetMissionDeliveredCountBySpecialRule", &DSDeliverySurveyCommand::GetMissionDeliveredCountBySpecialRule,
-        "StopSwitchingPlayerTriggerBoxForPrivateRoom", &DSDeliverySurveyCommand::StopSwitchingPlayerTriggerBoxForPrivateRoom,
-        "GetTotalDeliveryBaggageCountOnSurvey", &DSDeliverySurveyCommand::GetTotalDeliveryBaggageCountOnSurvey
-    );
-    lua.new_usertype<WorldEncounterManager>("WorldEncounterManager",
-        "StopAllWorldEncounters", &WorldEncounterManager::StopAllWorldEncounters
-    );
-    lua.new_usertype<DSMissionCollectorsItemCommand>("DSMissionCollectorsItemCommand",
-        "Given", &DSMissionCollectorsItemCommand::Given,
-        "PickingUp", &DSMissionCollectorsItemCommand::PickingUp,
-        "IsDonatedAllMemoryChip", &DSMissionCollectorsItemCommand::IsDonatedAllMemoryChip,
-        "Donated", &DSMissionCollectorsItemCommand::Donated
-    );
-    lua.new_usertype<DSDeliveryManager>("DSDeliveryManager",
-        "SendCommand", &DSDeliveryManager::SendCommand
-    );
     lua.new_usertype<AttachedLightsComponent>("AttachedLightsComponent",
         "SetColor", &AttachedLightsComponent::SetColor,
         "SetIntensityMultiplier", &AttachedLightsComponent::SetIntensityMultiplier
-    );
-    lua.new_usertype<DSMissionEvaluationDataTablesByThreshold>("DSMissionEvaluationDataTablesByThreshold",
-        "GetMinThreshold", &DSMissionEvaluationDataTablesByThreshold::GetMinThreshold,
-        "GetMaxThreshold", &DSMissionEvaluationDataTablesByThreshold::GetMaxThreshold,
-        "MaxEvaluationDataTable", &DSMissionEvaluationDataTablesByThreshold::MaxEvaluationDataTable,
-        "MinEvaluationDataTable", &DSMissionEvaluationDataTablesByThreshold::MinEvaluationDataTable,
-        "FindEvaluationDataTable", &DSMissionEvaluationDataTablesByThreshold::FindEvaluationDataTable
     );
     lua.new_usertype<InventoryWeapon>("InventoryWeapon",
         "GetChargeFraction", &InventoryWeapon::GetChargeFraction,
         "GetRounds", &InventoryWeapon::GetRounds,
         "GetRoundsInMagazine", &InventoryWeapon::GetRoundsInMagazine
-    );
-    lua.new_usertype<DSNpcAlertZone>("DSNpcAlertZone",
-        "SetAlertZone", &DSNpcAlertZone::SetAlertZone,
-        "ClearAlertZone", &DSNpcAlertZone::ClearAlertZone
     );
     lua.new_usertype<ChildEntityComponent>("ChildEntityComponent",
         "GetChild", &ChildEntityComponent::GetChild
@@ -18178,28 +16483,12 @@ static void BindingFunctions(sol::state& lua) {
     lua.new_usertype<TagEvent>("TagEvent",
         "SetHandled", &TagEvent::SetHandled
     );
-    lua.new_usertype<EconomyManagerResource>("EconomyManagerResource",
-        "GetAmountInPlayerInventory", &EconomyManagerResource::GetAmountInPlayerInventory,
-        "GetCurrencyItemResource", &EconomyManagerResource::GetCurrencyItemResource
-    );
     lua.new_usertype<AIHTNPlannerDaemonPositionPicker>("AIHTNPlannerDaemonPositionPicker",
         "FindPositionInAttackRange", &AIHTNPlannerDaemonPositionPicker::FindPositionInAttackRange
     );
-    lua.new_usertype<CollectableManager>("CollectableManager",
-        "SetCollectableUnlocked", &CollectableManager::SetCollectableUnlocked,
-        "IsCollectableForEntityResourceUnlocked", &CollectableManager::IsCollectableForEntityResourceUnlocked,
-        "SetCollectableForEntityResourceUnlocked", &CollectableManager::SetCollectableForEntityResourceUnlocked,
-        "IsCollectableUnlocked", &CollectableManager::IsCollectableUnlocked
-    );
-    lua.new_usertype<CrowdMember>("CrowdMember",
-        "SetCarryingCrate", &CrowdMember::SetCarryingCrate,
-        "SetSleepingIndoors", &CrowdMember::SetSleepingIndoors
-    );
     lua.new_usertype<StaminaComponent>("StaminaComponent",
         "RemoveModifier", &StaminaComponent::RemoveModifier,
-        "GetStamina", &StaminaComponent::GetStamina,
-        "AddModifier", &StaminaComponent::AddModifier,
-        "UseStamina", &StaminaComponent::UseStamina
+        "AddModifier", &StaminaComponent::AddModifier
     );
     lua.new_usertype<MaterialTypeResource>("MaterialTypeResource",
         "IsKindOf", &MaterialTypeResource::IsKindOf
@@ -18211,14 +16500,8 @@ static void BindingFunctions(sol::state& lua) {
         "GetObject", &ObjectCollection::GetObject,
         "GetObjectCount", &ObjectCollection::GetObjectCount
     );
-    lua.new_usertype<GroundToAirTransitionComponent>("GroundToAirTransitionComponent",
-        "GetAirTransitionState", &GroundToAirTransitionComponent::GetAirTransitionState
-    );
     lua.new_usertype<LocalizedTextResource>("LocalizedTextResource",
         "GetInstance", &LocalizedTextResource::GetInstance
-    );
-    lua.new_usertype<ResourceSet>("ResourceSet",
-        "FindResource", &ResourceSet::FindResource
     );
     lua.new_usertype<SkinnedModel>("SkinnedModel",
         "SetPBDMaxDistanceMultiplier", &SkinnedModel::SetPBDMaxDistanceMultiplier
@@ -18233,9 +16516,7 @@ static void BindingFunctions(sol::state& lua) {
         "StopSceneScriptOnEntity", &Scene::StopSceneScriptOnEntity,
         "SetForcedActivation", &Scene::SetForcedActivation,
         "Start", &Scene::Start,
-        "GetCurrentSceneEntity", &Scene::GetCurrentSceneEntity,
         "StartSceneScriptOnEntity", &Scene::StartSceneScriptOnEntity,
-        "SendCustomMessage", &Scene::SendCustomMessage,
         "IsRunning", &Scene::IsRunning,
         "Stop", &Scene::Stop
     );
@@ -18247,17 +16528,7 @@ static void BindingFunctions(sol::state& lua) {
     );
     lua.new_usertype<InventoryController>("InventoryController",
         "IsUsingHeavyWeapon", &InventoryController::IsUsingHeavyWeapon,
-        "HasAmmoAvailable", &InventoryController::HasAmmoAvailable,
         "ForceMeleeWeapon", &InventoryController::ForceMeleeWeapon
-    );
-    lua.new_usertype<DSHeartmanRoomGraphArgs>("DSHeartmanRoomGraphArgs",
-        "GetHeartmanRoomGraphArgs", &DSHeartmanRoomGraphArgs::GetHeartmanRoomGraphArgs
-    );
-    lua.new_usertype<DSMissionBaggageResource>("DSMissionBaggageResource",
-        "GetDSGameBaggageListItem", &DSMissionBaggageResource::GetDSGameBaggageListItem
-    );
-    lua.new_usertype<GameMenu>("GameMenu",
-        "OpenMenuPage", &GameMenu::OpenMenuPage
     );
     lua.new_usertype<VegetationCoverComponent>("VegetationCoverComponent",
         "GetBoxAtmosphereFactor", &VegetationCoverComponent::GetBoxAtmosphereFactor,
@@ -18266,115 +16537,44 @@ static void BindingFunctions(sol::state& lua) {
     lua.new_usertype<AIHintSymbolResource>("AIHintSymbolResource",
         "GetHintSymbol", &AIHintSymbolResource::GetHintSymbol
     );
-    lua.new_usertype<GliderMover>("GliderMover",
-        "AddDisplacement", &GliderMover::AddDisplacement
-    );
-    lua.new_usertype<BodyVariantRuntimeComponent>("BodyVariantRuntimeComponent",
-        "SetBodyVariant", &BodyVariantRuntimeComponent::SetBodyVariant,
-        "IsActiveBodyVariant", &BodyVariantRuntimeComponent::IsActiveBodyVariant
-    );
     lua.new_usertype<StunnedComponent>("StunnedComponent",
         "IsActive", &StunnedComponent::IsActive
-    );
-    lua.new_usertype<HealOverTimeComponent>("HealOverTimeComponent",
-        "HealOverTime", &HealOverTimeComponent::HealOverTime
     );
     lua.new_usertype<DSSimpleAnimationComponent>("DSSimpleAnimationComponent",
         "ResetMotion", &DSSimpleAnimationComponent::ResetMotion,
         "SetMotion", &DSSimpleAnimationComponent::SetMotion,
         "IsDoneOrHold", &DSSimpleAnimationComponent::IsDoneOrHold
     );
-    lua.new_usertype<DSBulletSystem>("DSBulletSystem",
-        "CreateBullet", &DSBulletSystem::CreateBullet
-    );
     lua.new_usertype<DSBombDropperSettings>("DSBombDropperSettings",
         "DropBomb", &DSBombDropperSettings::DropBomb,
-        "DropBombFromPosition", &DSBombDropperSettings::DropBombFromPosition,
-        "CalculateParametersFromPosition", &DSBombDropperSettings::CalculateParametersFromPosition
-    );
-    lua.new_usertype<DSNetOnlineObjectCommand>("DSNetOnlineObjectCommand",
-        "RequestCheckOnlineState", &DSNetOnlineObjectCommand::RequestCheckOnlineState,
-        "QueuePreSearch", &DSNetOnlineObjectCommand::QueuePreSearch,
-        "StartLastStranding", &DSNetOnlineObjectCommand::StartLastStranding,
-        "EndLastStranding", &DSNetOnlineObjectCommand::EndLastStranding,
-        "IsServiceEnd", &DSNetOnlineObjectCommand::IsServiceEnd,
-        "IsLogin", &DSNetOnlineObjectCommand::IsLogin,
-        "DeleteObjectsFollowingSyncFlags", &DSNetOnlineObjectCommand::DeleteObjectsFollowingSyncFlags
-    );
-    lua.new_usertype<AI>("AI",
-        "gHtnFactMatchesQuery", &AI::gHtnFactMatchesQuery
+        "DropBombFromPosition", &DSBombDropperSettings::DropBombFromPosition
     );
     lua.new_usertype<PropertyComponentResource>("PropertyComponentResource",
         "GetContainerResource", &PropertyComponentResource::GetContainerResource
     );
-    lua.new_usertype<WorldPosition>("WorldPosition",
-        "CalculateStrafeAngleAndDistance", &WorldPosition::CalculateStrafeAngleAndDistance
-    );
     lua.new_usertype<ContextualSpeechComponent>("ContextualSpeechComponent",
-        "SayContextualSpeech", &ContextualSpeechComponent::SayContextualSpeech,
         "HasContextualSpeechToSay", &ContextualSpeechComponent::HasContextualSpeechToSay
     );
     lua.new_usertype<PickUpComponent>("PickUpComponent",
         "AddAmount", &PickUpComponent::AddAmount
     );
-    lua.new_usertype<LastingHealComponent>("LastingHealComponent",
-        "StartLastingHeal", &LastingHealComponent::StartLastingHeal,
-        "IsLastingHealActive", &LastingHealComponent::IsLastingHealActive
-    );
-    lua.new_usertype<DSRaceNodeGraphBindings>("DSRaceNodeGraphBindings",
-        "StartRace", &DSRaceNodeGraphBindings::StartRace,
-        "GetRaceLapTime", &DSRaceNodeGraphBindings::GetRaceLapTime,
-        "ShowRaceHUD", &DSRaceNodeGraphBindings::ShowRaceHUD,
-        "IsRaceMission", &DSRaceNodeGraphBindings::IsRaceMission,
-        "SetStartTransform", &DSRaceNodeGraphBindings::SetStartTransform
-    );
-    lua.new_usertype<DSMissionEvaluationDataTablesByDeliveryPoint>("DSMissionEvaluationDataTablesByDeliveryPoint",
-        "FindEvaluationDataTable", &DSMissionEvaluationDataTablesByDeliveryPoint::FindEvaluationDataTable
-    );
     lua.new_usertype<PlayerNotificationComponent>("PlayerNotificationComponent",
         "IsNotificationActive", &PlayerNotificationComponent::IsNotificationActive,
-        "ClearNotifications", &PlayerNotificationComponent::ClearNotifications,
-        "ShowNotification", &PlayerNotificationComponent::ShowNotification
-    );
-    lua.new_usertype<ComboComponent>("ComboComponent",
-        "IncreaseComboLevel", &ComboComponent::IncreaseComboLevel,
-        "GetComboLevel", &ComboComponent::GetComboLevel,
-        "GetComboTimer", &ComboComponent::GetComboTimer
+        "ClearNotifications", &PlayerNotificationComponent::ClearNotifications
     );
     lua.new_usertype<DSGroundMovementComponent>("DSGroundMovementComponent",
-        "DebugMovePositionToHeading", &DSGroundMovementComponent::DebugMovePositionToHeading,
-        "DebugGetMoveSyncEventTime", &DSGroundMovementComponent::DebugGetMoveSyncEventTime,
-        "DebugSetControllerState", &DSGroundMovementComponent::DebugSetControllerState
-    );
-    lua.new_usertype<DSMissionOpenConditionList>("DSMissionOpenConditionList",
-        "GetOpenConditionList", &DSMissionOpenConditionList::GetOpenConditionList
+        "DebugGetMoveSyncEventTime", &DSGroundMovementComponent::DebugGetMoveSyncEventTime
     );
     lua.new_usertype<PropertyComponent>("PropertyComponent",
         "GetContainer", &PropertyComponent::GetContainer
-    );
-    lua.new_usertype<BuddyManager>("BuddyManager",
-        "GetBuddy", &BuddyManager::GetBuddy,
-        "RegisterSceneForMessages", &BuddyManager::RegisterSceneForMessages,
-        "RequestSpawnBuddy", &BuddyManager::RequestSpawnBuddy,
-        "ClearBuddy", &BuddyManager::ClearBuddy
     );
     lua.new_usertype<LootComponent>("LootComponent",
         "HasBeenLooted", &LootComponent::HasBeenLooted,
         "DisableLooting", &LootComponent::DisableLooting,
         "EnableLooting", &LootComponent::EnableLooting
     );
-    lua.new_usertype<DSMissionDiscreteCommand>("DSMissionDiscreteCommand",
-        "GetNuclearMissionVariables", &DSMissionDiscreteCommand::GetNuclearMissionVariables
-    );
-    lua.new_usertype<RangedWeaponMode>("RangedWeaponMode",
-        "DisableEjectEffectsLocation", &RangedWeaponMode::DisableEjectEffectsLocation,
-        "DisableEjectLocation", &RangedWeaponMode::DisableEjectLocation
-    );
     lua.new_usertype<AIDefendArea>("AIDefendArea",
         "GetParent", &AIDefendArea::GetParent
-    );
-    lua.new_usertype<LightbakeOnly>("LightbakeOnly",
-        "GetLightbakeOnlyFlag", &LightbakeOnly::GetLightbakeOnlyFlag
     );
     lua.new_usertype<MultiSpawnpoint>("MultiSpawnpoint",
         "MultiSpawn", &MultiSpawnpoint::MultiSpawn,
@@ -18387,73 +16587,25 @@ static void BindingFunctions(sol::state& lua) {
     );
     lua.new_usertype<SmartObjectComponent>("SmartObjectComponent",
         "SetEnabled", &SmartObjectComponent::SetEnabled,
-        "CanSatisfyMainDesire", &SmartObjectComponent::CanSatisfyMainDesire,
         "IsEnabled", &SmartObjectComponent::IsEnabled
-    );
-    lua.new_usertype<ModificationItemComponent>("ModificationItemComponent",
-        "GetCategory", &ModificationItemComponent::GetCategory,
-        "GetModificationCount", &ModificationItemComponent::GetModificationCount
-    );
-    lua.new_usertype<ArtPartsVariation>("ArtPartsVariation",
-        "ApplyArtPartsVariation", &ArtPartsVariation::ApplyArtPartsVariation
     );
     lua.new_usertype<InventoryCollection>("InventoryCollection",
         "GiveTo", &InventoryCollection::GiveTo
     );
-    lua.new_usertype<DSMissionLargeSceneCommand>("DSMissionLargeSceneCommand",
-        "ActivateFreeMissionScene", &DSMissionLargeSceneCommand::ActivateFreeMissionScene,
-        "CheckAllMissionSceneIsStable", &DSMissionLargeSceneCommand::CheckAllMissionSceneIsStable,
-        "IsRunningMissionLargeScene", &DSMissionLargeSceneCommand::IsRunningMissionLargeScene,
-        "ActivateMissionLargeScene", &DSMissionLargeSceneCommand::ActivateMissionLargeScene
-    );
-    lua.new_usertype<PBDGraph>("PBDGraph",
-        "Update", &PBDGraph::Update
-    );
     lua.new_usertype<ContextualEmotionComponent>("ContextualEmotionComponent",
         "IsPerformingContextualEmotion", &ContextualEmotionComponent::IsPerformingContextualEmotion
-    );
-    lua.new_usertype<DynamicPrefabCommand>("DynamicPrefabCommand",
-        "DisableDynamicPrefab", &DynamicPrefabCommand::DisableDynamicPrefab
     );
     lua.new_usertype<MeleeWeaponComponent>("MeleeWeaponComponent",
         "IsInMelee", &MeleeWeaponComponent::IsInMelee
     );
-    lua.new_usertype<DSDeliveryBotMenuInfo>("DSDeliveryBotMenuInfo",
-        "CheckDeliveryBotMenuInfoState", &DSDeliveryBotMenuInfo::CheckDeliveryBotMenuInfoState
-    );
-    lua.new_usertype<InventoryCapacityComponent>("InventoryCapacityComponent",
-        "GetFreeSlotsLeft", &InventoryCapacityComponent::GetFreeSlotsLeft
-    );
-    lua.new_usertype<AIMover>("AIMover",
-        "NavMeshRayCast", &AIMover::NavMeshRayCast
-    );
-    lua.new_usertype<UDSGroup>("UDSGroup",
-        "PostEvent", &UDSGroup::PostEvent
-    );
     lua.new_usertype<AnnotationPrimitiveInstance>("AnnotationPrimitiveInstance",
         "HasTag", &AnnotationPrimitiveInstance::HasTag
-    );
-    lua.new_usertype<CachedHelperLocationsComponent>("CachedHelperLocationsComponent",
-        "GetHelperLocationInEntitySpace", &CachedHelperLocationsComponent::GetHelperLocationInEntitySpace,
-        "GetHelperLocationInWorldSpace", &CachedHelperLocationsComponent::GetHelperLocationInWorldSpace
     );
     lua.new_usertype<DSPrototypeNoiseAreaResource>("DSPrototypeNoiseAreaResource",
         "MakeNoise", &DSPrototypeNoiseAreaResource::MakeNoise
     );
-    lua.new_usertype<EntitlementResource>("EntitlementResource",
-        "IsEntitlementAvailable", &EntitlementResource::IsEntitlementAvailable
-    );
-    lua.new_usertype<DSMissionFactsResource>("DSMissionFactsResource",
-        "GetFacts", &DSMissionFactsResource::GetFacts
-    );
-    lua.new_usertype<PlayerLoadoutManagerResource>("PlayerLoadoutManagerResource",
-        "GiveLoadoutToPlayer", &PlayerLoadoutManagerResource::GiveLoadoutToPlayer
-    );
     lua.new_usertype<ForceFieldManager>("ForceFieldManager",
         "GetForce", &ForceFieldManager::GetForce
-    );
-    lua.new_usertype<DSDebugNodeGraphGroup>("DSDebugNodeGraphGroup",
-        "DebugIsPressed", &DSDebugNodeGraphGroup::DebugIsPressed
     );
     lua.new_usertype<FactMusicPresetCollection>("FactMusicPresetCollection",
         "GetPresets", &FactMusicPresetCollection::GetPresets
@@ -18461,20 +16613,1723 @@ static void BindingFunctions(sol::state& lua) {
     lua.new_usertype<AIAgent>("AIAgent",
         "FindDaemonByRTTI", &AIAgent::FindDaemonByRTTI
     );
-    lua.new_usertype<DSMissionRankingCommand>("DSMissionRankingCommand",
-        "GetCurrentRankingSeasonId", &DSMissionRankingCommand::GetCurrentRankingSeasonId,
-        "IsNightmareRankingMode", &DSMissionRankingCommand::IsNightmareRankingMode
-    );
-    lua.new_usertype<DSStringHashResource>("DSStringHashResource",
-        "GetStringHash", &DSStringHashResource::GetStringHash
-    );
-    lua.new_usertype<KjpSoundGraphNodeGroup>("KjpSoundGraphNodeGroup",
-        "GetSoundTimeScaleExport", &KjpSoundGraphNodeGroup::GetSoundTimeScaleExport
-    );
     lua.new_usertype<SequenceNetworkComponent>("SequenceNetworkComponent",
         "GetSequenceNetworkInstance", &SequenceNetworkComponent::GetSequenceNetworkInstance
     );
-    lua.new_usertype<HUDLogicGroupResource>("HUDLogicGroupResource",
-        "HighlightHUDGroup", &HUDLogicGroupResource::HighlightHUDGroup
-    );
+    // Map all class static function only!!
+    auto RetractingPartsComponent_LuaTable = lua.create_table();
+    RetractingPartsComponent_LuaTable["AbortRetractingParts"] = &RetractingPartsComponent::AbortRetractingParts;
+    RetractingPartsComponent_LuaTable["StartRetractingParts"] = &RetractingPartsComponent::StartRetractingParts;
+    RetractingPartsComponent_LuaTable["RegisterRetractingPartEntity"] = &RetractingPartsComponent::RegisterRetractingPartEntity;
+    lua["RetractingPartsComponent"] = RetractingPartsComponent_LuaTable;
+    
+    auto DSGameState_LuaTable = lua.create_table();
+    DSGameState_LuaTable["IsPauseMusic"] = &DSGameState::IsPauseMusic;
+    DSGameState_LuaTable["IsStoppingGameEventLoose"] = &DSGameState::IsStoppingGameEventLoose;
+    DSGameState_LuaTable["CalcUnsaveReason"] = &DSGameState::CalcUnsaveReason;
+    DSGameState_LuaTable["GetGameState2"] = &DSGameState::GetGameState2;
+    DSGameState_LuaTable["IsStoppingGameEvent"] = &DSGameState::IsStoppingGameEvent;
+    DSGameState_LuaTable["CalcAutosaveRequestUnsaveReason"] = &DSGameState::CalcAutosaveRequestUnsaveReason;
+    DSGameState_LuaTable["SetGameState"] = &DSGameState::SetGameState;
+    lua["DSGameState"] = DSGameState_LuaTable;
+    
+    auto Game_LuaTable = lua.create_table();
+    Game_LuaTable["DSGetTitleRegion"] = &Game::DSGetTitleRegion;
+    Game_LuaTable["Game_SetMusicIntensity"] = &Game::Game_SetMusicIntensity;
+    Game_LuaTable["Game_GetGameSettings"] = &Game::Game_GetGameSettings;
+    Game_LuaTable["DamageEntitiesInRangeByFaction"] = &Game::DamageEntitiesInRangeByFaction;
+    Game_LuaTable["DSCreateSaveGameWithActivity_PlusWakeupDreamDemo"] = &Game::DSCreateSaveGameWithActivity_PlusWakeupDreamDemo;
+    Game_LuaTable["Game_GetGameMode"] = &Game::Game_GetGameMode;
+    Game_LuaTable["Game_GetGameTimeInSec"] = &Game::Game_GetGameTimeInSec;
+    Game_LuaTable["EntityMessage_DeconstructPlacedEntity"] = &Game::EntityMessage_DeconstructPlacedEntity;
+    Game_LuaTable["NotifyHackDisabled"] = &Game::NotifyHackDisabled;
+    Game_LuaTable["DSExistsRetrySaveData"] = &Game::DSExistsRetrySaveData;
+    Game_LuaTable["DSCreateSaveGameForStrideQpidArea"] = &Game::DSCreateSaveGameForStrideQpidArea;
+    Game_LuaTable["Game_StartAmbience"] = &Game::Game_StartAmbience;
+    Game_LuaTable["CreateSaveGame"] = &Game::CreateSaveGame;
+    Game_LuaTable["DSCreateSaveGame"] = &Game::DSCreateSaveGame;
+    Game_LuaTable["DSClearRetrySaveData"] = &Game::DSClearRetrySaveData;
+    Game_LuaTable["DSCreateSaveGameForRetry"] = &Game::DSCreateSaveGameForRetry;
+    Game_LuaTable["DSCreateSaveGameWithActivity"] = &Game::DSCreateSaveGameWithActivity;
+    Game_LuaTable["Game_IsDayNightCycleEnabled"] = &Game::Game_IsDayNightCycleEnabled;
+    Game_LuaTable["DSCreateSaveGamePlayWakeupDreamDemo"] = &Game::DSCreateSaveGamePlayWakeupDreamDemo;
+    Game_LuaTable["DSGetDifficulty"] = &Game::DSGetDifficulty;
+    Game_LuaTable["DSGetDifficultyWithoutFixMode"] = &Game::DSGetDifficultyWithoutFixMode;
+    Game_LuaTable["Game_SetTimeOfDay"] = &Game::Game_SetTimeOfDay;
+    Game_LuaTable["Game_GetTimeOfDay"] = &Game::Game_GetTimeOfDay;
+    Game_LuaTable["Game_EnableDayNightCycle"] = &Game::Game_EnableDayNightCycle;
+    Game_LuaTable["Game_StopAmbience"] = &Game::Game_StopAmbience;
+    lua["Game"] = Game_LuaTable;
+    
+    auto DSGameBaggageListItem_LuaTable = lua.create_table();
+    DSGameBaggageListItem_LuaTable["GetRarity"] = &DSGameBaggageListItem::GetRarity;
+    DSGameBaggageListItem_LuaTable["GetContentsDamageType"] = &DSGameBaggageListItem::GetContentsDamageType;
+    DSGameBaggageListItem_LuaTable["GetCaseDurability"] = &DSGameBaggageListItem::GetCaseDurability;
+    DSGameBaggageListItem_LuaTable["GetContentsDurability"] = &DSGameBaggageListItem::GetContentsDurability;
+    DSGameBaggageListItem_LuaTable["GetBaggageCaseType"] = &DSGameBaggageListItem::GetBaggageCaseType;
+    DSGameBaggageListItem_LuaTable["GetBaggageWeight"] = &DSGameBaggageListItem::GetBaggageWeight;
+    DSGameBaggageListItem_LuaTable["GetVolumeType"] = &DSGameBaggageListItem::GetVolumeType;
+    lua["DSGameBaggageListItem"] = DSGameBaggageListItem_LuaTable;
+    
+    auto RagdollComponent_LuaTable = lua.create_table();
+    RagdollComponent_LuaTable["RagdollDriven"] = &RagdollComponent::RagdollDriven;
+    RagdollComponent_LuaTable["SetContraintsProperties"] = &RagdollComponent::SetContraintsProperties;
+    RagdollComponent_LuaTable["RequestRagdollActivation"] = &RagdollComponent::RequestRagdollActivation;
+    RagdollComponent_LuaTable["SetBodiesProperties"] = &RagdollComponent::SetBodiesProperties;
+    RagdollComponent_LuaTable["RagdollMotorDriven"] = &RagdollComponent::RagdollMotorDriven;
+    RagdollComponent_LuaTable["RagdollDrivenDefault"] = &RagdollComponent::RagdollDrivenDefault;
+    RagdollComponent_LuaTable["ApplySoftKeyFrame"] = &RagdollComponent::ApplySoftKeyFrame;
+    RagdollComponent_LuaTable["ApplyHardKeyFrame"] = &RagdollComponent::ApplyHardKeyFrame;
+    RagdollComponent_LuaTable["IsRagdollAcquired"] = &RagdollComponent::IsRagdollAcquired;
+    lua["RagdollComponent"] = RagdollComponent_LuaTable;
+    
+    auto DSMissionGoalsResource_LuaTable = lua.create_table();
+    DSMissionGoalsResource_LuaTable["SetShortTermGoal"] = &DSMissionGoalsResource::SetShortTermGoal;
+    DSMissionGoalsResource_LuaTable["ShowNotificationHUD"] = &DSMissionGoalsResource::ShowNotificationHUD;
+    DSMissionGoalsResource_LuaTable["ClearShortTermGoal"] = &DSMissionGoalsResource::ClearShortTermGoal;
+    DSMissionGoalsResource_LuaTable["SetLongTermGoal"] = &DSMissionGoalsResource::SetLongTermGoal;
+    DSMissionGoalsResource_LuaTable["CloseNotificationHUD"] = &DSMissionGoalsResource::CloseNotificationHUD;
+    DSMissionGoalsResource_LuaTable["SetEpisode"] = &DSMissionGoalsResource::SetEpisode;
+    DSMissionGoalsResource_LuaTable["ClearEpisode"] = &DSMissionGoalsResource::ClearEpisode;
+    DSMissionGoalsResource_LuaTable["ClearLongTermGoal"] = &DSMissionGoalsResource::ClearLongTermGoal;
+    lua["DSMissionGoalsResource"] = DSMissionGoalsResource_LuaTable;
+    
+    auto DSMissionProgressCommand_LuaTable = lua.create_table();
+    DSMissionProgressCommand_LuaTable["CheckDSMissionProgressSimple"] = &DSMissionProgressCommand::CheckDSMissionProgressSimple;
+    DSMissionProgressCommand_LuaTable["CheckDeliveringBaggages"] = &DSMissionProgressCommand::CheckDeliveringBaggages;
+    DSMissionProgressCommand_LuaTable["IsMissionProgressWithTimer"] = &DSMissionProgressCommand::IsMissionProgressWithTimer;
+    DSMissionProgressCommand_LuaTable["CheckDSMissionPerformState"] = &DSMissionProgressCommand::CheckDSMissionPerformState;
+    DSMissionProgressCommand_LuaTable["CheckMultipleDSMissionProgress"] = &DSMissionProgressCommand::CheckMultipleDSMissionProgress;
+    DSMissionProgressCommand_LuaTable["GetDSMissionIdFromResource"] = &DSMissionProgressCommand::GetDSMissionIdFromResource;
+    DSMissionProgressCommand_LuaTable["CheckDSMissionProgressByDestination"] = &DSMissionProgressCommand::CheckDSMissionProgressByDestination;
+    DSMissionProgressCommand_LuaTable["CheckDSMissionProgress"] = &DSMissionProgressCommand::CheckDSMissionProgress;
+    lua["DSMissionProgressCommand"] = DSMissionProgressCommand_LuaTable;
+    
+    auto DSCameraInterface_LuaTable = lua.create_table();
+    DSCameraInterface_LuaTable["SetEnableForceSubjectiveCameraMode"] = &DSCameraInterface::SetEnableForceSubjectiveCameraMode;
+    DSCameraInterface_LuaTable["SetCameraRotationHeading"] = &DSCameraInterface::SetCameraRotationHeading;
+    DSCameraInterface_LuaTable["ResetAroundCameraCollisionTriggerType"] = &DSCameraInterface::ResetAroundCameraCollisionTriggerType;
+    DSCameraInterface_LuaTable["GetCameraPosition"] = &DSCameraInterface::GetCameraPosition;
+    DSCameraInterface_LuaTable["RequestShowdownCamera"] = &DSCameraInterface::RequestShowdownCamera;
+    DSCameraInterface_LuaTable["SetStock"] = &DSCameraInterface::SetStock;
+    DSCameraInterface_LuaTable["SetCameraRotationPitch"] = &DSCameraInterface::SetCameraRotationPitch;
+    DSCameraInterface_LuaTable["RequestForceRadioCallCamera"] = &DSCameraInterface::RequestForceRadioCallCamera;
+    DSCameraInterface_LuaTable["StopShowdownCamera"] = &DSCameraInterface::StopShowdownCamera;
+    DSCameraInterface_LuaTable["SetAroundCameraCollisionTriggerType"] = &DSCameraInterface::SetAroundCameraCollisionTriggerType;
+    DSCameraInterface_LuaTable["RequestTargetConstrainCamera"] = &DSCameraInterface::RequestTargetConstrainCamera;
+    lua["DSCameraInterface"] = DSCameraInterface_LuaTable;
+    
+    auto TrophySystem_LuaTable = lua.create_table();
+    TrophySystem_LuaTable["SetTrophyProgressIntegerStat"] = &TrophySystem::SetTrophyProgressIntegerStat;
+    TrophySystem_LuaTable["SetTrophyProgressFloatStat"] = &TrophySystem::SetTrophyProgressFloatStat;
+    TrophySystem_LuaTable["CaptureTrophyScreenshot"] = &TrophySystem::CaptureTrophyScreenshot;
+    TrophySystem_LuaTable["IncrementTrophyProgressIntegerStat"] = &TrophySystem::IncrementTrophyProgressIntegerStat;
+    TrophySystem_LuaTable["IsTrophyUnlocked"] = &TrophySystem::IsTrophyUnlocked;
+    TrophySystem_LuaTable["CompletedUpconvertTrophy"] = &TrophySystem::CompletedUpconvertTrophy;
+    TrophySystem_LuaTable["UnlockTrophy"] = &TrophySystem::UnlockTrophy;
+    lua["TrophySystem"] = TrophySystem_LuaTable;
+    
+    auto AttachPhysicsRagdollToHelperMover_LuaTable = lua.create_table();
+    AttachPhysicsRagdollToHelperMover_LuaTable["Create"] = &AttachPhysicsRagdollToHelperMover::Create;
+    lua["AttachPhysicsRagdollToHelperMover"] = AttachPhysicsRagdollToHelperMover_LuaTable;
+    
+    auto GraphSound_LuaTable = lua.create_table();
+    GraphSound_LuaTable["GetWaveSampleRate"] = &GraphSound::GetWaveSampleRate;
+    GraphSound_LuaTable["GetTimeFromContext"] = &GraphSound::GetTimeFromContext;
+    GraphSound_LuaTable["GetGroupIndex"] = &GraphSound::GetGroupIndex;
+    GraphSound_LuaTable["SetEnableInstanceFilter"] = &GraphSound::SetEnableInstanceFilter;
+    GraphSound_LuaTable["SetHDRProperties"] = &GraphSound::SetHDRProperties;
+    GraphSound_LuaTable["GetTimeStep"] = &GraphSound::GetTimeStep;
+    GraphSound_LuaTable["SetForceTo2D"] = &GraphSound::SetForceTo2D;
+    GraphSound_LuaTable["WwiseSimplePostEventExport"] = &GraphSound::WwiseSimplePostEventExport;
+    GraphSound_LuaTable["GetWaveDuration"] = &GraphSound::GetWaveDuration;
+    GraphSound_LuaTable["SetDisableSoundPause"] = &GraphSound::SetDisableSoundPause;
+    GraphSound_LuaTable["RestartContext"] = &GraphSound::RestartContext;
+    GraphSound_LuaTable["StopWave"] = &GraphSound::StopWave;
+    GraphSound_LuaTable["GetEnvelopeData"] = &GraphSound::GetEnvelopeData;
+    GraphSound_LuaTable["GetEnvelopeFromADSR"] = &GraphSound::GetEnvelopeFromADSR;
+    GraphSound_LuaTable["EndContext"] = &GraphSound::EndContext;
+    GraphSound_LuaTable["KeepAliveContext"] = &GraphSound::KeepAliveContext;
+    GraphSound_LuaTable["SetOverrideGroup"] = &GraphSound::SetOverrideGroup;
+    GraphSound_LuaTable["SetOverrideMaxAzimuthDelta"] = &GraphSound::SetOverrideMaxAzimuthDelta;
+    GraphSound_LuaTable["SetPriorityModifier"] = &GraphSound::SetPriorityModifier;
+    GraphSound_LuaTable["SetDisableDistanceCulling"] = &GraphSound::SetDisableDistanceCulling;
+    GraphSound_LuaTable["SetMusicPlayerCutsceneResumeExport"] = &GraphSound::SetMusicPlayerCutsceneResumeExport;
+    lua["GraphSound"] = GraphSound_LuaTable;
+    
+    auto DSRoad_LuaTable = lua.create_table();
+    DSRoad_LuaTable["DSStopAndStartRecordingRouteTrackingByPlaceIdWithNotUpdateWorldData"] = &DSRoad::DSStopAndStartRecordingRouteTrackingByPlaceIdWithNotUpdateWorldData;
+    DSRoad_LuaTable["DSStopAndStartRecordingRouteTrackingByPlaceId"] = &DSRoad::DSStopAndStartRecordingRouteTrackingByPlaceId;
+    DSRoad_LuaTable["SetUseCheckpointIndexList"] = &DSRoad::SetUseCheckpointIndexList;
+    DSRoad_LuaTable["IsBuildingNationalRoute"] = &DSRoad::IsBuildingNationalRoute;
+    DSRoad_LuaTable["SetCompletedNationalRoute"] = &DSRoad::SetCompletedNationalRoute;
+    DSRoad_LuaTable["IsCompletedNationalRoute"] = &DSRoad::IsCompletedNationalRoute;
+    DSRoad_LuaTable["RequestRebuildNationalRoute"] = &DSRoad::RequestRebuildNationalRoute;
+    DSRoad_LuaTable["AddLocalTrackingLogFromData"] = &DSRoad::AddLocalTrackingLogFromData;
+    DSRoad_LuaTable["TriggerNationalRoadUpdateCheck"] = &DSRoad::TriggerNationalRoadUpdateCheck;
+    DSRoad_LuaTable["RequestTrackingLogMarge"] = &DSRoad::RequestTrackingLogMarge;
+    DSRoad_LuaTable["CheckFixedTrackingLogLevelUp"] = &DSRoad::CheckFixedTrackingLogLevelUp;
+    DSRoad_LuaTable["SetStaticRoadVisible"] = &DSRoad::SetStaticRoadVisible;
+    DSRoad_LuaTable["IsIncludedLevel2InLastPath"] = &DSRoad::IsIncludedLevel2InLastPath;
+    DSRoad_LuaTable["DebugSetForceRoadVisible"] = &DSRoad::DebugSetForceRoadVisible;
+    lua["DSRoad"] = DSRoad_LuaTable;
+    
+    auto DSMissionLogicBlock_LuaTable = lua.create_table();
+    DSMissionLogicBlock_LuaTable["GetConditionResouceList"] = &DSMissionLogicBlock::GetConditionResouceList;
+    DSMissionLogicBlock_LuaTable["GetLogicBlocks"] = &DSMissionLogicBlock::GetLogicBlocks;
+    DSMissionLogicBlock_LuaTable["GetLogicType"] = &DSMissionLogicBlock::GetLogicType;
+    DSMissionLogicBlock_LuaTable["GetAchievementConditionNum"] = &DSMissionLogicBlock::GetAchievementConditionNum;
+    DSMissionLogicBlock_LuaTable["GetConditionFactList"] = &DSMissionLogicBlock::GetConditionFactList;
+    lua["DSMissionLogicBlock"] = DSMissionLogicBlock_LuaTable;
+    
+    auto DSMissionLogicCommand_LuaTable = lua.create_table();
+    DSMissionLogicCommand_LuaTable["DEBUG_RequestDSMissionStartPremium"] = &DSMissionLogicCommand::DEBUG_RequestDSMissionStartPremium;
+    DSMissionLogicCommand_LuaTable["DispResult1"] = &DSMissionLogicCommand::DispResult1;
+    DSMissionLogicCommand_LuaTable["RequestDSMissionStart"] = &DSMissionLogicCommand::RequestDSMissionStart;
+    DSMissionLogicCommand_LuaTable["SendMissionMessageSimple"] = &DSMissionLogicCommand::SendMissionMessageSimple;
+    DSMissionLogicCommand_LuaTable["FastTravel"] = &DSMissionLogicCommand::FastTravel;
+    DSMissionLogicCommand_LuaTable["DispResultEvaluation"] = &DSMissionLogicCommand::DispResultEvaluation;
+    DSMissionLogicCommand_LuaTable["SendMissionSceneMessageImmediately"] = &DSMissionLogicCommand::SendMissionSceneMessageImmediately;
+    DSMissionLogicCommand_LuaTable["ChangeArea"] = &DSMissionLogicCommand::ChangeArea;
+    DSMissionLogicCommand_LuaTable["GameOver"] = &DSMissionLogicCommand::GameOver;
+    DSMissionLogicCommand_LuaTable["GetElapsedDayLastFastTravel"] = &DSMissionLogicCommand::GetElapsedDayLastFastTravel;
+    DSMissionLogicCommand_LuaTable["RequestDSMissionCancelSilent"] = &DSMissionLogicCommand::RequestDSMissionCancelSilent;
+    DSMissionLogicCommand_LuaTable["ForceFinishAutoDeliveryLight"] = &DSMissionLogicCommand::ForceFinishAutoDeliveryLight;
+    DSMissionLogicCommand_LuaTable["ActivateRange"] = &DSMissionLogicCommand::ActivateRange;
+    DSMissionLogicCommand_LuaTable["DispTotalResult"] = &DSMissionLogicCommand::DispTotalResult;
+    DSMissionLogicCommand_LuaTable["DispResult2"] = &DSMissionLogicCommand::DispResult2;
+    DSMissionLogicCommand_LuaTable["AllDispResult"] = &DSMissionLogicCommand::AllDispResult;
+    DSMissionLogicCommand_LuaTable["ReturnToPRForCliffMemories"] = &DSMissionLogicCommand::ReturnToPRForCliffMemories;
+    DSMissionLogicCommand_LuaTable["GoOutFromPRForCliffMemories"] = &DSMissionLogicCommand::GoOutFromPRForCliffMemories;
+    DSMissionLogicCommand_LuaTable["DebugSetPlayerSpawnLocatorUUID"] = &DSMissionLogicCommand::DebugSetPlayerSpawnLocatorUUID;
+    DSMissionLogicCommand_LuaTable["GetGameOverMissionID"] = &DSMissionLogicCommand::GetGameOverMissionID;
+    DSMissionLogicCommand_LuaTable["GetGameOverReason"] = &DSMissionLogicCommand::GetGameOverReason;
+    DSMissionLogicCommand_LuaTable["GetCurrentArea"] = &DSMissionLogicCommand::GetCurrentArea;
+    DSMissionLogicCommand_LuaTable["SendMissionMessage"] = &DSMissionLogicCommand::SendMissionMessage;
+    DSMissionLogicCommand_LuaTable["GetSamMissionProgressFact"] = &DSMissionLogicCommand::GetSamMissionProgressFact;
+    DSMissionLogicCommand_LuaTable["RequestDSMissionFail"] = &DSMissionLogicCommand::RequestDSMissionFail;
+    DSMissionLogicCommand_LuaTable["RequestDSMissionSuccess"] = &DSMissionLogicCommand::RequestDSMissionSuccess;
+    lua["DSMissionLogicCommand"] = DSMissionLogicCommand_LuaTable;
+    
+    auto DSWeather_LuaTable = lua.create_table();
+    DSWeather_LuaTable["GetRainyCondition"] = &DSWeather::GetRainyCondition;
+    DSWeather_LuaTable["SetForecastTypeOfRegionDirect"] = &DSWeather::SetForecastTypeOfRegionDirect;
+    DSWeather_LuaTable["SetForecastTypeOfRegionDirectEx"] = &DSWeather::SetForecastTypeOfRegionDirectEx;
+    DSWeather_LuaTable["ResetForecastTime"] = &DSWeather::ResetForecastTime;
+    DSWeather_LuaTable["CheckArea"] = &DSWeather::CheckArea;
+    DSWeather_LuaTable["SetStartControlFlags"] = &DSWeather::SetStartControlFlags;
+    DSWeather_LuaTable["GetRainyConditionFromMap"] = &DSWeather::GetRainyConditionFromMap;
+    lua["DSWeather"] = DSWeather_LuaTable;
+    
+    auto DSCatcher_LuaTable = lua.create_table();
+    DSCatcher_LuaTable["IsInAnnihilationAreaWithArea"] = &DSCatcher::IsInAnnihilationAreaWithArea;
+    DSCatcher_LuaTable["GetIntState"] = &DSCatcher::GetIntState;
+    DSCatcher_LuaTable["IsInAnnihilationArea"] = &DSCatcher::IsInAnnihilationArea;
+    DSCatcher_LuaTable["RemoveAnnihilationArea"] = &DSCatcher::RemoveAnnihilationArea;
+    DSCatcher_LuaTable["NotifySimpleControlCommand"] = &DSCatcher::NotifySimpleControlCommand;
+    DSCatcher_LuaTable["GetNotifyIdentifier"] = &DSCatcher::GetNotifyIdentifier;
+    DSCatcher_LuaTable["AnnihilationProgress"] = &DSCatcher::AnnihilationProgress;
+    DSCatcher_LuaTable["CatcherWhaleControlCommand"] = &DSCatcher::CatcherWhaleControlCommand;
+    DSCatcher_LuaTable["GetActiveCatcherEntity"] = &DSCatcher::GetActiveCatcherEntity;
+    DSCatcher_LuaTable["SetScriptVariableCommand"] = &DSCatcher::SetScriptVariableCommand;
+    DSCatcher_LuaTable["CheckCatcherNotifyFlags"] = &DSCatcher::CheckCatcherNotifyFlags;
+    lua["DSCatcher"] = DSCatcher_LuaTable;
+    
+    auto DSUINodeGraphBindings_LuaTable = lua.create_table();
+    DSUINodeGraphBindings_LuaTable["IgnoreOnceWeightHUDRequest"] = &DSUINodeGraphBindings::IgnoreOnceWeightHUDRequest;
+    DSUINodeGraphBindings_LuaTable["WeaponSelectorHasPageChangeByCategory"] = &DSUINodeGraphBindings::WeaponSelectorHasPageChangeByCategory;
+    DSUINodeGraphBindings_LuaTable["FadeInScreen"] = &DSUINodeGraphBindings::FadeInScreen;
+    DSUINodeGraphBindings_LuaTable["HideTutorialTelopWithHash"] = &DSUINodeGraphBindings::HideTutorialTelopWithHash;
+    DSUINodeGraphBindings_LuaTable["ClearAllInfoLog"] = &DSUINodeGraphBindings::ClearAllInfoLog;
+    DSUINodeGraphBindings_LuaTable["IsShowTutorialTelop"] = &DSUINodeGraphBindings::IsShowTutorialTelop;
+    DSUINodeGraphBindings_LuaTable["SetLoadingScreenNumber"] = &DSUINodeGraphBindings::SetLoadingScreenNumber;
+    DSUINodeGraphBindings_LuaTable["SetUnlockUIFlag"] = &DSUINodeGraphBindings::SetUnlockUIFlag;
+    DSUINodeGraphBindings_LuaTable["ShowHiggsFightGaugeHUD"] = &DSUINodeGraphBindings::ShowHiggsFightGaugeHUD;
+    DSUINodeGraphBindings_LuaTable["HideOperationGuide"] = &DSUINodeGraphBindings::HideOperationGuide;
+    DSUINodeGraphBindings_LuaTable["ClearLowPriorityInfoLog"] = &DSUINodeGraphBindings::ClearLowPriorityInfoLog;
+    DSUINodeGraphBindings_LuaTable["CheckDSUIFadeState"] = &DSUINodeGraphBindings::CheckDSUIFadeState;
+    DSUINodeGraphBindings_LuaTable["RemoveInfoLogFromQueue"] = &DSUINodeGraphBindings::RemoveInfoLogFromQueue;
+    DSUINodeGraphBindings_LuaTable["GetLastMissionIdsFromMissionTelop"] = &DSUINodeGraphBindings::GetLastMissionIdsFromMissionTelop;
+    DSUINodeGraphBindings_LuaTable["HideDeviceMapTutorialRoute"] = &DSUINodeGraphBindings::HideDeviceMapTutorialRoute;
+    DSUINodeGraphBindings_LuaTable["SetBBPodCustomizeActionIconNewMark"] = &DSUINodeGraphBindings::SetBBPodCustomizeActionIconNewMark;
+    DSUINodeGraphBindings_LuaTable["IsProfileKBDActionToggleGrabEnable"] = &DSUINodeGraphBindings::IsProfileKBDActionToggleGrabEnable;
+    DSUINodeGraphBindings_LuaTable["IsProfileGamePadActionToggleGrabEnable"] = &DSUINodeGraphBindings::IsProfileGamePadActionToggleGrabEnable;
+    DSUINodeGraphBindings_LuaTable["ShowDeviceMapTutorialRoute"] = &DSUINodeGraphBindings::ShowDeviceMapTutorialRoute;
+    DSUINodeGraphBindings_LuaTable["HideTimerHUD"] = &DSUINodeGraphBindings::HideTimerHUD;
+    DSUINodeGraphBindings_LuaTable["IsPrivateRoomTerminalNew"] = &DSUINodeGraphBindings::IsPrivateRoomTerminalNew;
+    DSUINodeGraphBindings_LuaTable["IsPrivateRoomBBPodNew"] = &DSUINodeGraphBindings::IsPrivateRoomBBPodNew;
+    DSUINodeGraphBindings_LuaTable["IsPrivateRoomUniformNew"] = &DSUINodeGraphBindings::IsPrivateRoomUniformNew;
+    DSUINodeGraphBindings_LuaTable["IsPrivateRoomBackpackNew"] = &DSUINodeGraphBindings::IsPrivateRoomBackpackNew;
+    DSUINodeGraphBindings_LuaTable["IsDeliveryMenuPrivateRoomNewMarkForUniform"] = &DSUINodeGraphBindings::IsDeliveryMenuPrivateRoomNewMarkForUniform;
+    DSUINodeGraphBindings_LuaTable["IsDeliveryMenuPrivateRoomNewMarkForBackpack"] = &DSUINodeGraphBindings::IsDeliveryMenuPrivateRoomNewMarkForBackpack;
+    DSUINodeGraphBindings_LuaTable["RequestOpenCureGaugeMenu"] = &DSUINodeGraphBindings::RequestOpenCureGaugeMenu;
+    DSUINodeGraphBindings_LuaTable["IsOdradekDemoOnceSetting"] = &DSUINodeGraphBindings::IsOdradekDemoOnceSetting;
+    DSUINodeGraphBindings_LuaTable["IgnoreWeightHUDRequestTimer"] = &DSUINodeGraphBindings::IgnoreWeightHUDRequestTimer;
+    DSUINodeGraphBindings_LuaTable["IsFunctionPressed"] = &DSUINodeGraphBindings::IsFunctionPressed;
+    DSUINodeGraphBindings_LuaTable["IsProfileDandlingTypeMotionSensor"] = &DSUINodeGraphBindings::IsProfileDandlingTypeMotionSensor;
+    DSUINodeGraphBindings_LuaTable["IsCompassShown"] = &DSUINodeGraphBindings::IsCompassShown;
+    DSUINodeGraphBindings_LuaTable["CheckUIMenuSoundCategoy"] = &DSUINodeGraphBindings::CheckUIMenuSoundCategoy;
+    DSUINodeGraphBindings_LuaTable["GetLoadingScreenNumber"] = &DSUINodeGraphBindings::GetLoadingScreenNumber;
+    DSUINodeGraphBindings_LuaTable["SetDeviceMapZoomScale"] = &DSUINodeGraphBindings::SetDeviceMapZoomScale;
+    DSUINodeGraphBindings_LuaTable["CheckRepairMenuInfoResult"] = &DSUINodeGraphBindings::CheckRepairMenuInfoResult;
+    DSUINodeGraphBindings_LuaTable["HideAllMissionTelopHUD"] = &DSUINodeGraphBindings::HideAllMissionTelopHUD;
+    DSUINodeGraphBindings_LuaTable["RequestAimHUDDemo"] = &DSUINodeGraphBindings::RequestAimHUDDemo;
+    DSUINodeGraphBindings_LuaTable["CheckDSUIFadeColor"] = &DSUINodeGraphBindings::CheckDSUIFadeColor;
+    DSUINodeGraphBindings_LuaTable["RequestUnlockFunctionDialog"] = &DSUINodeGraphBindings::RequestUnlockFunctionDialog;
+    DSUINodeGraphBindings_LuaTable["FadeOutScreen"] = &DSUINodeGraphBindings::FadeOutScreen;
+    DSUINodeGraphBindings_LuaTable["UnSetUnlockUIFlag"] = &DSUINodeGraphBindings::UnSetUnlockUIFlag;
+    DSUINodeGraphBindings_LuaTable["CheckMissionListDialogMissionId"] = &DSUINodeGraphBindings::CheckMissionListDialogMissionId;
+    DSUINodeGraphBindings_LuaTable["ShowOperationGuideWithPosition"] = &DSUINodeGraphBindings::ShowOperationGuideWithPosition;
+    DSUINodeGraphBindings_LuaTable["ShowOperationGuide"] = &DSUINodeGraphBindings::ShowOperationGuide;
+    DSUINodeGraphBindings_LuaTable["HideAllTelop"] = &DSUINodeGraphBindings::HideAllTelop;
+    DSUINodeGraphBindings_LuaTable["HideTelop"] = &DSUINodeGraphBindings::HideTelop;
+    DSUINodeGraphBindings_LuaTable["ShowTutorialTelop"] = &DSUINodeGraphBindings::ShowTutorialTelop;
+    DSUINodeGraphBindings_LuaTable["ShowMusicTelopFromId"] = &DSUINodeGraphBindings::ShowMusicTelopFromId;
+    DSUINodeGraphBindings_LuaTable["RestoreLandmarkTelop"] = &DSUINodeGraphBindings::RestoreLandmarkTelop;
+    DSUINodeGraphBindings_LuaTable["RequestBackupAndHideLandmarkTelop"] = &DSUINodeGraphBindings::RequestBackupAndHideLandmarkTelop;
+    DSUINodeGraphBindings_LuaTable["DebugSetLevelUpMenuInfoResult"] = &DSUINodeGraphBindings::DebugSetLevelUpMenuInfoResult;
+    DSUINodeGraphBindings_LuaTable["CheckLevelUpMenuInfoResult"] = &DSUINodeGraphBindings::CheckLevelUpMenuInfoResult;
+    DSUINodeGraphBindings_LuaTable["DebugSetBaggageMenuInfoResult"] = &DSUINodeGraphBindings::DebugSetBaggageMenuInfoResult;
+    DSUINodeGraphBindings_LuaTable["CheckBaggageMenuInfoResult"] = &DSUINodeGraphBindings::CheckBaggageMenuInfoResult;
+    DSUINodeGraphBindings_LuaTable["GetLocalizedTextFromResource"] = &DSUINodeGraphBindings::GetLocalizedTextFromResource;
+    lua["DSUINodeGraphBindings"] = DSUINodeGraphBindings_LuaTable;
+    
+    auto DSQpidUnitCommand_LuaTable = lua.create_table();
+    DSQpidUnitCommand_LuaTable["EqualQpidStateById"] = &DSQpidUnitCommand::EqualQpidStateById;
+    DSQpidUnitCommand_LuaTable["SetQpidLevelUpEventToTerminalOperation"] = &DSQpidUnitCommand::SetQpidLevelUpEventToTerminalOperation;
+    DSQpidUnitCommand_LuaTable["ChangeQpidStateById"] = &DSQpidUnitCommand::ChangeQpidStateById;
+    DSQpidUnitCommand_LuaTable["CheckCanChangeQpidStateById"] = &DSQpidUnitCommand::CheckCanChangeQpidStateById;
+    DSQpidUnitCommand_LuaTable["HasQpid"] = &DSQpidUnitCommand::HasQpid;
+    DSQpidUnitCommand_LuaTable["ChangeQpidBandWidthLevelById"] = &DSQpidUnitCommand::ChangeQpidBandWidthLevelById;
+    DSQpidUnitCommand_LuaTable["GetQpidIdPlayerInside"] = &DSQpidUnitCommand::GetQpidIdPlayerInside;
+    DSQpidUnitCommand_LuaTable["EqualQpidState"] = &DSQpidUnitCommand::EqualQpidState;
+    DSQpidUnitCommand_LuaTable["ForceUpdateQpid"] = &DSQpidUnitCommand::ForceUpdateQpid;
+    DSQpidUnitCommand_LuaTable["DebugChangeAllQpidState"] = &DSQpidUnitCommand::DebugChangeAllQpidState;
+    DSQpidUnitCommand_LuaTable["ChangeQpidBandWidthLevel"] = &DSQpidUnitCommand::ChangeQpidBandWidthLevel;
+    DSQpidUnitCommand_LuaTable["ChangeQpidState"] = &DSQpidUnitCommand::ChangeQpidState;
+    DSQpidUnitCommand_LuaTable["CheckQpidStateById"] = &DSQpidUnitCommand::CheckQpidStateById;
+    DSQpidUnitCommand_LuaTable["CheckQpidState"] = &DSQpidUnitCommand::CheckQpidState;
+    DSQpidUnitCommand_LuaTable["DebugQpidOpenAll"] = &DSQpidUnitCommand::DebugQpidOpenAll;
+    lua["DSQpidUnitCommand"] = DSQpidUnitCommand_LuaTable;
+    
+    auto DSParkingMenuInfo_LuaTable = lua.create_table();
+    DSParkingMenuInfo_LuaTable["HasVacantParking"] = &DSParkingMenuInfo::HasVacantParking;
+    DSParkingMenuInfo_LuaTable["GetVehicleOnParkingLift"] = &DSParkingMenuInfo::GetVehicleOnParkingLift;
+    DSParkingMenuInfo_LuaTable["DespawnVehicleSelectedInRace"] = &DSParkingMenuInfo::DespawnVehicleSelectedInRace;
+    DSParkingMenuInfo_LuaTable["SpawnVehicleSelectedInRace"] = &DSParkingMenuInfo::SpawnVehicleSelectedInRace;
+    DSParkingMenuInfo_LuaTable["SendUpdateRaceRecordLike"] = &DSParkingMenuInfo::SendUpdateRaceRecordLike;
+    DSParkingMenuInfo_LuaTable["CheckParkingMenuInfoResult"] = &DSParkingMenuInfo::CheckParkingMenuInfoResult;
+    DSParkingMenuInfo_LuaTable["GetStoringVehicleToParking"] = &DSParkingMenuInfo::GetStoringVehicleToParking;
+    DSParkingMenuInfo_LuaTable["GetLeavingVehicleFromParking"] = &DSParkingMenuInfo::GetLeavingVehicleFromParking;
+    DSParkingMenuInfo_LuaTable["RegisterUsedVehicleInRace"] = &DSParkingMenuInfo::RegisterUsedVehicleInRace;
+    DSParkingMenuInfo_LuaTable["SendVehicleUsedInRaceLike"] = &DSParkingMenuInfo::SendVehicleUsedInRaceLike;
+    DSParkingMenuInfo_LuaTable["SpawnVehicleSelectedInParking"] = &DSParkingMenuInfo::SpawnVehicleSelectedInParking;
+    DSParkingMenuInfo_LuaTable["StoreVehicleToParking"] = &DSParkingMenuInfo::StoreVehicleToParking;
+    DSParkingMenuInfo_LuaTable["LockParkingLift"] = &DSParkingMenuInfo::LockParkingLift;
+    DSParkingMenuInfo_LuaTable["HasEnoughVacantParking"] = &DSParkingMenuInfo::HasEnoughVacantParking;
+    lua["DSParkingMenuInfo"] = DSParkingMenuInfo_LuaTable;
+    
+    auto DSEnvironmentManagerNodes_LuaTable = lua.create_table();
+    DSEnvironmentManagerNodes_LuaTable["BeginBlackSamGameOver"] = &DSEnvironmentManagerNodes::BeginBlackSamGameOver;
+    DSEnvironmentManagerNodes_LuaTable["EndBlackSamGameOver"] = &DSEnvironmentManagerNodes::EndBlackSamGameOver;
+    DSEnvironmentManagerNodes_LuaTable["CreateKnotSpaceEntity"] = &DSEnvironmentManagerNodes::CreateKnotSpaceEntity;
+    DSEnvironmentManagerNodes_LuaTable["DeleteKnotSpaceEntity"] = &DSEnvironmentManagerNodes::DeleteKnotSpaceEntity;
+    lua["DSEnvironmentManagerNodes"] = DSEnvironmentManagerNodes_LuaTable;
+    
+    auto DSPlayerEntity_LuaTable = lua.create_table();
+    DSPlayerEntity_LuaTable["GetPlayerParameterWorldTransform"] = &DSPlayerEntity::GetPlayerParameterWorldTransform;
+    DSPlayerEntity_LuaTable["GetPlayerParameterFloat"] = &DSPlayerEntity::GetPlayerParameterFloat;
+    DSPlayerEntity_LuaTable["GetPlayerParameterWorldPosition"] = &DSPlayerEntity::GetPlayerParameterWorldPosition;
+    DSPlayerEntity_LuaTable["IsPlayerLeftLegFrost"] = &DSPlayerEntity::IsPlayerLeftLegFrost;
+    DSPlayerEntity_LuaTable["CartGameActorIdToEntity"] = &DSPlayerEntity::CartGameActorIdToEntity;
+    DSPlayerEntity_LuaTable["GetLocalDSPlayerEntity"] = &DSPlayerEntity::GetLocalDSPlayerEntity;
+    DSPlayerEntity_LuaTable["ClearBBStressInfoFromHoloCutscene"] = &DSPlayerEntity::ClearBBStressInfoFromHoloCutscene;
+    DSPlayerEntity_LuaTable["GetPlayerParameterInt"] = &DSPlayerEntity::GetPlayerParameterInt;
+    DSPlayerEntity_LuaTable["ResetPlayerNail"] = &DSPlayerEntity::ResetPlayerNail;
+    DSPlayerEntity_LuaTable["GetBBAffectionLevel"] = &DSPlayerEntity::GetBBAffectionLevel;
+    DSPlayerEntity_LuaTable["SetBBPodBlackRequested"] = &DSPlayerEntity::SetBBPodBlackRequested;
+    DSPlayerEntity_LuaTable["GetPlayerParameterVec3"] = &DSPlayerEntity::GetPlayerParameterVec3;
+    DSPlayerEntity_LuaTable["GetPlayerParameterBool"] = &DSPlayerEntity::GetPlayerParameterBool;
+    DSPlayerEntity_LuaTable["RecoveryAffectionPointForM00590"] = &DSPlayerEntity::RecoveryAffectionPointForM00590;
+    DSPlayerEntity_LuaTable["PlayAkukanVoice"] = &DSPlayerEntity::PlayAkukanVoice;
+    DSPlayerEntity_LuaTable["SetVoicedAlmostThere"] = &DSPlayerEntity::SetVoicedAlmostThere;
+    DSPlayerEntity_LuaTable["ResetPlayerFrost"] = &DSPlayerEntity::ResetPlayerFrost;
+    DSPlayerEntity_LuaTable["IsPlayerRightLegFrost"] = &DSPlayerEntity::IsPlayerRightLegFrost;
+    DSPlayerEntity_LuaTable["IsPlayerHandFrost"] = &DSPlayerEntity::IsPlayerHandFrost;
+    DSPlayerEntity_LuaTable["IsPlayerFrost"] = &DSPlayerEntity::IsPlayerFrost;
+    lua["DSPlayerEntity"] = DSPlayerEntity_LuaTable;
+    
+    auto AnimationNodeProceduralLook_LuaTable = lua.create_table();
+    AnimationNodeProceduralLook_LuaTable["UpdateProceduralLookInstance"] = &AnimationNodeProceduralLook::UpdateProceduralLookInstance;
+    lua["AnimationNodeProceduralLook"] = AnimationNodeProceduralLook_LuaTable;
+    
+    auto DSResidentsBasicNode_LuaTable = lua.create_table();
+    DSResidentsBasicNode_LuaTable["SetAlreadyDeliveryAtHousehold"] = &DSResidentsBasicNode::SetAlreadyDeliveryAtHousehold;
+    DSResidentsBasicNode_LuaTable["AddFriendshipFromMissionID"] = &DSResidentsBasicNode::AddFriendshipFromMissionID;
+    DSResidentsBasicNode_LuaTable["GetHouseholdByNameHash"] = &DSResidentsBasicNode::GetHouseholdByNameHash;
+    DSResidentsBasicNode_LuaTable["GetHouseholdThatRequestedMissionByMissionID"] = &DSResidentsBasicNode::GetHouseholdThatRequestedMissionByMissionID;
+    DSResidentsBasicNode_LuaTable["SetFriendshipFromDShouseholdInfoResource"] = &DSResidentsBasicNode::SetFriendshipFromDShouseholdInfoResource;
+    DSResidentsBasicNode_LuaTable["GetHouseholdByTerminalId"] = &DSResidentsBasicNode::GetHouseholdByTerminalId;
+    DSResidentsBasicNode_LuaTable["SetForceFirendshipOfHouseholdByGGUUID"] = &DSResidentsBasicNode::SetForceFirendshipOfHouseholdByGGUUID;
+    lua["DSResidentsBasicNode"] = DSResidentsBasicNode_LuaTable;
+    
+    auto AIUsableComponent_LuaTable = lua.create_table();
+    AIUsableComponent_LuaTable["ImmediateAttach"] = &AIUsableComponent::ImmediateAttach;
+    lua["AIUsableComponent"] = AIUsableComponent_LuaTable;
+    
+    auto DSDebugEntryCommand_LuaTable = lua.create_table();
+    DSDebugEntryCommand_LuaTable["DebugEntryConnectRoad"] = &DSDebugEntryCommand::DebugEntryConnectRoad;
+    DSDebugEntryCommand_LuaTable["DebugNilUUID"] = &DSDebugEntryCommand::DebugNilUUID;
+    DSDebugEntryCommand_LuaTable["DebugIsNilUUID"] = &DSDebugEntryCommand::DebugIsNilUUID;
+    lua["DSDebugEntryCommand"] = DSDebugEntryCommand_LuaTable;
+    
+    auto DSMissionInfo_LuaTable = lua.create_table();
+    DSMissionInfo_LuaTable["IsDisableFriendshipResult"] = &DSMissionInfo::IsDisableFriendshipResult;
+    DSMissionInfo_LuaTable["IsLostPersonalObjectMission"] = &DSMissionInfo::IsLostPersonalObjectMission;
+    DSMissionInfo_LuaTable["IsNoDelivery"] = &DSMissionInfo::IsNoDelivery;
+    DSMissionInfo_LuaTable["GetDeliveryCountRate"] = &DSMissionInfo::GetDeliveryCountRate;
+    DSMissionInfo_LuaTable["IsAutomation"] = &DSMissionInfo::IsAutomation;
+    DSMissionInfo_LuaTable["GetEvaluationType"] = &DSMissionInfo::GetEvaluationType;
+    DSMissionInfo_LuaTable["IsSupplyMission"] = &DSMissionInfo::IsSupplyMission;
+    DSMissionInfo_LuaTable["GetElapsedTime"] = &DSMissionInfo::GetElapsedTime;
+    DSMissionInfo_LuaTable["GetBaggageDamageMinRate"] = &DSMissionInfo::GetBaggageDamageMinRate;
+    DSMissionInfo_LuaTable["GetHouseholdInfoResourceOfTheClient"] = &DSMissionInfo::GetHouseholdInfoResourceOfTheClient;
+    DSMissionInfo_LuaTable["IsCheckStartAndGoalDeliveryPointInfo"] = &DSMissionInfo::IsCheckStartAndGoalDeliveryPointInfo;
+    DSMissionInfo_LuaTable["IsEnableDistanceMeasurementMission"] = &DSMissionInfo::IsEnableDistanceMeasurementMission;
+    DSMissionInfo_LuaTable["GetMovingDistanceXY"] = &DSMissionInfo::GetMovingDistanceXY;
+    DSMissionInfo_LuaTable["GetMissionCategory"] = &DSMissionInfo::GetMissionCategory;
+    DSMissionInfo_LuaTable["GetDeliveryCount"] = &DSMissionInfo::GetDeliveryCount;
+    DSMissionInfo_LuaTable["IsDeliveryBBPod"] = &DSMissionInfo::IsDeliveryBBPod;
+    DSMissionInfo_LuaTable["GetLowestDifficulty"] = &DSMissionInfo::GetLowestDifficulty;
+    DSMissionInfo_LuaTable["GetMovingDistanceXYZ"] = &DSMissionInfo::GetMovingDistanceXYZ;
+    DSMissionInfo_LuaTable["GetMovingDistanceXYRate"] = &DSMissionInfo::GetMovingDistanceXYRate;
+    DSMissionInfo_LuaTable["GetGoalDeliveryPointPosition"] = &DSMissionInfo::GetGoalDeliveryPointPosition;
+    DSMissionInfo_LuaTable["GetStartDeliveryPointPosition"] = &DSMissionInfo::GetStartDeliveryPointPosition;
+    DSMissionInfo_LuaTable["GetClearMinTime"] = &DSMissionInfo::GetClearMinTime;
+    DSMissionInfo_LuaTable["GetMinCountBaggage"] = &DSMissionInfo::GetMinCountBaggage;
+    DSMissionInfo_LuaTable["GetSpecialReportOnPlace"] = &DSMissionInfo::GetSpecialReportOnPlace;
+    DSMissionInfo_LuaTable["GetElapsedTimeRate"] = &DSMissionInfo::GetElapsedTimeRate;
+    DSMissionInfo_LuaTable["GetDeliveredTotalMinWeightBaggage"] = &DSMissionInfo::GetDeliveredTotalMinWeightBaggage;
+    DSMissionInfo_LuaTable["GetDeliveredTotalMaxWeightBaggage"] = &DSMissionInfo::GetDeliveredTotalMaxWeightBaggage;
+    DSMissionInfo_LuaTable["GetDeliveredTotalWeightRateBaggage"] = &DSMissionInfo::GetDeliveredTotalWeightRateBaggage;
+    DSMissionInfo_LuaTable["GetDeliveredTotalWeightBaggage"] = &DSMissionInfo::GetDeliveredTotalWeightBaggage;
+    DSMissionInfo_LuaTable["GetDeliveryMaxCount"] = &DSMissionInfo::GetDeliveryMaxCount;
+    DSMissionInfo_LuaTable["GetTotalDeliveryBaggageDamageRate"] = &DSMissionInfo::GetTotalDeliveryBaggageDamageRate;
+    DSMissionInfo_LuaTable["GetReward2"] = &DSMissionInfo::GetReward2;
+    DSMissionInfo_LuaTable["IsLostObjectMission"] = &DSMissionInfo::IsLostObjectMission;
+    DSMissionInfo_LuaTable["IsPremium"] = &DSMissionInfo::IsPremium;
+    DSMissionInfo_LuaTable["IsDynamicMission"] = &DSMissionInfo::IsDynamicMission;
+    DSMissionInfo_LuaTable["IsOnlineMission"] = &DSMissionInfo::IsOnlineMission;
+    DSMissionInfo_LuaTable["IsSimpleMissionOfStatic"] = &DSMissionInfo::IsSimpleMissionOfStatic;
+    DSMissionInfo_LuaTable["IsSimpleMission"] = &DSMissionInfo::IsSimpleMission;
+    DSMissionInfo_LuaTable["IsChiralMission"] = &DSMissionInfo::IsChiralMission;
+    DSMissionInfo_LuaTable["GetMissionId"] = &DSMissionInfo::GetMissionId;
+    lua["DSMissionInfo"] = DSMissionInfo_LuaTable;
+    
+    auto DSMisionEvaluationCommand_LuaTable = lua.create_table();
+    DSMisionEvaluationCommand_LuaTable["IsEnableTotalWeightBonusFromMissionInfoStack"] = &DSMisionEvaluationCommand::IsEnableTotalWeightBonusFromMissionInfoStack;
+    DSMisionEvaluationCommand_LuaTable["GetSpecialReportTotalBaggageDamage"] = &DSMisionEvaluationCommand::GetSpecialReportTotalBaggageDamage;
+    DSMisionEvaluationCommand_LuaTable["GetAccessingTerminalPosition"] = &DSMisionEvaluationCommand::GetAccessingTerminalPosition;
+    DSMisionEvaluationCommand_LuaTable["GetSpecialReportRouteExploration"] = &DSMisionEvaluationCommand::GetSpecialReportRouteExploration;
+    DSMisionEvaluationCommand_LuaTable["GetSpecialReportReachd"] = &DSMisionEvaluationCommand::GetSpecialReportReachd;
+    DSMisionEvaluationCommand_LuaTable["CheckNonDeliveryBaggageForStaticMission"] = &DSMisionEvaluationCommand::CheckNonDeliveryBaggageForStaticMission;
+    DSMisionEvaluationCommand_LuaTable["IsEnableTotalWeightBonusFromBaggageUnit"] = &DSMisionEvaluationCommand::IsEnableTotalWeightBonusFromBaggageUnit;
+    DSMisionEvaluationCommand_LuaTable["IsEnableTotalWeightBonusFromMissionInfoStackAndBaggageUnit"] = &DSMisionEvaluationCommand::IsEnableTotalWeightBonusFromMissionInfoStackAndBaggageUnit;
+    DSMisionEvaluationCommand_LuaTable["GetSpecialReportRouteNotExploration"] = &DSMisionEvaluationCommand::GetSpecialReportRouteNotExploration;
+    DSMisionEvaluationCommand_LuaTable["FindBaggageStartAndGoalByStaticMissionBaggageResource"] = &DSMisionEvaluationCommand::FindBaggageStartAndGoalByStaticMissionBaggageResource;
+    DSMisionEvaluationCommand_LuaTable["GetBaggageListItemWasteBBPod"] = &DSMisionEvaluationCommand::GetBaggageListItemWasteBBPod;
+    DSMisionEvaluationCommand_LuaTable["CompareAndRecordAtShortestDistance"] = &DSMisionEvaluationCommand::CompareAndRecordAtShortestDistance;
+    DSMisionEvaluationCommand_LuaTable["GetDSTraceEnable"] = &DSMisionEvaluationCommand::GetDSTraceEnable;
+    DSMisionEvaluationCommand_LuaTable["GetAutoDeliveryEndPosition"] = &DSMisionEvaluationCommand::GetAutoDeliveryEndPosition;
+    DSMisionEvaluationCommand_LuaTable["FindBaggageStartAndGoalByBaggage2"] = &DSMisionEvaluationCommand::FindBaggageStartAndGoalByBaggage2;
+    DSMisionEvaluationCommand_LuaTable["GetBaggageSpecialReport"] = &DSMisionEvaluationCommand::GetBaggageSpecialReport;
+    DSMisionEvaluationCommand_LuaTable["GetSpecialReportContentsDamage"] = &DSMisionEvaluationCommand::GetSpecialReportContentsDamage;
+    DSMisionEvaluationCommand_LuaTable["GetSpecialReportTotalDelivery"] = &DSMisionEvaluationCommand::GetSpecialReportTotalDelivery;
+    DSMisionEvaluationCommand_LuaTable["GetSpecialReportRouteDeviation"] = &DSMisionEvaluationCommand::GetSpecialReportRouteDeviation;
+    lua["DSMisionEvaluationCommand"] = DSMisionEvaluationCommand_LuaTable;
+    
+    auto QuestInstance_LuaTable = lua.create_table();
+    QuestInstance_LuaTable["ProgressQuest"] = &QuestInstance::ProgressQuest;
+    lua["QuestInstance"] = QuestInstance_LuaTable;
+    
+    auto DSMissionOpenList_LuaTable = lua.create_table();
+    DSMissionOpenList_LuaTable["GetOpenState"] = &DSMissionOpenList::GetOpenState;
+    DSMissionOpenList_LuaTable["GetOpenResourceList"] = &DSMissionOpenList::GetOpenResourceList;
+    lua["DSMissionOpenList"] = DSMissionOpenList_LuaTable;
+    
+    auto DsMuleMissionCommand_LuaTable = lua.create_table();
+    DsMuleMissionCommand_LuaTable["Mule_DontTakeAwayShoes"] = &DsMuleMissionCommand::Mule_DontTakeAwayShoes;
+    DsMuleMissionCommand_LuaTable["MuleCP_ForceSetCPPhase"] = &DsMuleMissionCommand::MuleCP_ForceSetCPPhase;
+    DsMuleMissionCommand_LuaTable["Mule_AddMissionClearCountForResurrect"] = &DsMuleMissionCommand::Mule_AddMissionClearCountForResurrect;
+    DsMuleMissionCommand_LuaTable["Mule_IsExistCautionOrNoticeMule"] = &DsMuleMissionCommand::Mule_IsExistCautionOrNoticeMule;
+    DsMuleMissionCommand_LuaTable["Mule_RemovePersonalMissionBaggages"] = &DsMuleMissionCommand::Mule_RemovePersonalMissionBaggages;
+    DsMuleMissionCommand_LuaTable["MuleCP_DisableCPAndAllsMembers"] = &DsMuleMissionCommand::MuleCP_DisableCPAndAllsMembers;
+    DsMuleMissionCommand_LuaTable["Mule_StillExistDeadBodyBecomingGazer"] = &DsMuleMissionCommand::Mule_StillExistDeadBodyBecomingGazer;
+    DsMuleMissionCommand_LuaTable["Mule_SetIgnoreDeadMuleMoveArea"] = &DsMuleMissionCommand::Mule_SetIgnoreDeadMuleMoveArea;
+    DsMuleMissionCommand_LuaTable["Mule_RemoveDeadMules"] = &DsMuleMissionCommand::Mule_RemoveDeadMules;
+    DsMuleMissionCommand_LuaTable["Mule_ResetOutsideCPAreaPosition"] = &DsMuleMissionCommand::Mule_ResetOutsideCPAreaPosition;
+    DsMuleMissionCommand_LuaTable["Mule_RemoveDeadMulesByBridges"] = &DsMuleMissionCommand::Mule_RemoveDeadMulesByBridges;
+    DsMuleMissionCommand_LuaTable["Mule_IsExistAlertMule"] = &DsMuleMissionCommand::Mule_IsExistAlertMule;
+    DsMuleMissionCommand_LuaTable["MuleCP_CheckPlayerInMuleArea"] = &DsMuleMissionCommand::MuleCP_CheckPlayerInMuleArea;
+    DsMuleMissionCommand_LuaTable["MuleCP_SetKeepCaution"] = &DsMuleMissionCommand::MuleCP_SetKeepCaution;
+    DsMuleMissionCommand_LuaTable["MuleCP_IsExitMuleInCamera"] = &DsMuleMissionCommand::MuleCP_IsExitMuleInCamera;
+    DsMuleMissionCommand_LuaTable["Mule_MoveMulesOnElevator"] = &DsMuleMissionCommand::Mule_MoveMulesOnElevator;
+    DsMuleMissionCommand_LuaTable["MuleCP_IsExtinction"] = &DsMuleMissionCommand::MuleCP_IsExtinction;
+    DsMuleMissionCommand_LuaTable["Mule_ResetFriendlyMuleByAccessingTerminal"] = &DsMuleMissionCommand::Mule_ResetFriendlyMuleByAccessingTerminal;
+    DsMuleMissionCommand_LuaTable["MuleCP_BgmMute"] = &DsMuleMissionCommand::MuleCP_BgmMute;
+    DsMuleMissionCommand_LuaTable["Mule_InCollisionTrigger"] = &DsMuleMissionCommand::Mule_InCollisionTrigger;
+    DsMuleMissionCommand_LuaTable["Mule_ChangeWeapon"] = &DsMuleMissionCommand::Mule_ChangeWeapon;
+    DsMuleMissionCommand_LuaTable["MuleCP_CheckPlayerInMuleAreaByLocator"] = &DsMuleMissionCommand::MuleCP_CheckPlayerInMuleAreaByLocator;
+    DsMuleMissionCommand_LuaTable["Mule_ResetAllMulesByAreaChange"] = &DsMuleMissionCommand::Mule_ResetAllMulesByAreaChange;
+    DsMuleMissionCommand_LuaTable["Mule_ResetAndResurrectAllMulesByMissionChange"] = &DsMuleMissionCommand::Mule_ResetAndResurrectAllMulesByMissionChange;
+    DsMuleMissionCommand_LuaTable["Mule_RemoveAllMulesFromWorld"] = &DsMuleMissionCommand::Mule_RemoveAllMulesFromWorld;
+    DsMuleMissionCommand_LuaTable["Mule_ResetCPMulesAIOnly"] = &DsMuleMissionCommand::Mule_ResetCPMulesAIOnly;
+    DsMuleMissionCommand_LuaTable["Mule_ResetCPMulesByMissionChange"] = &DsMuleMissionCommand::Mule_ResetCPMulesByMissionChange;
+    DsMuleMissionCommand_LuaTable["MuleCP_DisableCPRaderCheck"] = &DsMuleMissionCommand::MuleCP_DisableCPRaderCheck;
+    DsMuleMissionCommand_LuaTable["Mule_ResetAllMulesByMissionChange"] = &DsMuleMissionCommand::Mule_ResetAllMulesByMissionChange;
+    DsMuleMissionCommand_LuaTable["Mule_SetMissionBaggage"] = &DsMuleMissionCommand::Mule_SetMissionBaggage;
+    DsMuleMissionCommand_LuaTable["Mule_GetMinDistanceBetweenBaggage"] = &DsMuleMissionCommand::Mule_GetMinDistanceBetweenBaggage;
+    DsMuleMissionCommand_LuaTable["Mule_GetMinDistanceBetweenPlayer"] = &DsMuleMissionCommand::Mule_GetMinDistanceBetweenPlayer;
+    lua["DsMuleMissionCommand"] = DsMuleMissionCommand_LuaTable;
+    
+    auto DebugTool_LuaTable = lua.create_table();
+    DebugTool_LuaTable["sDrawSphere"] = &DebugTool::sDrawSphere;
+    DebugTool_LuaTable["sGetDebugName"] = &DebugTool::sGetDebugName;
+    DebugTool_LuaTable["sDrawLine"] = &DebugTool::sDrawLine;
+    DebugTool_LuaTable["sDrawOrientedBoundingBox"] = &DebugTool::sDrawOrientedBoundingBox;
+    lua["DebugTool"] = DebugTool_LuaTable;
+    
+    auto HitReactions_LuaTable = lua.create_table();
+    HitReactions_LuaTable["ModifySeverityDecay"] = &HitReactions::ModifySeverityDecay;
+    HitReactions_LuaTable["ResetHitReactionByDamage"] = &HitReactions::ResetHitReactionByDamage;
+    HitReactions_LuaTable["ModifyReactionDuration"] = &HitReactions::ModifyReactionDuration;
+    HitReactions_LuaTable["ModifyReactionThreshold"] = &HitReactions::ModifyReactionThreshold;
+    lua["HitReactions"] = HitReactions_LuaTable;
+    
+    auto DSMissionEvaluationDataRecord_LuaTable = lua.create_table();
+    DSMissionEvaluationDataRecord_LuaTable["GetLike"] = &DSMissionEvaluationDataRecord::GetLike;
+    DSMissionEvaluationDataRecord_LuaTable["GetGreaterThan"] = &DSMissionEvaluationDataRecord::GetGreaterThan;
+    DSMissionEvaluationDataRecord_LuaTable["GetRewardRank"] = &DSMissionEvaluationDataRecord::GetRewardRank;
+    lua["DSMissionEvaluationDataRecord"] = DSMissionEvaluationDataRecord_LuaTable;
+    
+    auto DSMissionReward2_LuaTable = lua.create_table();
+    DSMissionReward2_LuaTable["GetNeedBaggageDamageRateForPremium"] = &DSMissionReward2::GetNeedBaggageDamageRateForPremium;
+    DSMissionReward2_LuaTable["FindBaggageCountConditionResource"] = &DSMissionReward2::FindBaggageCountConditionResource;
+    DSMissionReward2_LuaTable["FindBaggageWeightConditionResource"] = &DSMissionReward2::FindBaggageWeightConditionResource;
+    DSMissionReward2_LuaTable["GetClearMinTime"] = &DSMissionReward2::GetClearMinTime;
+    DSMissionReward2_LuaTable["IsEnableSpecialReportLand"] = &DSMissionReward2::IsEnableSpecialReportLand;
+    DSMissionReward2_LuaTable["GetEvaluationDataTableTotalBaggageDamage"] = &DSMissionReward2::GetEvaluationDataTableTotalBaggageDamage;
+    DSMissionReward2_LuaTable["GetNeedBaggageWeightForPremium"] = &DSMissionReward2::GetNeedBaggageWeightForPremium;
+    DSMissionReward2_LuaTable["IsRouteEvaluation"] = &DSMissionReward2::IsRouteEvaluation;
+    DSMissionReward2_LuaTable["FindServiceConditionResource"] = &DSMissionReward2::FindServiceConditionResource;
+    DSMissionReward2_LuaTable["GetCustomSpecialReportFromIndex"] = &DSMissionReward2::GetCustomSpecialReportFromIndex;
+    DSMissionReward2_LuaTable["GetEvaluationType"] = &DSMissionReward2::GetEvaluationType;
+    DSMissionReward2_LuaTable["FindSpeedConditionResource"] = &DSMissionReward2::FindSpeedConditionResource;
+    DSMissionReward2_LuaTable["GetEvaluationDataTableRouteDeviation"] = &DSMissionReward2::GetEvaluationDataTableRouteDeviation;
+    DSMissionReward2_LuaTable["GetBaseLike"] = &DSMissionReward2::GetBaseLike;
+    DSMissionReward2_LuaTable["GetCustomSpecialReportsLength"] = &DSMissionReward2::GetCustomSpecialReportsLength;
+    DSMissionReward2_LuaTable["GetPlayerMinDamage"] = &DSMissionReward2::GetPlayerMinDamage;
+    DSMissionReward2_LuaTable["IsEnableSpecialReportDelicateDelivery"] = &DSMissionReward2::IsEnableSpecialReportDelicateDelivery;
+    DSMissionReward2_LuaTable["GetBaggageDamageMinRate"] = &DSMissionReward2::GetBaggageDamageMinRate;
+    DSMissionReward2_LuaTable["GetMinWeightBaggage"] = &DSMissionReward2::GetMinWeightBaggage;
+    DSMissionReward2_LuaTable["GetMinCountBaggage"] = &DSMissionReward2::GetMinCountBaggage;
+    DSMissionReward2_LuaTable["GetNeedClearTimeForPremium"] = &DSMissionReward2::GetNeedClearTimeForPremium;
+    DSMissionReward2_LuaTable["GetNeedBaggageCountForPremium"] = &DSMissionReward2::GetNeedBaggageCountForPremium;
+    DSMissionReward2_LuaTable["FindConditionResource"] = &DSMissionReward2::FindConditionResource;
+    DSMissionReward2_LuaTable["FindSafetyConditionResource"] = &DSMissionReward2::FindSafetyConditionResource;
+    lua["DSMissionReward2"] = DSMissionReward2_LuaTable;
+    
+    auto DSPlayerSystem_LuaTable = lua.create_table();
+    DSPlayerSystem_LuaTable["RecoverOrSupplyShoes"] = &DSPlayerSystem::RecoverOrSupplyShoes;
+    DSPlayerSystem_LuaTable["SetPlayerPadMask"] = &DSPlayerSystem::SetPlayerPadMask;
+    DSPlayerSystem_LuaTable["SetShoesForcibly"] = &DSPlayerSystem::SetShoesForcibly;
+    DSPlayerSystem_LuaTable["GetBloodAllPaintValue"] = &DSPlayerSystem::GetBloodAllPaintValue;
+    DSPlayerSystem_LuaTable["GetTarSpherePaintValue"] = &DSPlayerSystem::GetTarSpherePaintValue;
+    DSPlayerSystem_LuaTable["OpenHandcuffDevice"] = &DSPlayerSystem::OpenHandcuffDevice;
+    DSPlayerSystem_LuaTable["OverrideReturnFromKnotSpaceSequence"] = &DSPlayerSystem::OverrideReturnFromKnotSpaceSequence;
+    DSPlayerSystem_LuaTable["AddOnlyPaintRecordToFootForM00030"] = &DSPlayerSystem::AddOnlyPaintRecordToFootForM00030;
+    DSPlayerSystem_LuaTable["SetOdradekStateAfterSequence"] = &DSPlayerSystem::SetOdradekStateAfterSequence;
+    DSPlayerSystem_LuaTable["SetHiggsPhase3Transform"] = &DSPlayerSystem::SetHiggsPhase3Transform;
+    DSPlayerSystem_LuaTable["AddSuitPartsToInventorySetting"] = &DSPlayerSystem::AddSuitPartsToInventorySetting;
+    DSPlayerSystem_LuaTable["ClearInventorySetting"] = &DSPlayerSystem::ClearInventorySetting;
+    DSPlayerSystem_LuaTable["ResetOverrideBlackSamPointGroupName"] = &DSPlayerSystem::ResetOverrideBlackSamPointGroupName;
+    DSPlayerSystem_LuaTable["StartGhostAction"] = &DSPlayerSystem::StartGhostAction;
+    DSPlayerSystem_LuaTable["SetAmountOfWaterInBottle"] = &DSPlayerSystem::SetAmountOfWaterInBottle;
+    DSPlayerSystem_LuaTable["GetBBAffectionPoint"] = &DSPlayerSystem::GetBBAffectionPoint;
+    DSPlayerSystem_LuaTable["PopWorldTransform"] = &DSPlayerSystem::PopWorldTransform;
+    DSPlayerSystem_LuaTable["PopWorldTransformAtEndOfSequence"] = &DSPlayerSystem::PopWorldTransformAtEndOfSequence;
+    DSPlayerSystem_LuaTable["SetStateAfterSequence"] = &DSPlayerSystem::SetStateAfterSequence;
+    DSPlayerSystem_LuaTable["RecoverBattery"] = &DSPlayerSystem::RecoverBattery;
+    DSPlayerSystem_LuaTable["CreateCryptobiosisOfReturningFromKnotSpace"] = &DSPlayerSystem::CreateCryptobiosisOfReturningFromKnotSpace;
+    DSPlayerSystem_LuaTable["StartSignboardCheck"] = &DSPlayerSystem::StartSignboardCheck;
+    DSPlayerSystem_LuaTable["StartConstructionCheck"] = &DSPlayerSystem::StartConstructionCheck;
+    DSPlayerSystem_LuaTable["ActivateAdrenalinMode"] = &DSPlayerSystem::ActivateAdrenalinMode;
+    DSPlayerSystem_LuaTable["SetChiralCrystalCount"] = &DSPlayerSystem::SetChiralCrystalCount;
+    DSPlayerSystem_LuaTable["OpenTerminalTopMenuAtLastTerminal"] = &DSPlayerSystem::OpenTerminalTopMenuAtLastTerminal;
+    DSPlayerSystem_LuaTable["AddWeapon"] = &DSPlayerSystem::AddWeapon;
+    DSPlayerSystem_LuaTable["RegisterActionIconInfo"] = &DSPlayerSystem::RegisterActionIconInfo;
+    DSPlayerSystem_LuaTable["PlayPlayerVoice"] = &DSPlayerSystem::PlayPlayerVoice;
+    DSPlayerSystem_LuaTable["RequestBBPodBagCry"] = &DSPlayerSystem::RequestBBPodBagCry;
+    DSPlayerSystem_LuaTable["EndConstructionCheck"] = &DSPlayerSystem::EndConstructionCheck;
+    DSPlayerSystem_LuaTable["ApplyInventorySetting"] = &DSPlayerSystem::ApplyInventorySetting;
+    DSPlayerSystem_LuaTable["SetOverrideBlackSamPointGroupName"] = &DSPlayerSystem::SetOverrideBlackSamPointGroupName;
+    DSPlayerSystem_LuaTable["RemoveWeapon"] = &DSPlayerSystem::RemoveWeapon;
+    DSPlayerSystem_LuaTable["AddSuitParts"] = &DSPlayerSystem::AddSuitParts;
+    DSPlayerSystem_LuaTable["UnequipAccessories"] = &DSPlayerSystem::UnequipAccessories;
+    DSPlayerSystem_LuaTable["RequestMoveTo"] = &DSPlayerSystem::RequestMoveTo;
+    DSPlayerSystem_LuaTable["EquipEquipment"] = &DSPlayerSystem::EquipEquipment;
+    DSPlayerSystem_LuaTable["FloatAndMovePlayer"] = &DSPlayerSystem::FloatAndMovePlayer;
+    DSPlayerSystem_LuaTable["DebugPlaySequenceOfReturningFromKnotSpace"] = &DSPlayerSystem::DebugPlaySequenceOfReturningFromKnotSpace;
+    DSPlayerSystem_LuaTable["UnregisterActionIconInfo"] = &DSPlayerSystem::UnregisterActionIconInfo;
+    DSPlayerSystem_LuaTable["SetBBAffectionPointForDebugEntry"] = &DSPlayerSystem::SetBBAffectionPointForDebugEntry;
+    DSPlayerSystem_LuaTable["ResetHoodAndBalloon"] = &DSPlayerSystem::ResetHoodAndBalloon;
+    DSPlayerSystem_LuaTable["GetMudsSpherePaintValue"] = &DSPlayerSystem::GetMudsSpherePaintValue;
+    DSPlayerSystem_LuaTable["GetBloodSpherePaintValue"] = &DSPlayerSystem::GetBloodSpherePaintValue;
+    DSPlayerSystem_LuaTable["GetMudsAllPaintValue"] = &DSPlayerSystem::GetMudsAllPaintValue;
+    DSPlayerSystem_LuaTable["GetTarAllPaintValue"] = &DSPlayerSystem::GetTarAllPaintValue;
+    DSPlayerSystem_LuaTable["IsHadItem"] = &DSPlayerSystem::IsHadItem;
+    DSPlayerSystem_LuaTable["GetMudsPaintValue"] = &DSPlayerSystem::GetMudsPaintValue;
+    DSPlayerSystem_LuaTable["GetTarPaintValue"] = &DSPlayerSystem::GetTarPaintValue;
+    DSPlayerSystem_LuaTable["GetBloodPaintValue"] = &DSPlayerSystem::GetBloodPaintValue;
+    DSPlayerSystem_LuaTable["IsHadEquipment"] = &DSPlayerSystem::IsHadEquipment;
+    DSPlayerSystem_LuaTable["GetOdradekBodyEntity"] = &DSPlayerSystem::GetOdradekBodyEntity;
+    DSPlayerSystem_LuaTable["IsEquippedEquipment"] = &DSPlayerSystem::IsEquippedEquipment;
+    DSPlayerSystem_LuaTable["EndSignboardCheck"] = &DSPlayerSystem::EndSignboardCheck;
+    DSPlayerSystem_LuaTable["ReadyCryptobiosisOfReturningFromKnotSpace"] = &DSPlayerSystem::ReadyCryptobiosisOfReturningFromKnotSpace;
+    DSPlayerSystem_LuaTable["ResetPlayerPadMask"] = &DSPlayerSystem::ResetPlayerPadMask;
+    DSPlayerSystem_LuaTable["SendDSPlayerMessage"] = &DSPlayerSystem::SendDSPlayerMessage;
+    DSPlayerSystem_LuaTable["ActivateOdradek"] = &DSPlayerSystem::ActivateOdradek;
+    DSPlayerSystem_LuaTable["AddItemToInventorySetting"] = &DSPlayerSystem::AddItemToInventorySetting;
+    DSPlayerSystem_LuaTable["EndGhostAction"] = &DSPlayerSystem::EndGhostAction;
+    DSPlayerSystem_LuaTable["ClearHighPrioReturnTransformAfterAnnihilationAttack"] = &DSPlayerSystem::ClearHighPrioReturnTransformAfterAnnihilationAttack;
+    DSPlayerSystem_LuaTable["SetHighPrioReturnTransformAfterAnnihilationAttack"] = &DSPlayerSystem::SetHighPrioReturnTransformAfterAnnihilationAttack;
+    DSPlayerSystem_LuaTable["ClearPaint"] = &DSPlayerSystem::ClearPaint;
+    DSPlayerSystem_LuaTable["GetOdradekArmEntity"] = &DSPlayerSystem::GetOdradekArmEntity;
+    DSPlayerSystem_LuaTable["RemoveOdradekReactionPoint"] = &DSPlayerSystem::RemoveOdradekReactionPoint;
+    DSPlayerSystem_LuaTable["AddOdradekReactionPoint"] = &DSPlayerSystem::AddOdradekReactionPoint;
+    DSPlayerSystem_LuaTable["RideOffVehicleForcibly"] = &DSPlayerSystem::RideOffVehicleForcibly;
+    DSPlayerSystem_LuaTable["DidGoodActionForBBFromSpecifiedEntity"] = &DSPlayerSystem::DidGoodActionForBBFromSpecifiedEntity;
+    DSPlayerSystem_LuaTable["DidGoodActionForBBFromScript"] = &DSPlayerSystem::DidGoodActionForBBFromScript;
+    DSPlayerSystem_LuaTable["PrepareToDeliverMama"] = &DSPlayerSystem::PrepareToDeliverMama;
+    DSPlayerSystem_LuaTable["UnregisterMissionMessageEvent"] = &DSPlayerSystem::UnregisterMissionMessageEvent;
+    DSPlayerSystem_LuaTable["RegisterMissionMessageEvent"] = &DSPlayerSystem::RegisterMissionMessageEvent;
+    DSPlayerSystem_LuaTable["AddChiralCrystalCount"] = &DSPlayerSystem::AddChiralCrystalCount;
+    DSPlayerSystem_LuaTable["SetInitialState"] = &DSPlayerSystem::SetInitialState;
+    DSPlayerSystem_LuaTable["RecoverFull"] = &DSPlayerSystem::RecoverFull;
+    DSPlayerSystem_LuaTable["SetShoesLifeByRate"] = &DSPlayerSystem::SetShoesLifeByRate;
+    DSPlayerSystem_LuaTable["SetShoesLife"] = &DSPlayerSystem::SetShoesLife;
+    DSPlayerSystem_LuaTable["SetBBStressByRate"] = &DSPlayerSystem::SetBBStressByRate;
+    DSPlayerSystem_LuaTable["SetDeath"] = &DSPlayerSystem::SetDeath;
+    DSPlayerSystem_LuaTable["AddAmmoToInventorySetting"] = &DSPlayerSystem::AddAmmoToInventorySetting;
+    DSPlayerSystem_LuaTable["PushWorldTransform"] = &DSPlayerSystem::PushWorldTransform;
+    DSPlayerSystem_LuaTable["DoesHaveBaggage"] = &DSPlayerSystem::DoesHaveBaggage;
+    DSPlayerSystem_LuaTable["AddWeaponToInventorySetting"] = &DSPlayerSystem::AddWeaponToInventorySetting;
+    lua["DSPlayerSystem"] = DSPlayerSystem_LuaTable;
+    
+    auto DSMissionSystem_LuaTable = lua.create_table();
+    DSMissionSystem_LuaTable["GetDeliveryPointInfoResources"] = &DSMissionSystem::GetDeliveryPointInfoResources;
+    DSMissionSystem_LuaTable["KillOverrideEvaluationActingType"] = &DSMissionSystem::KillOverrideEvaluationActingType;
+    DSMissionSystem_LuaTable["FindMissionInfoFromId"] = &DSMissionSystem::FindMissionInfoFromId;
+    lua["DSMissionSystem"] = DSMissionSystem_LuaTable;
+    
+    auto DispensableEntityManager_LuaTable = lua.create_table();
+    DispensableEntityManager_LuaTable["RemoveDispensableEntitiesInTrigger"] = &DispensableEntityManager::RemoveDispensableEntitiesInTrigger;
+    DispensableEntityManager_LuaTable["RemoveDispensableEntities"] = &DispensableEntityManager::RemoveDispensableEntities;
+    lua["DispensableEntityManager"] = DispensableEntityManager_LuaTable;
+    
+    auto DSMissionCheckCommand_LuaTable = lua.create_table();
+    DSMissionCheckCommand_LuaTable["HasTimerMission"] = &DSMissionCheckCommand::HasTimerMission;
+    lua["DSMissionCheckCommand"] = DSMissionCheckCommand_LuaTable;
+    
+    auto NodeGraph_LuaTable = lua.create_table();
+    NodeGraph_LuaTable["IsProfiling"] = &NodeGraph::IsProfiling;
+    NodeGraph_LuaTable["GetObjectUUID"] = &NodeGraph::GetObjectUUID;
+    NodeGraph_LuaTable["InstantiateRTTI"] = &NodeGraph::InstantiateRTTI;
+    lua["NodeGraph"] = NodeGraph_LuaTable;
+    
+    auto UDSSystem_LuaTable = lua.create_table();
+    UDSSystem_LuaTable["SetFloatStat"] = &UDSSystem::SetFloatStat;
+    UDSSystem_LuaTable["MechanicUse"] = &UDSSystem::MechanicUse;
+    UDSSystem_LuaTable["SetIntStat"] = &UDSSystem::SetIntStat;
+    UDSSystem_LuaTable["SetTrophyUintStat"] = &UDSSystem::SetTrophyUintStat;
+    UDSSystem_LuaTable["SetTrophyFloatStat"] = &UDSSystem::SetTrophyFloatStat;
+    UDSSystem_LuaTable["SetTrophyIntStat"] = &UDSSystem::SetTrophyIntStat;
+    UDSSystem_LuaTable["SetUintStat"] = &UDSSystem::SetUintStat;
+    lua["UDSSystem"] = UDSSystem_LuaTable;
+    
+    auto EnvironmentSoundManager_LuaTable = lua.create_table();
+    EnvironmentSoundManager_LuaTable["SpawnSoundUpdate"] = &EnvironmentSoundManager::SpawnSoundUpdate;
+    EnvironmentSoundManager_LuaTable["SetSpawnedSoundPressureLevel"] = &EnvironmentSoundManager::SetSpawnedSoundPressureLevel;
+    lua["EnvironmentSoundManager"] = EnvironmentSoundManager_LuaTable;
+    
+    auto DsGameActorCommand_LuaTable = lua.create_table();
+    DsGameActorCommand_LuaTable["DSGetGameActorIDByEntity"] = &DsGameActorCommand::DSGetGameActorIDByEntity;
+    DsGameActorCommand_LuaTable["DSGetGameActorLocatorID"] = &DsGameActorCommand::DSGetGameActorLocatorID;
+    DsGameActorCommand_LuaTable["DSIsEqualGameActorType"] = &DsGameActorCommand::DSIsEqualGameActorType;
+    DsGameActorCommand_LuaTable["DSGetGameActorEntity"] = &DsGameActorCommand::DSGetGameActorEntity;
+    DsGameActorCommand_LuaTable["DSGetGameActorIDByLocatorUUID"] = &DsGameActorCommand::DSGetGameActorIDByLocatorUUID;
+    lua["DsGameActorCommand"] = DsGameActorCommand_LuaTable;
+    
+    auto DSBaggage2_LuaTable = lua.create_table();
+    DSBaggage2_LuaTable["GetAmountRate"] = &DSBaggage2::GetAmountRate;
+    DSBaggage2_LuaTable["GetMissionId"] = &DSBaggage2::GetMissionId;
+    DSBaggage2_LuaTable["GetBaggageCaseType"] = &DSBaggage2::GetBaggageCaseType;
+    DSBaggage2_LuaTable["GetBaggageWeight"] = &DSBaggage2::GetBaggageWeight;
+    DSBaggage2_LuaTable["GetVolumeType"] = &DSBaggage2::GetVolumeType;
+    DSBaggage2_LuaTable["GetContentsLifeRate"] = &DSBaggage2::GetContentsLifeRate;
+    DSBaggage2_LuaTable["GetCatalogItemRarity"] = &DSBaggage2::GetCatalogItemRarity;
+    DSBaggage2_LuaTable["GetContentsDamageType"] = &DSBaggage2::GetContentsDamageType;
+    DSBaggage2_LuaTable["GetListItem"] = &DSBaggage2::GetListItem;
+    DSBaggage2_LuaTable["IsDelicate"] = &DSBaggage2::IsDelicate;
+    DSBaggage2_LuaTable["GetCoatingLifeRate"] = &DSBaggage2::GetCoatingLifeRate;
+    lua["DSBaggage2"] = DSBaggage2_LuaTable;
+    
+    auto DSDeliveryPointInfoResource_LuaTable = lua.create_table();
+    DSDeliveryPointInfoResource_LuaTable["GetWorldPosition"] = &DSDeliveryPointInfoResource::GetWorldPosition;
+    DSDeliveryPointInfoResource_LuaTable["GetSpecialReportOnPlace"] = &DSDeliveryPointInfoResource::GetSpecialReportOnPlace;
+    lua["DSDeliveryPointInfoResource"] = DSDeliveryPointInfoResource_LuaTable;
+    
+    auto PlayerOutfitComponent_LuaTable = lua.create_table();
+    PlayerOutfitComponent_LuaTable["SetFacePaint"] = &PlayerOutfitComponent::SetFacePaint;
+    PlayerOutfitComponent_LuaTable["SetPlayerOutfit"] = &PlayerOutfitComponent::SetPlayerOutfit;
+    PlayerOutfitComponent_LuaTable["SetShaderEffect"] = &PlayerOutfitComponent::SetShaderEffect;
+    PlayerOutfitComponent_LuaTable["ApplyPlayerOutfitPart"] = &PlayerOutfitComponent::ApplyPlayerOutfitPart;
+    PlayerOutfitComponent_LuaTable["ApplyPlayerOutfit"] = &PlayerOutfitComponent::ApplyPlayerOutfit;
+    lua["PlayerOutfitComponent"] = PlayerOutfitComponent_LuaTable;
+    
+    auto DSDataLibraryBasicNode_LuaTable = lua.create_table();
+    DSDataLibraryBasicNode_LuaTable["DSPauseMusicPlayer"] = &DSDataLibraryBasicNode::DSPauseMusicPlayer;
+    DSDataLibraryBasicNode_LuaTable["DSIsPausedMusicPlayer"] = &DSDataLibraryBasicNode::DSIsPausedMusicPlayer;
+    DSDataLibraryBasicNode_LuaTable["DSStopMusicPlayer"] = &DSDataLibraryBasicNode::DSStopMusicPlayer;
+    DSDataLibraryBasicNode_LuaTable["DSIsOpenTips"] = &DSDataLibraryBasicNode::DSIsOpenTips;
+    DSDataLibraryBasicNode_LuaTable["IsRaceBgmSelectForSound"] = &DSDataLibraryBasicNode::IsRaceBgmSelectForSound;
+    DSDataLibraryBasicNode_LuaTable["DSGetMusicPlayerPlayingMusicId"] = &DSDataLibraryBasicNode::DSGetMusicPlayerPlayingMusicId;
+    DSDataLibraryBasicNode_LuaTable["DSResumeMusicPlayer"] = &DSDataLibraryBasicNode::DSResumeMusicPlayer;
+    DSDataLibraryBasicNode_LuaTable["DSGetTrackIdFromResource"] = &DSDataLibraryBasicNode::DSGetTrackIdFromResource;
+    DSDataLibraryBasicNode_LuaTable["DSOpenMusicPlayerTrack"] = &DSDataLibraryBasicNode::DSOpenMusicPlayerTrack;
+    DSDataLibraryBasicNode_LuaTable["DSReserveNextLoadingTips"] = &DSDataLibraryBasicNode::DSReserveNextLoadingTips;
+    DSDataLibraryBasicNode_LuaTable["DSOpenTipsByList"] = &DSDataLibraryBasicNode::DSOpenTipsByList;
+    DSDataLibraryBasicNode_LuaTable["DSOpenTips"] = &DSDataLibraryBasicNode::DSOpenTips;
+    lua["DSDataLibraryBasicNode"] = DSDataLibraryBasicNode_LuaTable;
+    
+    auto GameModule_LuaTable = lua.create_table();
+    GameModule_LuaTable["GetGameMovie"] = &GameModule::GetGameMovie;
+    GameModule_LuaTable["IsNewGamePlus"] = &GameModule::IsNewGamePlus;
+    GameModule_LuaTable["IsGameLoading"] = &GameModule::IsGameLoading;
+    GameModule_LuaTable["SetForceExtendedLoadingStateCheck"] = &GameModule::SetForceExtendedLoadingStateCheck;
+    GameModule_LuaTable["RequestWaitForAutobot"] = &GameModule::RequestWaitForAutobot;
+    GameModule_LuaTable["ClearObserverPositionOverride"] = &GameModule::ClearObserverPositionOverride;
+    GameModule_LuaTable["FadeInAfterSkippingSequence"] = &GameModule::FadeInAfterSkippingSequence;
+    GameModule_LuaTable["ReserveForceExtendedLoadingStateCheck"] = &GameModule::ReserveForceExtendedLoadingStateCheck;
+    GameModule_LuaTable["SetLoadingPauseEnabled"] = &GameModule::SetLoadingPauseEnabled;
+    GameModule_LuaTable["IsDLCEnabled"] = &GameModule::IsDLCEnabled;
+    GameModule_LuaTable["SetObserverPositionOverride"] = &GameModule::SetObserverPositionOverride;
+    GameModule_LuaTable["GetTileBasedStreamingStrategy"] = &GameModule::GetTileBasedStreamingStrategy;
+    GameModule_LuaTable["ReloadLastSaveGame"] = &GameModule::ReloadLastSaveGame;
+    GameModule_LuaTable["QuitGame"] = &GameModule::QuitGame;
+    lua["GameModule"] = GameModule_LuaTable;
+    
+    auto CrowdSpawnManager_LuaTable = lua.create_table();
+    CrowdSpawnManager_LuaTable["ForceCrowdHighLod"] = &CrowdSpawnManager::ForceCrowdHighLod;
+    CrowdSpawnManager_LuaTable["IsInHighLod"] = &CrowdSpawnManager::IsInHighLod;
+    lua["CrowdSpawnManager"] = CrowdSpawnManager_LuaTable;
+    
+    auto VoiceComponent_LuaTable = lua.create_table();
+    VoiceComponent_LuaTable["SetVoice"] = &VoiceComponent::SetVoice;
+    lua["VoiceComponent"] = VoiceComponent_LuaTable;
+    
+    auto CoreTelemetryService_LuaTable = lua.create_table();
+    CoreTelemetryService_LuaTable["GetTelemetryService"] = &CoreTelemetryService::GetTelemetryService;
+    lua["CoreTelemetryService"] = CoreTelemetryService_LuaTable;
+    
+    auto DSCliffMissionCommand_LuaTable = lua.create_table();
+    DSCliffMissionCommand_LuaTable["Cliff_SetAlertPhaseOnlySummonWarriorInfo"] = &DSCliffMissionCommand::Cliff_SetAlertPhaseOnlySummonWarriorInfo;
+    DSCliffMissionCommand_LuaTable["Cliff_GetEscapeCount"] = &DSCliffMissionCommand::Cliff_GetEscapeCount;
+    DSCliffMissionCommand_LuaTable["Cliff_SetSearchPointByLostWarrior"] = &DSCliffMissionCommand::Cliff_SetSearchPointByLostWarrior;
+    DSCliffMissionCommand_LuaTable["Cliff_SetSummonWarriorInfo"] = &DSCliffMissionCommand::Cliff_SetSummonWarriorInfo;
+    DSCliffMissionCommand_LuaTable["Cliff_RequestRollCall"] = &DSCliffMissionCommand::Cliff_RequestRollCall;
+    DSCliffMissionCommand_LuaTable["Cliff_RequestSummonWarriors"] = &DSCliffMissionCommand::Cliff_RequestSummonWarriors;
+    DSCliffMissionCommand_LuaTable["Cliff_SetShowCompassMaker"] = &DSCliffMissionCommand::Cliff_SetShowCompassMaker;
+    DSCliffMissionCommand_LuaTable["Cliff_SetNextBattlePoint"] = &DSCliffMissionCommand::Cliff_SetNextBattlePoint;
+    DSCliffMissionCommand_LuaTable["Cliff_OverwriteBattlePointInfo"] = &DSCliffMissionCommand::Cliff_OverwriteBattlePointInfo;
+    lua["DSCliffMissionCommand"] = DSCliffMissionCommand_LuaTable;
+    
+    auto DSCatcherManagerCommand_LuaTable = lua.create_table();
+    DSCatcherManagerCommand_LuaTable["GetActiveCatcherHealth"] = &DSCatcherManagerCommand::GetActiveCatcherHealth;
+    DSCatcherManagerCommand_LuaTable["GetDemoEntity"] = &DSCatcherManagerCommand::GetDemoEntity;
+    lua["DSCatcherManagerCommand"] = DSCatcherManagerCommand_LuaTable;
+    
+    auto AIPerchMarker_LuaTable = lua.create_table();
+    AIPerchMarker_LuaTable["IncreaseReservedForScript"] = &AIPerchMarker::IncreaseReservedForScript;
+    AIPerchMarker_LuaTable["DecreaseReservedForScript"] = &AIPerchMarker::DecreaseReservedForScript;
+    lua["AIPerchMarker"] = AIPerchMarker_LuaTable;
+    
+    auto OpenMenuSystem_LuaTable = lua.create_table();
+    OpenMenuSystem_LuaTable["EnableMenuPage"] = &OpenMenuSystem::EnableMenuPage;
+    OpenMenuSystem_LuaTable["DisableMenuPage"] = &OpenMenuSystem::DisableMenuPage;
+    lua["OpenMenuSystem"] = OpenMenuSystem_LuaTable;
+    
+    auto DSPlayRecordBasicNode_LuaTable = lua.create_table();
+    DSPlayRecordBasicNode_LuaTable["ResetAccumulatePlayerDamage"] = &DSPlayRecordBasicNode::ResetAccumulatePlayerDamage;
+    DSPlayRecordBasicNode_LuaTable["AddStayPrivateRoomNum"] = &DSPlayRecordBasicNode::AddStayPrivateRoomNum;
+    DSPlayRecordBasicNode_LuaTable["ResetDSMissionPlayLog"] = &DSPlayRecordBasicNode::ResetDSMissionPlayLog;
+    DSPlayRecordBasicNode_LuaTable["GetEvaluationPreviousServiceRank"] = &DSPlayRecordBasicNode::GetEvaluationPreviousServiceRank;
+    DSPlayRecordBasicNode_LuaTable["AddDeathCountForBridgeLink"] = &DSPlayRecordBasicNode::AddDeathCountForBridgeLink;
+    DSPlayRecordBasicNode_LuaTable["AddToiletBigNum"] = &DSPlayRecordBasicNode::AddToiletBigNum;
+    DSPlayRecordBasicNode_LuaTable["AddToiletSmallNum"] = &DSPlayRecordBasicNode::AddToiletSmallNum;
+    DSPlayRecordBasicNode_LuaTable["AddShowerNum"] = &DSPlayRecordBasicNode::AddShowerNum;
+    DSPlayRecordBasicNode_LuaTable["AddDiscoveredOnsenNum"] = &DSPlayRecordBasicNode::AddDiscoveredOnsenNum;
+    DSPlayRecordBasicNode_LuaTable["TimeLapseAtPrivateRoom"] = &DSPlayRecordBasicNode::TimeLapseAtPrivateRoom;
+    lua["DSPlayRecordBasicNode"] = DSPlayRecordBasicNode_LuaTable;
+    
+    auto DSMissionTerminalCommand_LuaTable = lua.create_table();
+    DSMissionTerminalCommand_LuaTable["DeliveryPointIdToUUID"] = &DSMissionTerminalCommand::DeliveryPointIdToUUID;
+    DSMissionTerminalCommand_LuaTable["CheckEntrustToNoDemo"] = &DSMissionTerminalCommand::CheckEntrustToNoDemo;
+    DSMissionTerminalCommand_LuaTable["CheckDeliveryToNoDemo"] = &DSMissionTerminalCommand::CheckDeliveryToNoDemo;
+    DSMissionTerminalCommand_LuaTable["RemoveDeadbodyBagForCrematorium"] = &DSMissionTerminalCommand::RemoveDeadbodyBagForCrematorium;
+    DSMissionTerminalCommand_LuaTable["AddMissionBonusToBuffer"] = &DSMissionTerminalCommand::AddMissionBonusToBuffer;
+    DSMissionTerminalCommand_LuaTable["CanOrderMissionAtDeliveryPoint"] = &DSMissionTerminalCommand::CanOrderMissionAtDeliveryPoint;
+    DSMissionTerminalCommand_LuaTable["SetStarMarkBonus"] = &DSMissionTerminalCommand::SetStarMarkBonus;
+    DSMissionTerminalCommand_LuaTable["AddSimpleBonusToBuffer"] = &DSMissionTerminalCommand::AddSimpleBonusToBuffer;
+    lua["DSMissionTerminalCommand"] = DSMissionTerminalCommand_LuaTable;
+    
+    auto DsHiggsGraphCommand_LuaTable = lua.create_table();
+    DsHiggsGraphCommand_LuaTable["Higgs_SetInitialPhase"] = &DsHiggsGraphCommand::Higgs_SetInitialPhase;
+    lua["DsHiggsGraphCommand"] = DsHiggsGraphCommand_LuaTable;
+    
+    auto DSMailBasicNode_LuaTable = lua.create_table();
+    DSMailBasicNode_LuaTable["RequestAllMailRecive"] = &DSMailBasicNode::RequestAllMailRecive;
+    DSMailBasicNode_LuaTable["RequestMailSending"] = &DSMailBasicNode::RequestMailSending;
+    lua["DSMailBasicNode"] = DSMailBasicNode_LuaTable;
+    
+    auto DSMissionMiscCommand_LuaTable = lua.create_table();
+    DSMissionMiscCommand_LuaTable["NotifyStartSequenceToFillGap"] = &DSMissionMiscCommand::NotifyStartSequenceToFillGap;
+    DSMissionMiscCommand_LuaTable["DSNotifyEndSequence"] = &DSMissionMiscCommand::DSNotifyEndSequence;
+    DSMissionMiscCommand_LuaTable["DSNotifyEndInGameSequence"] = &DSMissionMiscCommand::DSNotifyEndInGameSequence;
+    DSMissionMiscCommand_LuaTable["DSNotifyStartInGameSequence"] = &DSMissionMiscCommand::DSNotifyStartInGameSequence;
+    DSMissionMiscCommand_LuaTable["DisposalOnlineMissionsInTargetCPArea"] = &DSMissionMiscCommand::DisposalOnlineMissionsInTargetCPArea;
+    DSMissionMiscCommand_LuaTable["RequestLoadingScreen"] = &DSMissionMiscCommand::RequestLoadingScreen;
+    DSMissionMiscCommand_LuaTable["SwitchSection"] = &DSMissionMiscCommand::SwitchSection;
+    DSMissionMiscCommand_LuaTable["NotifyStayPrivateRoom"] = &DSMissionMiscCommand::NotifyStayPrivateRoom;
+    DSMissionMiscCommand_LuaTable["NotifyDirectIntoPrivateRoom"] = &DSMissionMiscCommand::NotifyDirectIntoPrivateRoom;
+    DSMissionMiscCommand_LuaTable["NotifyBossBattle"] = &DSMissionMiscCommand::NotifyBossBattle;
+    DSMissionMiscCommand_LuaTable["NotifyBeatBoss"] = &DSMissionMiscCommand::NotifyBeatBoss;
+    DSMissionMiscCommand_LuaTable["SetHeartmanRoomBlackBoard"] = &DSMissionMiscCommand::SetHeartmanRoomBlackBoard;
+    DSMissionMiscCommand_LuaTable["SetPrivateRoomBlackBoard"] = &DSMissionMiscCommand::SetPrivateRoomBlackBoard;
+    DSMissionMiscCommand_LuaTable["ChangePathRecordStraightMode"] = &DSMissionMiscCommand::ChangePathRecordStraightMode;
+    DSMissionMiscCommand_LuaTable["DSNotifyStartSequence"] = &DSMissionMiscCommand::DSNotifyStartSequence;
+    lua["DSMissionMiscCommand"] = DSMissionMiscCommand_LuaTable;
+    
+    auto AttachToHelperPositionMover_LuaTable = lua.create_table();
+    AttachToHelperPositionMover_LuaTable["Create"] = &AttachToHelperPositionMover::Create;
+    lua["AttachToHelperPositionMover"] = AttachToHelperPositionMover_LuaTable;
+    
+    auto DSBaggage2Manager_LuaTable = lua.create_table();
+    DSBaggage2Manager_LuaTable["PutNuclearToBackpackOrField"] = &DSBaggage2Manager::PutNuclearToBackpackOrField;
+    DSBaggage2Manager_LuaTable["GetNoDraggedCartInCollisionTrigger"] = &DSBaggage2Manager::GetNoDraggedCartInCollisionTrigger;
+    DSBaggage2Manager_LuaTable["SetAreaChangeInfo"] = &DSBaggage2Manager::SetAreaChangeInfo;
+    DSBaggage2Manager_LuaTable["MoveBaggageToPlayer"] = &DSBaggage2Manager::MoveBaggageToPlayer;
+    DSBaggage2Manager_LuaTable["CreateBaggage"] = &DSBaggage2Manager::CreateBaggage;
+    DSBaggage2Manager_LuaTable["AddBaggagesToTemporaryList"] = &DSBaggage2Manager::AddBaggagesToTemporaryList;
+    DSBaggage2Manager_LuaTable["PlaceTemporaryListBaggagesAroundPlayer"] = &DSBaggage2Manager::PlaceTemporaryListBaggagesAroundPlayer;
+    DSBaggage2Manager_LuaTable["ClearTemporaryList"] = &DSBaggage2Manager::ClearTemporaryList;
+    DSBaggage2Manager_LuaTable["DeleteBaggage"] = &DSBaggage2Manager::DeleteBaggage;
+    DSBaggage2Manager_LuaTable["MoveBaggagesWithTerminalShelf"] = &DSBaggage2Manager::MoveBaggagesWithTerminalShelf;
+    DSBaggage2Manager_LuaTable["DoesExistBaggageWithName"] = &DSBaggage2Manager::DoesExistBaggageWithName;
+    DSBaggage2Manager_LuaTable["GetBaggagesInRange"] = &DSBaggage2Manager::GetBaggagesInRange;
+    DSBaggage2Manager_LuaTable["SetBaggageUnrealizedAreaUntilPlayerLeave"] = &DSBaggage2Manager::SetBaggageUnrealizedAreaUntilPlayerLeave;
+    DSBaggage2Manager_LuaTable["PlaceTemporaryListBaggagesAroundPosition"] = &DSBaggage2Manager::PlaceTemporaryListBaggagesAroundPosition;
+    DSBaggage2Manager_LuaTable["AddBaggageToTemporaryList"] = &DSBaggage2Manager::AddBaggageToTemporaryList;
+    DSBaggage2Manager_LuaTable["DeleteDeliveredBaggages"] = &DSBaggage2Manager::DeleteDeliveredBaggages;
+    DSBaggage2Manager_LuaTable["MoveDeliveredBaggagesWithTerminalShelf"] = &DSBaggage2Manager::MoveDeliveredBaggagesWithTerminalShelf;
+    DSBaggage2Manager_LuaTable["AddBaggageToPlayer"] = &DSBaggage2Manager::AddBaggageToPlayer;
+    DSBaggage2Manager_LuaTable["SetFirstCursorBaggage"] = &DSBaggage2Manager::SetFirstCursorBaggage;
+    DSBaggage2Manager_LuaTable["GetBaggagesInTerminalArea"] = &DSBaggage2Manager::GetBaggagesInTerminalArea;
+    DSBaggage2Manager_LuaTable["GetBaggagesInCollisionTrigger"] = &DSBaggage2Manager::GetBaggagesInCollisionTrigger;
+    DSBaggage2Manager_LuaTable["CreateAndAddBaggageToDeliveryPoint"] = &DSBaggage2Manager::CreateAndAddBaggageToDeliveryPoint;
+    DSBaggage2Manager_LuaTable["AddBaggageToDeliveryPoint"] = &DSBaggage2Manager::AddBaggageToDeliveryPoint;
+    DSBaggage2Manager_LuaTable["BreakBaggage"] = &DSBaggage2Manager::BreakBaggage;
+    DSBaggage2Manager_LuaTable["GetAllBaggages"] = &DSBaggage2Manager::GetAllBaggages;
+    DSBaggage2Manager_LuaTable["CreateAndAddBaggageToPlayer"] = &DSBaggage2Manager::CreateAndAddBaggageToPlayer;
+    DSBaggage2Manager_LuaTable["AddBaggageToPlayerByGameActorId"] = &DSBaggage2Manager::AddBaggageToPlayerByGameActorId;
+    lua["DSBaggage2Manager"] = DSBaggage2Manager_LuaTable;
+    
+    auto DSMissionSpecialReportResource_LuaTable = lua.create_table();
+    DSMissionSpecialReportResource_LuaTable["IsRewardLike"] = &DSMissionSpecialReportResource::IsRewardLike;
+    DSMissionSpecialReportResource_LuaTable["IsMissionMenuViewForcedDisable"] = &DSMissionSpecialReportResource::IsMissionMenuViewForcedDisable;
+    DSMissionSpecialReportResource_LuaTable["GetDataTablesByThreshold"] = &DSMissionSpecialReportResource::GetDataTablesByThreshold;
+    DSMissionSpecialReportResource_LuaTable["GetEvaluationType"] = &DSMissionSpecialReportResource::GetEvaluationType;
+    DSMissionSpecialReportResource_LuaTable["GetDataTablesByDeliveryPoint"] = &DSMissionSpecialReportResource::GetDataTablesByDeliveryPoint;
+    DSMissionSpecialReportResource_LuaTable["GetCustomParam02"] = &DSMissionSpecialReportResource::GetCustomParam02;
+    DSMissionSpecialReportResource_LuaTable["GetCustomParam01"] = &DSMissionSpecialReportResource::GetCustomParam01;
+    DSMissionSpecialReportResource_LuaTable["GetMissionEvaluationDataTable"] = &DSMissionSpecialReportResource::GetMissionEvaluationDataTable;
+    DSMissionSpecialReportResource_LuaTable["IsMissionMenuView"] = &DSMissionSpecialReportResource::IsMissionMenuView;
+    DSMissionSpecialReportResource_LuaTable["IsMissionCondition"] = &DSMissionSpecialReportResource::IsMissionCondition;
+    DSMissionSpecialReportResource_LuaTable["GetSpecialReportHash"] = &DSMissionSpecialReportResource::GetSpecialReportHash;
+    DSMissionSpecialReportResource_LuaTable["GetRewardLike"] = &DSMissionSpecialReportResource::GetRewardLike;
+    lua["DSMissionSpecialReportResource"] = DSMissionSpecialReportResource_LuaTable;
+    
+    auto SpawnSetupNonPlaceholder_LuaTable = lua.create_table();
+    SpawnSetupNonPlaceholder_LuaTable["WasSpawnedThroughSpawnSetup"] = &SpawnSetupNonPlaceholder::WasSpawnedThroughSpawnSetup;
+    lua["SpawnSetupNonPlaceholder"] = SpawnSetupNonPlaceholder_LuaTable;
+    
+    auto GCore_LuaTable = lua.create_table();
+    GCore_LuaTable["Sound_ActivateSoundMixState"] = &GCore::Sound_ActivateSoundMixState;
+    GCore_LuaTable["Sound_SetRelativePosition"] = &GCore::Sound_SetRelativePosition;
+    GCore_LuaTable["Sound_FlushSounds"] = &GCore::Sound_FlushSounds;
+    GCore_LuaTable["Sound_SetFloatParameter"] = &GCore::Sound_SetFloatParameter;
+    GCore_LuaTable["Sound_SetIntParameter"] = &GCore::Sound_SetIntParameter;
+    GCore_LuaTable["Sound_SetBoolParameter"] = &GCore::Sound_SetBoolParameter;
+    GCore_LuaTable["Sound_SetListenerTransform"] = &GCore::Sound_SetListenerTransform;
+    GCore_LuaTable["IntersectSweptSphere"] = &GCore::IntersectSweptSphere;
+    GCore_LuaTable["IntersectSphere"] = &GCore::IntersectSphere;
+    GCore_LuaTable["Dismount"] = &GCore::Dismount;
+    lua["GCore"] = GCore_LuaTable;
+    
+    auto DSMissioDebugUnlockAllItemsCommand_LuaTable = lua.create_table();
+    DSMissioDebugUnlockAllItemsCommand_LuaTable["UnlockAllItems"] = &DSMissioDebugUnlockAllItemsCommand::UnlockAllItems;
+    lua["DSMissioDebugUnlockAllItemsCommand"] = DSMissioDebugUnlockAllItemsCommand_LuaTable;
+    
+    auto WorldData_LuaTable = lua.create_table();
+    WorldData_LuaTable["SampleVec3AtWorldPosition"] = &WorldData::SampleVec3AtWorldPosition;
+    WorldData_LuaTable["SampleVec4AtWorldPosition"] = &WorldData::SampleVec4AtWorldPosition;
+    WorldData_LuaTable["GetWorldDataTileForPosition"] = &WorldData::GetWorldDataTileForPosition;
+    lua["WorldData"] = WorldData_LuaTable;
+    
+    auto DSMissionConditionResourceBase_LuaTable = lua.create_table();
+    DSMissionConditionResourceBase_LuaTable["GetMinCountBaggage"] = &DSMissionConditionResourceBase::GetMinCountBaggage;
+    DSMissionConditionResourceBase_LuaTable["GetCumulativeMinDamage"] = &DSMissionConditionResourceBase::GetCumulativeMinDamage;
+    DSMissionConditionResourceBase_LuaTable["GetSpecialReport"] = &DSMissionConditionResourceBase::GetSpecialReport;
+    DSMissionConditionResourceBase_LuaTable["GetConditionType"] = &DSMissionConditionResourceBase::GetConditionType;
+    DSMissionConditionResourceBase_LuaTable["GetMaxDonationCount"] = &DSMissionConditionResourceBase::GetMaxDonationCount;
+    DSMissionConditionResourceBase_LuaTable["GetEvaluationDataTable"] = &DSMissionConditionResourceBase::GetEvaluationDataTable;
+    DSMissionConditionResourceBase_LuaTable["GetBaggageDamageMinRate"] = &DSMissionConditionResourceBase::GetBaggageDamageMinRate;
+    DSMissionConditionResourceBase_LuaTable["GetMinDistance"] = &DSMissionConditionResourceBase::GetMinDistance;
+    DSMissionConditionResourceBase_LuaTable["GetClearMinTime"] = &DSMissionConditionResourceBase::GetClearMinTime;
+    DSMissionConditionResourceBase_LuaTable["GetMinWeightBaggage"] = &DSMissionConditionResourceBase::GetMinWeightBaggage;
+    lua["DSMissionConditionResourceBase"] = DSMissionConditionResourceBase_LuaTable;
+    
+    auto FactDatabase_LuaTable = lua.create_table();
+    FactDatabase_LuaTable["GetVec3Fact"] = &FactDatabase::GetVec3Fact;
+    FactDatabase_LuaTable["GetFloatFactWithUUID"] = &FactDatabase::GetFloatFactWithUUID;
+    FactDatabase_LuaTable["GetVec3FactWithUUID"] = &FactDatabase::GetVec3FactWithUUID;
+    FactDatabase_LuaTable["GetBooleanFact"] = &FactDatabase::GetBooleanFact;
+    FactDatabase_LuaTable["GetBooleanFactWithUUID"] = &FactDatabase::GetBooleanFactWithUUID;
+    FactDatabase_LuaTable["SetFloatFact"] = &FactDatabase::SetFloatFact;
+    FactDatabase_LuaTable["SetEnumFact"] = &FactDatabase::SetEnumFact;
+    FactDatabase_LuaTable["GetEnumFact"] = &FactDatabase::GetEnumFact;
+    FactDatabase_LuaTable["SetVec3Fact"] = &FactDatabase::SetVec3Fact;
+    FactDatabase_LuaTable["SetFactContextPersistent"] = &FactDatabase::SetFactContextPersistent;
+    FactDatabase_LuaTable["IncrementIntegerFact"] = &FactDatabase::IncrementIntegerFact;
+    FactDatabase_LuaTable["GetEnumFactWithUUID"] = &FactDatabase::GetEnumFactWithUUID;
+    FactDatabase_LuaTable["SetBooleanFact"] = &FactDatabase::SetBooleanFact;
+    FactDatabase_LuaTable["SetIntegerFact"] = &FactDatabase::SetIntegerFact;
+    FactDatabase_LuaTable["GetIntegerFactWithUUID"] = &FactDatabase::GetIntegerFactWithUUID;
+    FactDatabase_LuaTable["GetIntegerFact"] = &FactDatabase::GetIntegerFact;
+    FactDatabase_LuaTable["IncrementFloatFact"] = &FactDatabase::IncrementFloatFact;
+    FactDatabase_LuaTable["GetFloatFact"] = &FactDatabase::GetFloatFact;
+    lua["FactDatabase"] = FactDatabase_LuaTable;
+    
+    auto DSMissionEventTimerCommand_LuaTable = lua.create_table();
+    DSMissionEventTimerCommand_LuaTable["ManualBootupMissionEventTimer"] = &DSMissionEventTimerCommand::ManualBootupMissionEventTimer;
+    DSMissionEventTimerCommand_LuaTable["SetMissionEventTimerPurposeTextByLocalizedText"] = &DSMissionEventTimerCommand::SetMissionEventTimerPurposeTextByLocalizedText;
+    DSMissionEventTimerCommand_LuaTable["FixVisibleTimerFromDSMissionID"] = &DSMissionEventTimerCommand::FixVisibleTimerFromDSMissionID;
+    DSMissionEventTimerCommand_LuaTable["ManualStopMissionEventTimer"] = &DSMissionEventTimerCommand::ManualStopMissionEventTimer;
+    DSMissionEventTimerCommand_LuaTable["ShowMissionEventTimer"] = &DSMissionEventTimerCommand::ShowMissionEventTimer;
+    DSMissionEventTimerCommand_LuaTable["ResetMissionEventTimer"] = &DSMissionEventTimerCommand::ResetMissionEventTimer;
+    DSMissionEventTimerCommand_LuaTable["AllVisiblePopupTimer"] = &DSMissionEventTimerCommand::AllVisiblePopupTimer;
+    DSMissionEventTimerCommand_LuaTable["SetCurTimeSecondsF"] = &DSMissionEventTimerCommand::SetCurTimeSecondsF;
+    DSMissionEventTimerCommand_LuaTable["HideMissionEventTimer"] = &DSMissionEventTimerCommand::HideMissionEventTimer;
+    DSMissionEventTimerCommand_LuaTable["PauseMissionEventTimer"] = &DSMissionEventTimerCommand::PauseMissionEventTimer;
+    DSMissionEventTimerCommand_LuaTable["StartMissionEventTimer"] = &DSMissionEventTimerCommand::StartMissionEventTimer;
+    lua["DSMissionEventTimerCommand"] = DSMissionEventTimerCommand_LuaTable;
+    
+    auto DSAnyEventStateCommand_LuaTable = lua.create_table();
+    DSAnyEventStateCommand_LuaTable["SetEventState"] = &DSAnyEventStateCommand::SetEventState;
+    DSAnyEventStateCommand_LuaTable["UnsetEventStateHash"] = &DSAnyEventStateCommand::UnsetEventStateHash;
+    DSAnyEventStateCommand_LuaTable["SetEventStateHash"] = &DSAnyEventStateCommand::SetEventStateHash;
+    lua["DSAnyEventStateCommand"] = DSAnyEventStateCommand_LuaTable;
+    
+    auto DSMissionLogicMiscCommand_LuaTable = lua.create_table();
+    DSMissionLogicMiscCommand_LuaTable["StaticMissionIdToUUID"] = &DSMissionLogicMiscCommand::StaticMissionIdToUUID;
+    DSMissionLogicMiscCommand_LuaTable["PreparationBeforeCutscene"] = &DSMissionLogicMiscCommand::PreparationBeforeCutscene;
+    DSMissionLogicMiscCommand_LuaTable["DSIsCombatMuleOrBT"] = &DSMissionLogicMiscCommand::DSIsCombatMuleOrBT;
+    DSMissionLogicMiscCommand_LuaTable["ResetGameOverCountForHospitality"] = &DSMissionLogicMiscCommand::ResetGameOverCountForHospitality;
+    DSMissionLogicMiscCommand_LuaTable["GetGameOverCountForHospitality"] = &DSMissionLogicMiscCommand::GetGameOverCountForHospitality;
+    DSMissionLogicMiscCommand_LuaTable["CanStartCutscene"] = &DSMissionLogicMiscCommand::CanStartCutscene;
+    DSMissionLogicMiscCommand_LuaTable["SetMissionGlobalVariable"] = &DSMissionLogicMiscCommand::SetMissionGlobalVariable;
+    DSMissionLogicMiscCommand_LuaTable["GetMissionGlobalVariable"] = &DSMissionLogicMiscCommand::GetMissionGlobalVariable;
+    DSMissionLogicMiscCommand_LuaTable["DSHasBeenRelocateBaggage"] = &DSMissionLogicMiscCommand::DSHasBeenRelocateBaggage;
+    DSMissionLogicMiscCommand_LuaTable["IsBirthdayToday"] = &DSMissionLogicMiscCommand::IsBirthdayToday;
+    DSMissionLogicMiscCommand_LuaTable["SetMissionMessageEnabled"] = &DSMissionLogicMiscCommand::SetMissionMessageEnabled;
+    lua["DSMissionLogicMiscCommand"] = DSMissionLogicMiscCommand_LuaTable;
+    
+    auto DSMissionBaggageNodeCommand_LuaTable = lua.create_table();
+    DSMissionBaggageNodeCommand_LuaTable["IsIncludeBaggageListItemInMission"] = &DSMissionBaggageNodeCommand::IsIncludeBaggageListItemInMission;
+    DSMissionBaggageNodeCommand_LuaTable["DeliveryBaggageForDontDeliveryMission"] = &DSMissionBaggageNodeCommand::DeliveryBaggageForDontDeliveryMission;
+    DSMissionBaggageNodeCommand_LuaTable["GetBaggageAttribute"] = &DSMissionBaggageNodeCommand::GetBaggageAttribute;
+    lua["DSMissionBaggageNodeCommand"] = DSMissionBaggageNodeCommand_LuaTable;
+    
+    auto CollisionTrigger_LuaTable = lua.create_table();
+    CollisionTrigger_LuaTable["IsInTrigger"] = &CollisionTrigger::IsInTrigger;
+    lua["CollisionTrigger"] = CollisionTrigger_LuaTable;
+    
+    auto DSDeliveryBotEntity_LuaTable = lua.create_table();
+    DSDeliveryBotEntity_LuaTable["GameActorIdToEntity"] = &DSDeliveryBotEntity::GameActorIdToEntity;
+    lua["DSDeliveryBotEntity"] = DSDeliveryBotEntity_LuaTable;
+    
+    auto QuestSystem_LuaTable = lua.create_table();
+    QuestSystem_LuaTable["GetQuest"] = &QuestSystem::GetQuest;
+    QuestSystem_LuaTable["CanStartQuest"] = &QuestSystem::CanStartQuest;
+    QuestSystem_LuaTable["SetAllQuestsPaused"] = &QuestSystem::SetAllQuestsPaused;
+    QuestSystem_LuaTable["DisableQuest"] = &QuestSystem::DisableQuest;
+    QuestSystem_LuaTable["RevertQuest"] = &QuestSystem::RevertQuest;
+    QuestSystem_LuaTable["GetTrackedQuest"] = &QuestSystem::GetTrackedQuest;
+    QuestSystem_LuaTable["AbandonMerchantJobs"] = &QuestSystem::AbandonMerchantJobs;
+    QuestSystem_LuaTable["ShowQuestNotification"] = &QuestSystem::ShowQuestNotification;
+    QuestSystem_LuaTable["EnableQuest"] = &QuestSystem::EnableQuest;
+    lua["QuestSystem"] = QuestSystem_LuaTable;
+    
+    auto DSRadioNodeGraphBindings_LuaTable = lua.create_table();
+    DSRadioNodeGraphBindings_LuaTable["RandomlySelectSentenceHavingSpecificVoiceName"] = &DSRadioNodeGraphBindings::RandomlySelectSentenceHavingSpecificVoiceName;
+    DSRadioNodeGraphBindings_LuaTable["RaiseAbortEvent2"] = &DSRadioNodeGraphBindings::RaiseAbortEvent2;
+    DSRadioNodeGraphBindings_LuaTable["RaiseEvent"] = &DSRadioNodeGraphBindings::RaiseEvent;
+    DSRadioNodeGraphBindings_LuaTable["RaiseEvent2"] = &DSRadioNodeGraphBindings::RaiseEvent2;
+    DSRadioNodeGraphBindings_LuaTable["PlaySentence"] = &DSRadioNodeGraphBindings::PlaySentence;
+    DSRadioNodeGraphBindings_LuaTable["RaiseAbortEvent"] = &DSRadioNodeGraphBindings::RaiseAbortEvent;
+    lua["DSRadioNodeGraphBindings"] = DSRadioNodeGraphBindings_LuaTable;
+    
+    auto CharacterProgressionComponent_LuaTable = lua.create_table();
+    CharacterProgressionComponent_LuaTable["AddXp"] = &CharacterProgressionComponent::AddXp;
+    lua["CharacterProgressionComponent"] = CharacterProgressionComponent_LuaTable;
+    
+    auto DSConstructionPointManager_LuaTable = lua.create_table();
+    DSConstructionPointManager_LuaTable["ForceConstructionLevelupStart"] = &DSConstructionPointManager::ForceConstructionLevelupStart;
+    DSConstructionPointManager_LuaTable["SetCustomizeHoloSpawnPosition"] = &DSConstructionPointManager::SetCustomizeHoloSpawnPosition;
+    DSConstructionPointManager_LuaTable["AddMissionConstructableArea"] = &DSConstructionPointManager::AddMissionConstructableArea;
+    DSConstructionPointManager_LuaTable["RemoveConstructionsInArea"] = &DSConstructionPointManager::RemoveConstructionsInArea;
+    DSConstructionPointManager_LuaTable["SetConstructionPointTransform"] = &DSConstructionPointManager::SetConstructionPointTransform;
+    DSConstructionPointManager_LuaTable["SendCommandToDeliveryPoint"] = &DSConstructionPointManager::SendCommandToDeliveryPoint;
+    DSConstructionPointManager_LuaTable["AllowConstructionInfologInPrivateroom"] = &DSConstructionPointManager::AllowConstructionInfologInPrivateroom;
+    DSConstructionPointManager_LuaTable["CallGimmickActionByConstruction"] = &DSConstructionPointManager::CallGimmickActionByConstruction;
+    DSConstructionPointManager_LuaTable["GetConstructionAvailableFromEntity"] = &DSConstructionPointManager::GetConstructionAvailableFromEntity;
+    DSConstructionPointManager_LuaTable["SetActiveAllConstructions"] = &DSConstructionPointManager::SetActiveAllConstructions;
+    DSConstructionPointManager_LuaTable["ClearAccessingConstruction"] = &DSConstructionPointManager::ClearAccessingConstruction;
+    DSConstructionPointManager_LuaTable["SetIntruderCheckerActivation"] = &DSConstructionPointManager::SetIntruderCheckerActivation;
+    DSConstructionPointManager_LuaTable["SetActiveCPAreaConstructions"] = &DSConstructionPointManager::SetActiveCPAreaConstructions;
+    DSConstructionPointManager_LuaTable["RemoveGimmickLocatorFromConstruction"] = &DSConstructionPointManager::RemoveGimmickLocatorFromConstruction;
+    DSConstructionPointManager_LuaTable["GetConstructionPointPosition"] = &DSConstructionPointManager::GetConstructionPointPosition;
+    DSConstructionPointManager_LuaTable["CreateConstruction"] = &DSConstructionPointManager::CreateConstruction;
+    DSConstructionPointManager_LuaTable["SearchConstructionIDsWithPosition"] = &DSConstructionPointManager::SearchConstructionIDsWithPosition;
+    DSConstructionPointManager_LuaTable["CallGimmickActionByConstructionEntity"] = &DSConstructionPointManager::CallGimmickActionByConstructionEntity;
+    DSConstructionPointManager_LuaTable["SearchConstructionPointEntityByInfo"] = &DSConstructionPointManager::SearchConstructionPointEntityByInfo;
+    DSConstructionPointManager_LuaTable["ForceConstructionLevelupComplete"] = &DSConstructionPointManager::ForceConstructionLevelupComplete;
+    DSConstructionPointManager_LuaTable["SetConstructionLevel"] = &DSConstructionPointManager::SetConstructionLevel;
+    DSConstructionPointManager_LuaTable["SetBaggagesToStatic"] = &DSConstructionPointManager::SetBaggagesToStatic;
+    DSConstructionPointManager_LuaTable["SetActiveAreaConstructions"] = &DSConstructionPointManager::SetActiveAreaConstructions;
+    DSConstructionPointManager_LuaTable["PutConstructionsInTar"] = &DSConstructionPointManager::PutConstructionsInTar;
+    DSConstructionPointManager_LuaTable["SetGimmickLocatorToConstruction"] = &DSConstructionPointManager::SetGimmickLocatorToConstruction;
+    DSConstructionPointManager_LuaTable["RestoreLastStrandingConstructions"] = &DSConstructionPointManager::RestoreLastStrandingConstructions;
+    DSConstructionPointManager_LuaTable["StartLastStrandingConstructions"] = &DSConstructionPointManager::StartLastStrandingConstructions;
+    DSConstructionPointManager_LuaTable["SetAccessingConstruction"] = &DSConstructionPointManager::SetAccessingConstruction;
+    DSConstructionPointManager_LuaTable["SetConstructionUsableFromEntity"] = &DSConstructionPointManager::SetConstructionUsableFromEntity;
+    DSConstructionPointManager_LuaTable["MoveBaggagesToSafePlace"] = &DSConstructionPointManager::MoveBaggagesToSafePlace;
+    DSConstructionPointManager_LuaTable["GetAccessingConstructionPointEntity"] = &DSConstructionPointManager::GetAccessingConstructionPointEntity;
+    DSConstructionPointManager_LuaTable["GetConstructionPointFrontAccessTransform"] = &DSConstructionPointManager::GetConstructionPointFrontAccessTransform;
+    DSConstructionPointManager_LuaTable["RemoveMissionConstructableArea"] = &DSConstructionPointManager::RemoveMissionConstructableArea;
+    DSConstructionPointManager_LuaTable["SendCommandToDeliveryId"] = &DSConstructionPointManager::SendCommandToDeliveryId;
+    DSConstructionPointManager_LuaTable["SetPrivateRoomEventGraph"] = &DSConstructionPointManager::SetPrivateRoomEventGraph;
+    lua["DSConstructionPointManager"] = DSConstructionPointManager_LuaTable;
+    
+    auto DSSceneCommand_LuaTable = lua.create_table();
+    DSSceneCommand_LuaTable["DSGetScenePosition"] = &DSSceneCommand::DSGetScenePosition;
+    DSSceneCommand_LuaTable["DSGetSceneTerminalId"] = &DSSceneCommand::DSGetSceneTerminalId;
+    DSSceneCommand_LuaTable["DSIsEqualOriginalScene"] = &DSSceneCommand::DSIsEqualOriginalScene;
+    DSSceneCommand_LuaTable["DSGetSceneHashValue1"] = &DSSceneCommand::DSGetSceneHashValue1;
+    DSSceneCommand_LuaTable["DSGetSceneHashValue0"] = &DSSceneCommand::DSGetSceneHashValue0;
+    lua["DSSceneCommand"] = DSSceneCommand_LuaTable;
+    
+    auto DSCatalogueListItemCommand_LuaTable = lua.create_table();
+    DSCatalogueListItemCommand_LuaTable["GetBaggageListItemByName"] = &DSCatalogueListItemCommand::GetBaggageListItemByName;
+    lua["DSCatalogueListItemCommand"] = DSCatalogueListItemCommand_LuaTable;
+    
+    auto VehicleEntity_LuaTable = lua.create_table();
+    VehicleEntity_LuaTable["GameActorIdToEntity"] = &VehicleEntity::GameActorIdToEntity;
+    VehicleEntity_LuaTable["GetLastVehicleFromParking"] = &VehicleEntity::GetLastVehicleFromParking;
+    VehicleEntity_LuaTable["RequestSetForceLowLODAll"] = &VehicleEntity::RequestSetForceLowLODAll;
+    VehicleEntity_LuaTable["GetLastInVehicleFromTrigger"] = &VehicleEntity::GetLastInVehicleFromTrigger;
+    VehicleEntity_LuaTable["MoveObjectsToSafePositions"] = &VehicleEntity::MoveObjectsToSafePositions;
+    VehicleEntity_LuaTable["GetLastInVehicleFromNearestTrigger"] = &VehicleEntity::GetLastInVehicleFromNearestTrigger;
+    VehicleEntity_LuaTable["SetRequest"] = &VehicleEntity::SetRequest;
+    VehicleEntity_LuaTable["GetAllVehiclesInNearestTrigger"] = &VehicleEntity::GetAllVehiclesInNearestTrigger;
+    VehicleEntity_LuaTable["VehicleInOutTrigger"] = &VehicleEntity::VehicleInOutTrigger;
+    VehicleEntity_LuaTable["MoveObjectsToSafePlace"] = &VehicleEntity::MoveObjectsToSafePlace;
+    VehicleEntity_LuaTable["SetForceSpeedScale"] = &VehicleEntity::SetForceSpeedScale;
+    VehicleEntity_LuaTable["SetOverrideInCutscene"] = &VehicleEntity::SetOverrideInCutscene;
+    lua["VehicleEntity"] = VehicleEntity_LuaTable;
+    
+    auto AIManagerGame_LuaTable = lua.create_table();
+    AIManagerGame_LuaTable["GetPlayerIsBeingHeard"] = &AIManagerGame::GetPlayerIsBeingHeard;
+    AIManagerGame_LuaTable["GetPlayerThreatLevel"] = &AIManagerGame::GetPlayerThreatLevel;
+    AIManagerGame_LuaTable["IsPlayerCurrentlyIdentified"] = &AIManagerGame::IsPlayerCurrentlyIdentified;
+    AIManagerGame_LuaTable["GetPlayerLastBeingSeenTimestamp"] = &AIManagerGame::GetPlayerLastBeingSeenTimestamp;
+    AIManagerGame_LuaTable["GetPlayerThreatLevelFactor"] = &AIManagerGame::GetPlayerThreatLevelFactor;
+    AIManagerGame_LuaTable["IsPlayerCurrentlyIdentifiedByHumanoid"] = &AIManagerGame::IsPlayerCurrentlyIdentifiedByHumanoid;
+    AIManagerGame_LuaTable["GetEntitiesInRadius"] = &AIManagerGame::GetEntitiesInRadius;
+    AIManagerGame_LuaTable["IsPlayerCurrentlyIdentifiedByRobot"] = &AIManagerGame::IsPlayerCurrentlyIdentifiedByRobot;
+    AIManagerGame_LuaTable["GetPlayerVisualThreatLevel"] = &AIManagerGame::GetPlayerVisualThreatLevel;
+    AIManagerGame_LuaTable["GetPlayerHasBeenReported"] = &AIManagerGame::GetPlayerHasBeenReported;
+    AIManagerGame_LuaTable["GetPlayerLastBeingHeardTimestamp"] = &AIManagerGame::GetPlayerLastBeingHeardTimestamp;
+    AIManagerGame_LuaTable["GetPlayerIsInAntiStealth"] = &AIManagerGame::GetPlayerIsInAntiStealth;
+    AIManagerGame_LuaTable["GetPlayerIsBeingSeen"] = &AIManagerGame::GetPlayerIsBeingSeen;
+    lua["AIManagerGame"] = AIManagerGame_LuaTable;
+    
+    auto DsMuleManager_LuaTable = lua.create_table();
+    DsMuleManager_LuaTable["CallRestoreMuleScript"] = &DsMuleManager::CallRestoreMuleScript;
+    DsMuleManager_LuaTable["UpdateFriendlyMuleActivationStatus"] = &DsMuleManager::UpdateFriendlyMuleActivationStatus;
+    DsMuleManager_LuaTable["MuleDirectDamageToStatus"] = &DsMuleManager::MuleDirectDamageToStatus;
+    DsMuleManager_LuaTable["SetSequenceOnlyMule"] = &DsMuleManager::SetSequenceOnlyMule;
+    DsMuleManager_LuaTable["SetForceMuleStance"] = &DsMuleManager::SetForceMuleStance;
+    DsMuleManager_LuaTable["ClearForceMuleStance"] = &DsMuleManager::ClearForceMuleStance;
+    lua["DsMuleManager"] = DsMuleManager_LuaTable;
+    
+    auto DSWorldMapHoloComponent_LuaTable = lua.create_table();
+    DSWorldMapHoloComponent_LuaTable["SetWorldMapHoloCursor"] = &DSWorldMapHoloComponent::SetWorldMapHoloCursor;
+    DSWorldMapHoloComponent_LuaTable["SetWorldMapHoloPlayerPositionCursor"] = &DSWorldMapHoloComponent::SetWorldMapHoloPlayerPositionCursor;
+    DSWorldMapHoloComponent_LuaTable["SetWorldMapHoloPlayerCursor"] = &DSWorldMapHoloComponent::SetWorldMapHoloPlayerCursor;
+    DSWorldMapHoloComponent_LuaTable["AddWorldMapHoloConnection"] = &DSWorldMapHoloComponent::AddWorldMapHoloConnection;
+    DSWorldMapHoloComponent_LuaTable["AddWorldMapHoloConnectedPoint"] = &DSWorldMapHoloComponent::AddWorldMapHoloConnectedPoint;
+    lua["DSWorldMapHoloComponent"] = DSWorldMapHoloComponent_LuaTable;
+    
+    auto MountableComponent_LuaTable = lua.create_table();
+    MountableComponent_LuaTable["GetMounter"] = &MountableComponent::GetMounter;
+    MountableComponent_LuaTable["Mount"] = &MountableComponent::Mount;
+    lua["MountableComponent"] = MountableComponent_LuaTable;
+    
+    auto DSPlayerNodeExporter_LuaTable = lua.create_table();
+    DSPlayerNodeExporter_LuaTable["SetCryptbiosisCount"] = &DSPlayerNodeExporter::SetCryptbiosisCount;
+    DSPlayerNodeExporter_LuaTable["GetUsedBloodPackAmount"] = &DSPlayerNodeExporter::GetUsedBloodPackAmount;
+    DSPlayerNodeExporter_LuaTable["PlayerHelperSupplySystemEnable"] = &DSPlayerNodeExporter::PlayerHelperSupplySystemEnable;
+    DSPlayerNodeExporter_LuaTable["UnequipAccessoriesForBeach"] = &DSPlayerNodeExporter::UnequipAccessoriesForBeach;
+    DSPlayerNodeExporter_LuaTable["RecoverFullAtPrivateRoom"] = &DSPlayerNodeExporter::RecoverFullAtPrivateRoom;
+    DSPlayerNodeExporter_LuaTable["GetReturnPointTransform"] = &DSPlayerNodeExporter::GetReturnPointTransform;
+    DSPlayerNodeExporter_LuaTable["SetCryptobiosisReviveDistance"] = &DSPlayerNodeExporter::SetCryptobiosisReviveDistance;
+    DSPlayerNodeExporter_LuaTable["DisconnectCartAndPlaceAroundReturnPoint"] = &DSPlayerNodeExporter::DisconnectCartAndPlaceAroundReturnPoint;
+    DSPlayerNodeExporter_LuaTable["ResetNumCryptbiosisAroundCoral"] = &DSPlayerNodeExporter::ResetNumCryptbiosisAroundCoral;
+    DSPlayerNodeExporter_LuaTable["SetNumCryptbiosisAroundCoral"] = &DSPlayerNodeExporter::SetNumCryptbiosisAroundCoral;
+    DSPlayerNodeExporter_LuaTable["MarkToOnsen"] = &DSPlayerNodeExporter::MarkToOnsen;
+    DSPlayerNodeExporter_LuaTable["AddCryptbiosisCount"] = &DSPlayerNodeExporter::AddCryptbiosisCount;
+    DSPlayerNodeExporter_LuaTable["ResetPrivateRoomGlassesAndCap"] = &DSPlayerNodeExporter::ResetPrivateRoomGlassesAndCap;
+    DSPlayerNodeExporter_LuaTable["IsEquippedItem"] = &DSPlayerNodeExporter::IsEquippedItem;
+    DSPlayerNodeExporter_LuaTable["ResetCryptobiosisReviveDistance"] = &DSPlayerNodeExporter::ResetCryptobiosisReviveDistance;
+    lua["DSPlayerNodeExporter"] = DSPlayerNodeExporter_LuaTable;
+    
+    auto DsCheckStationGraphCommand_LuaTable = lua.create_table();
+    DsCheckStationGraphCommand_LuaTable["CheckStation_ShowPlayerInfoMessages"] = &DsCheckStationGraphCommand::CheckStation_ShowPlayerInfoMessages;
+    DsCheckStationGraphCommand_LuaTable["CheckStation_GetNonBaggageDeadBodyCount"] = &DsCheckStationGraphCommand::CheckStation_GetNonBaggageDeadBodyCount;
+    DsCheckStationGraphCommand_LuaTable["CheckStation_ContactScanner"] = &DsCheckStationGraphCommand::CheckStation_ContactScanner;
+    lua["DsCheckStationGraphCommand"] = DsCheckStationGraphCommand_LuaTable;
+    
+    auto DSMissionBasicNode_LuaTable = lua.create_table();
+    DSMissionBasicNode_LuaTable["DebugIsDebugEntryBusy"] = &DSMissionBasicNode::DebugIsDebugEntryBusy;
+    DSMissionBasicNode_LuaTable["GetMainMissionIdArray"] = &DSMissionBasicNode::GetMainMissionIdArray;
+    DSMissionBasicNode_LuaTable["IsHalflifeMissionById"] = &DSMissionBasicNode::IsHalflifeMissionById;
+    DSMissionBasicNode_LuaTable["DebugDelayRemoveBaggageByName"] = &DSMissionBasicNode::DebugDelayRemoveBaggageByName;
+    DSMissionBasicNode_LuaTable["DebugRemoveBaggageByName"] = &DSMissionBasicNode::DebugRemoveBaggageByName;
+    DSMissionBasicNode_LuaTable["DebugDeleteMissionBaggage"] = &DSMissionBasicNode::DebugDeleteMissionBaggage;
+    DSMissionBasicNode_LuaTable["DebugUpdateMissionSystem"] = &DSMissionBasicNode::DebugUpdateMissionSystem;
+    DSMissionBasicNode_LuaTable["DebugResetAccessingTerminal"] = &DSMissionBasicNode::DebugResetAccessingTerminal;
+    DSMissionBasicNode_LuaTable["DebugSetAccessingTerminal"] = &DSMissionBasicNode::DebugSetAccessingTerminal;
+    DSMissionBasicNode_LuaTable["GetMissionTypeById"] = &DSMissionBasicNode::GetMissionTypeById;
+    DSMissionBasicNode_LuaTable["RequestDispMissionStartHud"] = &DSMissionBasicNode::RequestDispMissionStartHud;
+    DSMissionBasicNode_LuaTable["CalcCanCancelProgressMissionCount"] = &DSMissionBasicNode::CalcCanCancelProgressMissionCount;
+    lua["DSMissionBasicNode"] = DSMissionBasicNode_LuaTable;
+    
+    auto DSTerminalGraphArgs_LuaTable = lua.create_table();
+    DSTerminalGraphArgs_LuaTable["GetDeliveredMemoryChips"] = &DSTerminalGraphArgs::GetDeliveredMemoryChips;
+    DSTerminalGraphArgs_LuaTable["GetOrderedBaggages"] = &DSTerminalGraphArgs::GetOrderedBaggages;
+    DSTerminalGraphArgs_LuaTable["GetDeliveredDeadBodyBaggages"] = &DSTerminalGraphArgs::GetDeliveredDeadBodyBaggages;
+    DSTerminalGraphArgs_LuaTable["GetDeliveredBaggages"] = &DSTerminalGraphArgs::GetDeliveredBaggages;
+    lua["DSTerminalGraphArgs"] = DSTerminalGraphArgs_LuaTable;
+    
+    auto DSGimmickGraphCommand_LuaTable = lua.create_table();
+    DSGimmickGraphCommand_LuaTable["SetInvisibleSharedGimmick"] = &DSGimmickGraphCommand::SetInvisibleSharedGimmick;
+    DSGimmickGraphCommand_LuaTable["DisableDSCheckStationAlarm"] = &DSGimmickGraphCommand::DisableDSCheckStationAlarm;
+    DSGimmickGraphCommand_LuaTable["MovePendulumGimmick"] = &DSGimmickGraphCommand::MovePendulumGimmick;
+    DSGimmickGraphCommand_LuaTable["ActivatePhysicsGimmickObjects"] = &DSGimmickGraphCommand::ActivatePhysicsGimmickObjects;
+    DSGimmickGraphCommand_LuaTable["ActivatePhysicsGimmickObjectsWithSoundEnd"] = &DSGimmickGraphCommand::ActivatePhysicsGimmickObjectsWithSoundEnd;
+    DSGimmickGraphCommand_LuaTable["SetFiringTargetWaiting"] = &DSGimmickGraphCommand::SetFiringTargetWaiting;
+    DSGimmickGraphCommand_LuaTable["NotifyGimmickSpawnMessage"] = &DSGimmickGraphCommand::NotifyGimmickSpawnMessage;
+    DSGimmickGraphCommand_LuaTable["DisableAutoDoorGimmickBaggageCheck"] = &DSGimmickGraphCommand::DisableAutoDoorGimmickBaggageCheck;
+    DSGimmickGraphCommand_LuaTable["LockAutoDoorGimmick"] = &DSGimmickGraphCommand::LockAutoDoorGimmick;
+    DSGimmickGraphCommand_LuaTable["ActivatePhysicsGimmickObjectsWithSoundStart"] = &DSGimmickGraphCommand::ActivatePhysicsGimmickObjectsWithSoundStart;
+    lua["DSGimmickGraphCommand"] = DSGimmickGraphCommand_LuaTable;
+    
+    auto MeleeBlockComponent_LuaTable = lua.create_table();
+    MeleeBlockComponent_LuaTable["IsBlocking"] = &MeleeBlockComponent::IsBlocking;
+    lua["MeleeBlockComponent"] = MeleeBlockComponent_LuaTable;
+    
+    auto FastTravelSystem_LuaTable = lua.create_table();
+    FastTravelSystem_LuaTable["DisableFastTravel"] = &FastTravelSystem::DisableFastTravel;
+    FastTravelSystem_LuaTable["EnableFastTravel"] = &FastTravelSystem::EnableFastTravel;
+    lua["FastTravelSystem"] = FastTravelSystem_LuaTable;
+    
+    auto DSSleepAfterShaderAnimComponent_LuaTable = lua.create_table();
+    DSSleepAfterShaderAnimComponent_LuaTable["SleepAfterShaderAnim"] = &DSSleepAfterShaderAnimComponent::SleepAfterShaderAnim;
+    DSSleepAfterShaderAnimComponent_LuaTable["WakeupAndRestartShaderAnim"] = &DSSleepAfterShaderAnimComponent::WakeupAndRestartShaderAnim;
+    lua["DSSleepAfterShaderAnimComponent"] = DSSleepAfterShaderAnimComponent_LuaTable;
+    
+    auto Application_LuaTable = lua.create_table();
+    Application_LuaTable["StartGame"] = &Application::StartGame;
+    Application_LuaTable["LoadAlwaysLoaded"] = &Application::LoadAlwaysLoaded;
+    Application_LuaTable["SelectAndLoadGame"] = &Application::SelectAndLoadGame;
+    Application_LuaTable["ContinueLastSave"] = &Application::ContinueLastSave;
+    Application_LuaTable["StartCredits"] = &Application::StartCredits;
+    Application_LuaTable["GetApplication"] = &Application::GetApplication;
+    lua["Application"] = Application_LuaTable;
+    
+    auto DSAmelieGestureComponent_LuaTable = lua.create_table();
+    DSAmelieGestureComponent_LuaTable["RequestAmelieHandWaving"] = &DSAmelieGestureComponent::RequestAmelieHandWaving;
+    lua["DSAmelieGestureComponent"] = DSAmelieGestureComponent_LuaTable;
+    
+    auto Math_LuaTable = lua.create_table();
+    Math_LuaTable["gMatrixInverse3x4"] = &Math::gMatrixInverse3x4;
+    Math_LuaTable["gComposeMat44"] = &Math::gComposeMat44;
+    Math_LuaTable["gMayaEulerTo4x4"] = &Math::gMayaEulerTo4x4;
+    Math_LuaTable["gMayaGetEulerXYZ"] = &Math::gMayaGetEulerXYZ;
+    Math_LuaTable["gMayaDecomposeAffineMatrix"] = &Math::gMayaDecomposeAffineMatrix;
+    Math_LuaTable["gMayaQuatFrom4x4"] = &Math::gMayaQuatFrom4x4;
+    Math_LuaTable["gMayaQuatTo4x4"] = &Math::gMayaQuatTo4x4;
+    lua["Math"] = Math_LuaTable;
+    
+    auto ModificationSocketComponent_LuaTable = lua.create_table();
+    ModificationSocketComponent_LuaTable["SocketModificationItem"] = &ModificationSocketComponent::SocketModificationItem;
+    ModificationSocketComponent_LuaTable["RemoveModificationItem"] = &ModificationSocketComponent::RemoveModificationItem;
+    lua["ModificationSocketComponent"] = ModificationSocketComponent_LuaTable;
+    
+    auto EntityPlaceHolder_LuaTable = lua.create_table();
+    EntityPlaceHolder_LuaTable["GetEntity"] = &EntityPlaceHolder::GetEntity;
+    lua["EntityPlaceHolder"] = EntityPlaceHolder_LuaTable;
+    
+    auto WwiseGroup_LuaTable = lua.create_table();
+    WwiseGroup_LuaTable["WwiseSetRTPCValueByPlayingIDExport"] = &WwiseGroup::WwiseSetRTPCValueByPlayingIDExport;
+    WwiseGroup_LuaTable["WwiseSetRTPCValueExport"] = &WwiseGroup::WwiseSetRTPCValueExport;
+    WwiseGroup_LuaTable["WwiseIsLoadingScreenExport"] = &WwiseGroup::WwiseIsLoadingScreenExport;
+    WwiseGroup_LuaTable["WwiseGetFootSoundToControllerSpeakerExport"] = &WwiseGroup::WwiseGetFootSoundToControllerSpeakerExport;
+    WwiseGroup_LuaTable["WwiseSetStateExport"] = &WwiseGroup::WwiseSetStateExport;
+    WwiseGroup_LuaTable["WwiseGetControllerSpeakerEnableExport"] = &WwiseGroup::WwiseGetControllerSpeakerEnableExport;
+    WwiseGroup_LuaTable["WwiseIsAliveExport"] = &WwiseGroup::WwiseIsAliveExport;
+    WwiseGroup_LuaTable["WwiseRtDbgGraphSoundResourceExport"] = &WwiseGroup::WwiseRtDbgGraphSoundResourceExport;
+    WwiseGroup_LuaTable["WwiseRtDbgUnregisterGameObjExport"] = &WwiseGroup::WwiseRtDbgUnregisterGameObjExport;
+    WwiseGroup_LuaTable["WwiseRtDbgPostEventExport"] = &WwiseGroup::WwiseRtDbgPostEventExport;
+    WwiseGroup_LuaTable["WwiseID_GetId"] = &WwiseGroup::WwiseID_GetId;
+    WwiseGroup_LuaTable["WwiseSetGlobalRTPCExport"] = &WwiseGroup::WwiseSetGlobalRTPCExport;
+    WwiseGroup_LuaTable["WwiseRtDbgSetPositionExport"] = &WwiseGroup::WwiseRtDbgSetPositionExport;
+    WwiseGroup_LuaTable["WwiseSetObjectObstructionAndOcclusionExport"] = &WwiseGroup::WwiseSetObjectObstructionAndOcclusionExport;
+    WwiseGroup_LuaTable["WwiseSetEventPauseExport"] = &WwiseGroup::WwiseSetEventPauseExport;
+    WwiseGroup_LuaTable["WwiseRtDbgPostEventWithCallbackExport"] = &WwiseGroup::WwiseRtDbgPostEventWithCallbackExport;
+    WwiseGroup_LuaTable["WwiseGetMasterVolumeExport"] = &WwiseGroup::WwiseGetMasterVolumeExport;
+    lua["WwiseGroup"] = WwiseGroup_LuaTable;
+    
+    auto WaterInteractionSystem_LuaTable = lua.create_table();
+    WaterInteractionSystem_LuaTable["AddImpact"] = &WaterInteractionSystem::AddImpact;
+    lua["WaterInteractionSystem"] = WaterInteractionSystem_LuaTable;
+    
+    auto MenuSaveDataDialog_LuaTable = lua.create_table();
+    MenuSaveDataDialog_LuaTable["DSCanSaveGame"] = &MenuSaveDataDialog::DSCanSaveGame;
+    MenuSaveDataDialog_LuaTable["IsSaveDataLoadingOrRequested"] = &MenuSaveDataDialog::IsSaveDataLoadingOrRequested;
+    MenuSaveDataDialog_LuaTable["SelectLoadSlot"] = &MenuSaveDataDialog::SelectLoadSlot;
+    MenuSaveDataDialog_LuaTable["SelectSaveSlot"] = &MenuSaveDataDialog::SelectSaveSlot;
+    MenuSaveDataDialog_LuaTable["DSSelectSaveSlot"] = &MenuSaveDataDialog::DSSelectSaveSlot;
+    MenuSaveDataDialog_LuaTable["CanSaveGame"] = &MenuSaveDataDialog::CanSaveGame;
+    lua["MenuSaveDataDialog"] = MenuSaveDataDialog_LuaTable;
+    
+    auto SnowInteractionSystem_LuaTable = lua.create_table();
+    SnowInteractionSystem_LuaTable["sGetFollowPositionDeformation"] = &SnowInteractionSystem::sGetFollowPositionDeformation;
+    SnowInteractionSystem_LuaTable["sSetMode"] = &SnowInteractionSystem::sSetMode;
+    SnowInteractionSystem_LuaTable["sGetMode"] = &SnowInteractionSystem::sGetMode;
+    lua["SnowInteractionSystem"] = SnowInteractionSystem_LuaTable;
+    
+    auto DsNpcGeneralCommand_LuaTable = lua.create_table();
+    DsNpcGeneralCommand_LuaTable["ForceLowLodNpc"] = &DsNpcGeneralCommand::ForceLowLodNpc;
+    DsNpcGeneralCommand_LuaTable["RemoveNpcFromWorld"] = &DsNpcGeneralCommand::RemoveNpcFromWorld;
+    DsNpcGeneralCommand_LuaTable["RestartExternalAnimation"] = &DsNpcGeneralCommand::RestartExternalAnimation;
+    DsNpcGeneralCommand_LuaTable["TeleportNpc"] = &DsNpcGeneralCommand::TeleportNpc;
+    DsNpcGeneralCommand_LuaTable["AppearNpcToWorld"] = &DsNpcGeneralCommand::AppearNpcToWorld;
+    lua["DsNpcGeneralCommand"] = DsNpcGeneralCommand_LuaTable;
+    
+    auto NPCScheduleManager_LuaTable = lua.create_table();
+    NPCScheduleManager_LuaTable["CreateNPCSchedule"] = &NPCScheduleManager::CreateNPCSchedule;
+    lua["NPCScheduleManager"] = NPCScheduleManager_LuaTable;
+    
+    auto DSPatrolPathManager_LuaTable = lua.create_table();
+    DSPatrolPathManager_LuaTable["UpdatePatrolPathCache"] = &DSPatrolPathManager::UpdatePatrolPathCache;
+    DSPatrolPathManager_LuaTable["ConnectSingleNPCWithPatrolPathGroup"] = &DSPatrolPathManager::ConnectSingleNPCWithPatrolPathGroup;
+    DSPatrolPathManager_LuaTable["AssignPatrolPathToEntity"] = &DSPatrolPathManager::AssignPatrolPathToEntity;
+    DSPatrolPathManager_LuaTable["EntityQuitPatrol"] = &DSPatrolPathManager::EntityQuitPatrol;
+    DSPatrolPathManager_LuaTable["ClearPatrolPathCache"] = &DSPatrolPathManager::ClearPatrolPathCache;
+    DSPatrolPathManager_LuaTable["ConnectNPCWithPatrolPath"] = &DSPatrolPathManager::ConnectNPCWithPatrolPath;
+    DSPatrolPathManager_LuaTable["DisconnectNPCFromPatrolPath"] = &DSPatrolPathManager::DisconnectNPCFromPatrolPath;
+    DSPatrolPathManager_LuaTable["ConnectSingleNPCWithPatrolPath"] = &DSPatrolPathManager::ConnectSingleNPCWithPatrolPath;
+    lua["DSPatrolPathManager"] = DSPatrolPathManager_LuaTable;
+    
+    auto ComponentLifetimeComponent_LuaTable = lua.create_table();
+    ComponentLifetimeComponent_LuaTable["UnregisterComponent"] = &ComponentLifetimeComponent::UnregisterComponent;
+    ComponentLifetimeComponent_LuaTable["RegisterComponent"] = &ComponentLifetimeComponent::RegisterComponent;
+    lua["ComponentLifetimeComponent"] = ComponentLifetimeComponent_LuaTable;
+    
+    auto AnimationData_LuaTable = lua.create_table();
+    AnimationData_LuaTable["MakeAdditive"] = &AnimationData::MakeAdditive;
+    AnimationData_LuaTable["StatesQueueEvalLogic"] = &AnimationData::StatesQueueEvalLogic;
+    AnimationData_LuaTable["BlendSyncTracks"] = &AnimationData::BlendSyncTracks;
+    AnimationData_LuaTable["StorePose"] = &AnimationData::StorePose;
+    AnimationData_LuaTable["StatesQueueUpdateTime"] = &AnimationData::StatesQueueUpdateTime;
+    AnimationData_LuaTable["BlendBuffers"] = &AnimationData::BlendBuffers;
+    AnimationData_LuaTable["PushActiveState"] = &AnimationData::PushActiveState;
+    AnimationData_LuaTable["ProbeActiveStates"] = &AnimationData::ProbeActiveStates;
+    AnimationData_LuaTable["ModifyJointTransform"] = &AnimationData::ModifyJointTransform;
+    AnimationData_LuaTable["ExtractSyncTracksFromAnim"] = &AnimationData::ExtractSyncTracksFromAnim;
+    AnimationData_LuaTable["ResolveJointID"] = &AnimationData::ResolveJointID;
+    AnimationData_LuaTable["SetBranchNameHash"] = &AnimationData::SetBranchNameHash;
+    AnimationData_LuaTable["PassThrough"] = &AnimationData::PassThrough;
+    AnimationData_LuaTable["ResetQueueOnActivation"] = &AnimationData::ResetQueueOnActivation;
+    AnimationData_LuaTable["ComputeClosestAnimation"] = &AnimationData::ComputeClosestAnimation;
+    AnimationData_LuaTable["UpdateEventMatching"] = &AnimationData::UpdateEventMatching;
+    AnimationData_LuaTable["SetFrameAndTime"] = &AnimationData::SetFrameAndTime;
+    AnimationData_LuaTable["BlendAnimationDataSources"] = &AnimationData::BlendAnimationDataSources;
+    AnimationData_LuaTable["SampleAnimation"] = &AnimationData::SampleAnimation;
+    AnimationData_LuaTable["TimeMapAnimation"] = &AnimationData::TimeMapAnimation;
+    AnimationData_LuaTable["ExtractJointInfo"] = &AnimationData::ExtractJointInfo;
+    AnimationData_LuaTable["CloneSyncTrackAndStretch"] = &AnimationData::CloneSyncTrackAndStretch;
+    AnimationData_LuaTable["GetPose"] = &AnimationData::GetPose;
+    AnimationData_LuaTable["IsAnimationEventActive"] = &AnimationData::IsAnimationEventActive;
+    AnimationData_LuaTable["RemoveActiveStates"] = &AnimationData::RemoveActiveStates;
+    AnimationData_LuaTable["RecycleActiveStatesQueue"] = &AnimationData::RecycleActiveStatesQueue;
+    AnimationData_LuaTable["SetCurrentStateEventSpaceTimeInSMContext"] = &AnimationData::SetCurrentStateEventSpaceTimeInSMContext;
+    lua["AnimationData"] = AnimationData_LuaTable;
+    
+    auto DSEffectsNodeGraphBindings_LuaTable = lua.create_table();
+    DSEffectsNodeGraphBindings_LuaTable["IsIntersectOrientedBox"] = &DSEffectsNodeGraphBindings::IsIntersectOrientedBox;
+    DSEffectsNodeGraphBindings_LuaTable["IsInClosestCrater"] = &DSEffectsNodeGraphBindings::IsInClosestCrater;
+    DSEffectsNodeGraphBindings_LuaTable["DSFindClosestPoint"] = &DSEffectsNodeGraphBindings::DSFindClosestPoint;
+    DSEffectsNodeGraphBindings_LuaTable["DSSendParticleSystemExternalSizeFromObjectCollection"] = &DSEffectsNodeGraphBindings::DSSendParticleSystemExternalSizeFromObjectCollection;
+    DSEffectsNodeGraphBindings_LuaTable["DSCreateImpactEffect"] = &DSEffectsNodeGraphBindings::DSCreateImpactEffect;
+    DSEffectsNodeGraphBindings_LuaTable["IsTileEdge"] = &DSEffectsNodeGraphBindings::IsTileEdge;
+    DSEffectsNodeGraphBindings_LuaTable["DSFindClosestPointFromObjectCollection"] = &DSEffectsNodeGraphBindings::DSFindClosestPointFromObjectCollection;
+    lua["DSEffectsNodeGraphBindings"] = DSEffectsNodeGraphBindings_LuaTable;
+    
+    auto DSMissionAbstractTodoNodeResource_LuaTable = lua.create_table();
+    DSMissionAbstractTodoNodeResource_LuaTable["RemindTodo"] = &DSMissionAbstractTodoNodeResource::RemindTodo;
+    DSMissionAbstractTodoNodeResource_LuaTable["RevealTodo"] = &DSMissionAbstractTodoNodeResource::RevealTodo;
+    DSMissionAbstractTodoNodeResource_LuaTable["MarkTodoAsCompleted"] = &DSMissionAbstractTodoNodeResource::MarkTodoAsCompleted;
+    DSMissionAbstractTodoNodeResource_LuaTable["MarkTodoAsDiscarded"] = &DSMissionAbstractTodoNodeResource::MarkTodoAsDiscarded;
+    DSMissionAbstractTodoNodeResource_LuaTable["MarkTodoAsFailed"] = &DSMissionAbstractTodoNodeResource::MarkTodoAsFailed;
+    lua["DSMissionAbstractTodoNodeResource"] = DSMissionAbstractTodoNodeResource_LuaTable;
+    
+    auto DSLikeCommand_LuaTable = lua.create_table();
+    DSLikeCommand_LuaTable["ReceiveLikeFromMajorMember"] = &DSLikeCommand::ReceiveLikeFromMajorMember;
+    DSLikeCommand_LuaTable["ReceiveLike"] = &DSLikeCommand::ReceiveLike;
+    DSLikeCommand_LuaTable["ReceiveLikeWithOption"] = &DSLikeCommand::ReceiveLikeWithOption;
+    lua["DSLikeCommand"] = DSLikeCommand_LuaTable;
+    
+    auto DSCreateMissionBaggageNodeCommand_LuaTable = lua.create_table();
+    DSCreateMissionBaggageNodeCommand_LuaTable["RequestCreateMissionExtraBaggage"] = &DSCreateMissionBaggageNodeCommand::RequestCreateMissionExtraBaggage;
+    DSCreateMissionBaggageNodeCommand_LuaTable["CreateMissionBaggages"] = &DSCreateMissionBaggageNodeCommand::CreateMissionBaggages;
+    DSCreateMissionBaggageNodeCommand_LuaTable["CreateBonusBaggageOnShelf"] = &DSCreateMissionBaggageNodeCommand::CreateBonusBaggageOnShelf;
+    lua["DSCreateMissionBaggageNodeCommand"] = DSCreateMissionBaggageNodeCommand_LuaTable;
+    
+    auto AIManager_LuaTable = lua.create_table();
+    AIManager_LuaTable["CreateAuralStimulus"] = &AIManager::CreateAuralStimulus;
+    AIManager_LuaTable["CreateVisualStimulus"] = &AIManager::CreateVisualStimulus;
+    lua["AIManager"] = AIManager_LuaTable;
+    
+    auto AINavMeshComponent_LuaTable = lua.create_table();
+    AINavMeshComponent_LuaTable["FindPositionOnNavMeshBySettings"] = &AINavMeshComponent::FindPositionOnNavMeshBySettings;
+    lua["AINavMeshComponent"] = AINavMeshComponent_LuaTable;
+    
+    auto ConstraintComponent_LuaTable = lua.create_table();
+    ConstraintComponent_LuaTable["Create"] = &ConstraintComponent::Create;
+    lua["ConstraintComponent"] = ConstraintComponent_LuaTable;
+    
+    auto SequenceNetworkInstance_LuaTable = lua.create_table();
+    SequenceNetworkInstance_LuaTable["ForceCameraPredictionByUUID"] = &SequenceNetworkInstance::ForceCameraPredictionByUUID;
+    lua["SequenceNetworkInstance"] = SequenceNetworkInstance_LuaTable;
+    
+    auto RouteMover_LuaTable = lua.create_table();
+    RouteMover_LuaTable["MoveAlongRoute"] = &RouteMover::MoveAlongRoute;
+    lua["RouteMover"] = RouteMover_LuaTable;
+    
+    auto DSFiringRangeNodeGraphBindings_LuaTable = lua.create_table();
+    DSFiringRangeNodeGraphBindings_LuaTable["SetFiringRangeMissionInitialCarriedWeapon"] = &DSFiringRangeNodeGraphBindings::SetFiringRangeMissionInitialCarriedWeapon;
+    DSFiringRangeNodeGraphBindings_LuaTable["SetFiringRangeMissionInitialItem"] = &DSFiringRangeNodeGraphBindings::SetFiringRangeMissionInitialItem;
+    DSFiringRangeNodeGraphBindings_LuaTable["StartFiringRangeMissionResult"] = &DSFiringRangeNodeGraphBindings::StartFiringRangeMissionResult;
+    DSFiringRangeNodeGraphBindings_LuaTable["SetStartTransform"] = &DSFiringRangeNodeGraphBindings::SetStartTransform;
+    DSFiringRangeNodeGraphBindings_LuaTable["NotifyFiringRangeMissionGoal"] = &DSFiringRangeNodeGraphBindings::NotifyFiringRangeMissionGoal;
+    DSFiringRangeNodeGraphBindings_LuaTable["SetFiringRangeMissionInitialSuitParts"] = &DSFiringRangeNodeGraphBindings::SetFiringRangeMissionInitialSuitParts;
+    DSFiringRangeNodeGraphBindings_LuaTable["SetFiringRangeMissionInitialWeapon"] = &DSFiringRangeNodeGraphBindings::SetFiringRangeMissionInitialWeapon;
+    DSFiringRangeNodeGraphBindings_LuaTable["CheckFiringRangeMissionClearCondition"] = &DSFiringRangeNodeGraphBindings::CheckFiringRangeMissionClearCondition;
+    DSFiringRangeNodeGraphBindings_LuaTable["StartFiringRangeMission"] = &DSFiringRangeNodeGraphBindings::StartFiringRangeMission;
+    DSFiringRangeNodeGraphBindings_LuaTable["IsFiringRangeMission"] = &DSFiringRangeNodeGraphBindings::IsFiringRangeMission;
+    DSFiringRangeNodeGraphBindings_LuaTable["SetStartLocator"] = &DSFiringRangeNodeGraphBindings::SetStartLocator;
+    lua["DSFiringRangeNodeGraphBindings"] = DSFiringRangeNodeGraphBindings_LuaTable;
+    
+    auto StringToolsGroup_LuaTable = lua.create_table();
+    StringToolsGroup_LuaTable["sHexToByte"] = &StringToolsGroup::sHexToByte;
+    lua["StringToolsGroup"] = StringToolsGroup_LuaTable;
+    
+    auto DSMissionEvaluationDataTable_LuaTable = lua.create_table();
+    DSMissionEvaluationDataTable_LuaTable["GetDataRecord"] = &DSMissionEvaluationDataTable::GetDataRecord;
+    DSMissionEvaluationDataTable_LuaTable["GetMinThreshold"] = &DSMissionEvaluationDataTable::GetMinThreshold;
+    DSMissionEvaluationDataTable_LuaTable["GetMaxThreshold"] = &DSMissionEvaluationDataTable::GetMaxThreshold;
+    lua["DSMissionEvaluationDataTable"] = DSMissionEvaluationDataTable_LuaTable;
+    
+    auto PlayerProfile_LuaTable = lua.create_table();
+    PlayerProfile_LuaTable["Save"] = &PlayerProfile::Save;
+    PlayerProfile_LuaTable["IsGameFinished"] = &PlayerProfile::IsGameFinished;
+    PlayerProfile_LuaTable["SetGameFinished"] = &PlayerProfile::SetGameFinished;
+    lua["PlayerProfile"] = PlayerProfile_LuaTable;
+    
+    auto SoundSystem_LuaTable = lua.create_table();
+    SoundSystem_LuaTable["OverrideReverbZone"] = &SoundSystem::OverrideReverbZone;
+    SoundSystem_LuaTable["OverrideMixZone"] = &SoundSystem::OverrideMixZone;
+    SoundSystem_LuaTable["SetHDRWindowSettings"] = &SoundSystem::SetHDRWindowSettings;
+    lua["SoundSystem"] = SoundSystem_LuaTable;
+    
+    auto DSDeliveryPointInfoCommand_LuaTable = lua.create_table();
+    DSDeliveryPointInfoCommand_LuaTable["SetDeliveryPointAvailabilityDetail"] = &DSDeliveryPointInfoCommand::SetDeliveryPointAvailabilityDetail;
+    DSDeliveryPointInfoCommand_LuaTable["SetBonusBaggageTypeHash"] = &DSDeliveryPointInfoCommand::SetBonusBaggageTypeHash;
+    DSDeliveryPointInfoCommand_LuaTable["SetDeliveryPointAvailability"] = &DSDeliveryPointInfoCommand::SetDeliveryPointAvailability;
+    DSDeliveryPointInfoCommand_LuaTable["GetDeliveryPointIdFromMissionId"] = &DSDeliveryPointInfoCommand::GetDeliveryPointIdFromMissionId;
+    DSDeliveryPointInfoCommand_LuaTable["GetTypeFromDeliveryPointInfoId"] = &DSDeliveryPointInfoCommand::GetTypeFromDeliveryPointInfoId;
+    DSDeliveryPointInfoCommand_LuaTable["CheckDeliveryPointAvailable"] = &DSDeliveryPointInfoCommand::CheckDeliveryPointAvailable;
+    DSDeliveryPointInfoCommand_LuaTable["GetTypeFromDeliveryPointInfo"] = &DSDeliveryPointInfoCommand::GetTypeFromDeliveryPointInfo;
+    lua["DSDeliveryPointInfoCommand"] = DSDeliveryPointInfoCommand_LuaTable;
+    
+    auto DSMissionOpenCondition_LuaTable = lua.create_table();
+    DSMissionOpenCondition_LuaTable["GetLogicBlock"] = &DSMissionOpenCondition::GetLogicBlock;
+    DSMissionOpenCondition_LuaTable["GetOpenLists"] = &DSMissionOpenCondition::GetOpenLists;
+    lua["DSMissionOpenCondition"] = DSMissionOpenCondition_LuaTable;
+    
+    auto DSMissionOpenNode_LuaTable = lua.create_table();
+    DSMissionOpenNode_LuaTable["SetTemporaryMissionOpenState"] = &DSMissionOpenNode::SetTemporaryMissionOpenState;
+    DSMissionOpenNode_LuaTable["OpenMissions"] = &DSMissionOpenNode::OpenMissions;
+    DSMissionOpenNode_LuaTable["CountCompletedMissions"] = &DSMissionOpenNode::CountCompletedMissions;
+    DSMissionOpenNode_LuaTable["CheckMissionOpenState"] = &DSMissionOpenNode::CheckMissionOpenState;
+    DSMissionOpenNode_LuaTable["CheckCompletedMissions"] = &DSMissionOpenNode::CheckCompletedMissions;
+    DSMissionOpenNode_LuaTable["CheckCompletedCondition"] = &DSMissionOpenNode::CheckCompletedCondition;
+    DSMissionOpenNode_LuaTable["SetNotAvailableMission"] = &DSMissionOpenNode::SetNotAvailableMission;
+    lua["DSMissionOpenNode"] = DSMissionOpenNode_LuaTable;
+    
+    auto CubemapbakeOnly_LuaTable = lua.create_table();
+    CubemapbakeOnly_LuaTable["GetCubemapbakeOnlyFlag"] = &CubemapbakeOnly::GetCubemapbakeOnlyFlag;
+    lua["CubemapbakeOnly"] = CubemapbakeOnly_LuaTable;
+    
+    auto DSMissionGraphService_LuaTable = lua.create_table();
+    DSMissionGraphService_LuaTable["CallOtherGraph"] = &DSMissionGraphService::CallOtherGraph;
+    DSMissionGraphService_LuaTable["CallByMissionResource"] = &DSMissionGraphService::CallByMissionResource;
+    DSMissionGraphService_LuaTable["CreateGraphServiceArg"] = &DSMissionGraphService::CreateGraphServiceArg;
+    DSMissionGraphService_LuaTable["CallByMissionId"] = &DSMissionGraphService::CallByMissionId;
+    lua["DSMissionGraphService"] = DSMissionGraphService_LuaTable;
+    
+    auto DSWeaponSystem_LuaTable = lua.create_table();
+    DSWeaponSystem_LuaTable["IsKillingAmmo"] = &DSWeaponSystem::IsKillingAmmo;
+    DSWeaponSystem_LuaTable["CanUseInsideDeliveryTerminalArea"] = &DSWeaponSystem::CanUseInsideDeliveryTerminalArea;
+    DSWeaponSystem_LuaTable["RefreshPrivateRoomWeaponShelf"] = &DSWeaponSystem::RefreshPrivateRoomWeaponShelf;
+    lua["DSWeaponSystem"] = DSWeaponSystem_LuaTable;
+    
+    auto SimplePathMover_LuaTable = lua.create_table();
+    SimplePathMover_LuaTable["MoveToWorldTransform"] = &SimplePathMover::MoveToWorldTransform;
+    SimplePathMover_LuaTable["MoveToWorldTransformOverTime"] = &SimplePathMover::MoveToWorldTransformOverTime;
+    lua["SimplePathMover"] = SimplePathMover_LuaTable;
+    
+    auto DHighwaySyncControlCommand_LuaTable = lua.create_table();
+    DHighwaySyncControlCommand_LuaTable["UpdateSyncControlParams"] = &DHighwaySyncControlCommand::UpdateSyncControlParams;
+    lua["DHighwaySyncControlCommand"] = DHighwaySyncControlCommand_LuaTable;
+    
+    auto DSDeliveryBotGameActor_LuaTable = lua.create_table();
+    DSDeliveryBotGameActor_LuaTable["CheckDeliveryBotAIMode"] = &DSDeliveryBotGameActor::CheckDeliveryBotAIMode;
+    DSDeliveryBotGameActor_LuaTable["CheckDeliveryBotRidingAIMode"] = &DSDeliveryBotGameActor::CheckDeliveryBotRidingAIMode;
+    DSDeliveryBotGameActor_LuaTable["GetDeliveryBotsInCurrentArea"] = &DSDeliveryBotGameActor::GetDeliveryBotsInCurrentArea;
+    DSDeliveryBotGameActor_LuaTable["ForceVisibleDeliveryBot"] = &DSDeliveryBotGameActor::ForceVisibleDeliveryBot;
+    DSDeliveryBotGameActor_LuaTable["GetAppearingDeliveryBotDistanceForCutscene"] = &DSDeliveryBotGameActor::GetAppearingDeliveryBotDistanceForCutscene;
+    DSDeliveryBotGameActor_LuaTable["ForceCompleteAllDeliveries"] = &DSDeliveryBotGameActor::ForceCompleteAllDeliveries;
+    DSDeliveryBotGameActor_LuaTable["StowDeliveryBot"] = &DSDeliveryBotGameActor::StowDeliveryBot;
+    DSDeliveryBotGameActor_LuaTable["DeactivateDeliveryBot"] = &DSDeliveryBotGameActor::DeactivateDeliveryBot;
+    DSDeliveryBotGameActor_LuaTable["ActivateDeliveryBot"] = &DSDeliveryBotGameActor::ActivateDeliveryBot;
+    DSDeliveryBotGameActor_LuaTable["CheckDeliveryBotDockingLocation"] = &DSDeliveryBotGameActor::CheckDeliveryBotDockingLocation;
+    DSDeliveryBotGameActor_LuaTable["IsPlayerRiding"] = &DSDeliveryBotGameActor::IsPlayerRiding;
+    lua["DSDeliveryBotGameActor"] = DSDeliveryBotGameActor_LuaTable;
+    
+    auto DSOnlineMissionCommand_LuaTable = lua.create_table();
+    DSOnlineMissionCommand_LuaTable["ApplyPreparationItemsForLastStranding"] = &DSOnlineMissionCommand::ApplyPreparationItemsForLastStranding;
+    DSOnlineMissionCommand_LuaTable["ApplyPreparationItemsForTarget"] = &DSOnlineMissionCommand::ApplyPreparationItemsForTarget;
+    lua["DSOnlineMissionCommand"] = DSOnlineMissionCommand_LuaTable;
+    
+    auto DSSoundNodeGraphBindings_LuaTable = lua.create_table();
+    DSSoundNodeGraphBindings_LuaTable["SetMusicPlayerCutsceneResume"] = &DSSoundNodeGraphBindings::SetMusicPlayerCutsceneResume;
+    lua["DSSoundNodeGraphBindings"] = DSSoundNodeGraphBindings_LuaTable;
+    
+    auto DSGazerManagerCommand_LuaTable = lua.create_table();
+    DSGazerManagerCommand_LuaTable["IsGazerNoticingPlayer"] = &DSGazerManagerCommand::IsGazerNoticingPlayer;
+    DSGazerManagerCommand_LuaTable["ResetAllGazers"] = &DSGazerManagerCommand::ResetAllGazers;
+    DSGazerManagerCommand_LuaTable["EnableRespawnGazers"] = &DSGazerManagerCommand::EnableRespawnGazers;
+    lua["DSGazerManagerCommand"] = DSGazerManagerCommand_LuaTable;
+    
+    auto AnnotationComponent_LuaTable = lua.create_table();
+    AnnotationComponent_LuaTable["EnableAllAnnotations"] = &AnnotationComponent::EnableAllAnnotations;
+    lua["AnnotationComponent"] = AnnotationComponent_LuaTable;
+    
+    auto SequenceComponent_LuaTable = lua.create_table();
+    SequenceComponent_LuaTable["GetSequenceStopFrameNumber"] = &SequenceComponent::GetSequenceStopFrameNumber;
+    SequenceComponent_LuaTable["GetSceneFromEntityBoundToSequence"] = &SequenceComponent::GetSceneFromEntityBoundToSequence;
+    SequenceComponent_LuaTable["GetSequenceCurrentFrameNumber"] = &SequenceComponent::GetSequenceCurrentFrameNumber;
+    SequenceComponent_LuaTable["GetSequenceNextFrameNumber"] = &SequenceComponent::GetSequenceNextFrameNumber;
+    lua["SequenceComponent"] = SequenceComponent_LuaTable;
+    
+    auto DSMissionSafetyHouseCommand_LuaTable = lua.create_table();
+    DSMissionSafetyHouseCommand_LuaTable["DSCallDefaultPrivateRoomGraph"] = &DSMissionSafetyHouseCommand::DSCallDefaultPrivateRoomGraph;
+    DSMissionSafetyHouseCommand_LuaTable["IsDisableLeavePrivateRoomInfoLogs"] = &DSMissionSafetyHouseCommand::IsDisableLeavePrivateRoomInfoLogs;
+    DSMissionSafetyHouseCommand_LuaTable["DSClearNotNeededInfoLogWhenLeavePrivateRoom"] = &DSMissionSafetyHouseCommand::DSClearNotNeededInfoLogWhenLeavePrivateRoom;
+    DSMissionSafetyHouseCommand_LuaTable["DSTelemetryEnterPrivateRoomOnlyEVorTR"] = &DSMissionSafetyHouseCommand::DSTelemetryEnterPrivateRoomOnlyEVorTR;
+    DSMissionSafetyHouseCommand_LuaTable["DSGetPrivateRoomDeltaTime"] = &DSMissionSafetyHouseCommand::DSGetPrivateRoomDeltaTime;
+    DSMissionSafetyHouseCommand_LuaTable["DSWakeupHeartmanRoomState"] = &DSMissionSafetyHouseCommand::DSWakeupHeartmanRoomState;
+    DSMissionSafetyHouseCommand_LuaTable["DSWakeupPrivateRoomStateById"] = &DSMissionSafetyHouseCommand::DSWakeupPrivateRoomStateById;
+    DSMissionSafetyHouseCommand_LuaTable["DSWakeupPrivateRoomState"] = &DSMissionSafetyHouseCommand::DSWakeupPrivateRoomState;
+    lua["DSMissionSafetyHouseCommand"] = DSMissionSafetyHouseCommand_LuaTable;
+    
+    auto CPUProfileWindow_LuaTable = lua.create_table();
+    CPUProfileWindow_LuaTable["sCaptureFrames"] = &CPUProfileWindow::sCaptureFrames;
+    lua["CPUProfileWindow"] = CPUProfileWindow_LuaTable;
+    
+    auto AttachToHelperMover_LuaTable = lua.create_table();
+    AttachToHelperMover_LuaTable["Create"] = &AttachToHelperMover::Create;
+    lua["AttachToHelperMover"] = AttachToHelperMover_LuaTable;
+    
+    auto DSWelcomeHoloComponent_LuaTable = lua.create_table();
+    DSWelcomeHoloComponent_LuaTable["StartVisibleWelcomeHolo"] = &DSWelcomeHoloComponent::StartVisibleWelcomeHolo;
+    DSWelcomeHoloComponent_LuaTable["SetAnimationDistanceSetting"] = &DSWelcomeHoloComponent::SetAnimationDistanceSetting;
+    DSWelcomeHoloComponent_LuaTable["SetNotEchoTargetWelcomeHolo"] = &DSWelcomeHoloComponent::SetNotEchoTargetWelcomeHolo;
+    DSWelcomeHoloComponent_LuaTable["SetAnimationSyncSetWelcomeHolo"] = &DSWelcomeHoloComponent::SetAnimationSyncSetWelcomeHolo;
+    DSWelcomeHoloComponent_LuaTable["StartInvisibleWelcomeHolo"] = &DSWelcomeHoloComponent::StartInvisibleWelcomeHolo;
+    lua["DSWelcomeHoloComponent"] = DSWelcomeHoloComponent_LuaTable;
+    
+    auto UTFToolsGroup_LuaTable = lua.create_table();
+    UTFToolsGroup_LuaTable["sDecodeUTF8"] = &UTFToolsGroup::sDecodeUTF8;
+    UTFToolsGroup_LuaTable["sEncodeUTF8"] = &UTFToolsGroup::sEncodeUTF8;
+    lua["UTFToolsGroup"] = UTFToolsGroup_LuaTable;
+    
+    auto DSDeliverySurveyCommand_LuaTable = lua.create_table();
+    DSDeliverySurveyCommand_LuaTable["StopSwitchingPlayerTriggerBoxForPrivateRoom"] = &DSDeliverySurveyCommand::StopSwitchingPlayerTriggerBoxForPrivateRoom;
+    DSDeliverySurveyCommand_LuaTable["GetTotalDeliveryBaggageCountOnSurvey"] = &DSDeliverySurveyCommand::GetTotalDeliveryBaggageCountOnSurvey;
+    lua["DSDeliverySurveyCommand"] = DSDeliverySurveyCommand_LuaTable;
+    
+    auto WorldEncounterManager_LuaTable = lua.create_table();
+    WorldEncounterManager_LuaTable["StopAllWorldEncounters"] = &WorldEncounterManager::StopAllWorldEncounters;
+    lua["WorldEncounterManager"] = WorldEncounterManager_LuaTable;
+    
+    auto DSMissionCollectorsItemCommand_LuaTable = lua.create_table();
+    DSMissionCollectorsItemCommand_LuaTable["Given"] = &DSMissionCollectorsItemCommand::Given;
+    DSMissionCollectorsItemCommand_LuaTable["PickingUp"] = &DSMissionCollectorsItemCommand::PickingUp;
+    DSMissionCollectorsItemCommand_LuaTable["IsDonatedAllMemoryChip"] = &DSMissionCollectorsItemCommand::IsDonatedAllMemoryChip;
+    DSMissionCollectorsItemCommand_LuaTable["Donated"] = &DSMissionCollectorsItemCommand::Donated;
+    lua["DSMissionCollectorsItemCommand"] = DSMissionCollectorsItemCommand_LuaTable;
+    
+    auto DSDeliveryManager_LuaTable = lua.create_table();
+    DSDeliveryManager_LuaTable["SendCommand"] = &DSDeliveryManager::SendCommand;
+    lua["DSDeliveryManager"] = DSDeliveryManager_LuaTable;
+    
+    auto DSMissionEvaluationDataTablesByThreshold_LuaTable = lua.create_table();
+    DSMissionEvaluationDataTablesByThreshold_LuaTable["GetMinThreshold"] = &DSMissionEvaluationDataTablesByThreshold::GetMinThreshold;
+    DSMissionEvaluationDataTablesByThreshold_LuaTable["GetMaxThreshold"] = &DSMissionEvaluationDataTablesByThreshold::GetMaxThreshold;
+    DSMissionEvaluationDataTablesByThreshold_LuaTable["MaxEvaluationDataTable"] = &DSMissionEvaluationDataTablesByThreshold::MaxEvaluationDataTable;
+    DSMissionEvaluationDataTablesByThreshold_LuaTable["MinEvaluationDataTable"] = &DSMissionEvaluationDataTablesByThreshold::MinEvaluationDataTable;
+    DSMissionEvaluationDataTablesByThreshold_LuaTable["FindEvaluationDataTable"] = &DSMissionEvaluationDataTablesByThreshold::FindEvaluationDataTable;
+    lua["DSMissionEvaluationDataTablesByThreshold"] = DSMissionEvaluationDataTablesByThreshold_LuaTable;
+    
+    auto DSNpcAlertZone_LuaTable = lua.create_table();
+    DSNpcAlertZone_LuaTable["SetAlertZone"] = &DSNpcAlertZone::SetAlertZone;
+    DSNpcAlertZone_LuaTable["ClearAlertZone"] = &DSNpcAlertZone::ClearAlertZone;
+    lua["DSNpcAlertZone"] = DSNpcAlertZone_LuaTable;
+    
+    auto EconomyManagerResource_LuaTable = lua.create_table();
+    EconomyManagerResource_LuaTable["GetAmountInPlayerInventory"] = &EconomyManagerResource::GetAmountInPlayerInventory;
+    EconomyManagerResource_LuaTable["GetCurrencyItemResource"] = &EconomyManagerResource::GetCurrencyItemResource;
+    lua["EconomyManagerResource"] = EconomyManagerResource_LuaTable;
+    
+    auto CollectableManager_LuaTable = lua.create_table();
+    CollectableManager_LuaTable["SetCollectableUnlocked"] = &CollectableManager::SetCollectableUnlocked;
+    CollectableManager_LuaTable["IsCollectableForEntityResourceUnlocked"] = &CollectableManager::IsCollectableForEntityResourceUnlocked;
+    CollectableManager_LuaTable["SetCollectableForEntityResourceUnlocked"] = &CollectableManager::SetCollectableForEntityResourceUnlocked;
+    CollectableManager_LuaTable["IsCollectableUnlocked"] = &CollectableManager::IsCollectableUnlocked;
+    lua["CollectableManager"] = CollectableManager_LuaTable;
+    
+    auto CrowdMember_LuaTable = lua.create_table();
+    CrowdMember_LuaTable["SetCarryingCrate"] = &CrowdMember::SetCarryingCrate;
+    CrowdMember_LuaTable["SetSleepingIndoors"] = &CrowdMember::SetSleepingIndoors;
+    lua["CrowdMember"] = CrowdMember_LuaTable;
+    
+    auto ResourceSet_LuaTable = lua.create_table();
+    ResourceSet_LuaTable["FindResource"] = &ResourceSet::FindResource;
+    lua["ResourceSet"] = ResourceSet_LuaTable;
+    
+    auto Scene_LuaTable = lua.create_table();
+    Scene_LuaTable["GetCurrentSceneEntity"] = &Scene::GetCurrentSceneEntity;
+    lua["Scene"] = Scene_LuaTable;
+    
+    auto DSMissionBaggageResource_LuaTable = lua.create_table();
+    DSMissionBaggageResource_LuaTable["GetDSGameBaggageListItem"] = &DSMissionBaggageResource::GetDSGameBaggageListItem;
+    lua["DSMissionBaggageResource"] = DSMissionBaggageResource_LuaTable;
+    
+    auto GameMenu_LuaTable = lua.create_table();
+    GameMenu_LuaTable["OpenMenuPage"] = &GameMenu::OpenMenuPage;
+    lua["GameMenu"] = GameMenu_LuaTable;
+    
+    auto GliderMover_LuaTable = lua.create_table();
+    GliderMover_LuaTable["AddDisplacement"] = &GliderMover::AddDisplacement;
+    lua["GliderMover"] = GliderMover_LuaTable;
+    
+    auto BodyVariantRuntimeComponent_LuaTable = lua.create_table();
+    BodyVariantRuntimeComponent_LuaTable["SetBodyVariant"] = &BodyVariantRuntimeComponent::SetBodyVariant;
+    BodyVariantRuntimeComponent_LuaTable["IsActiveBodyVariant"] = &BodyVariantRuntimeComponent::IsActiveBodyVariant;
+    lua["BodyVariantRuntimeComponent"] = BodyVariantRuntimeComponent_LuaTable;
+    
+    auto HealOverTimeComponent_LuaTable = lua.create_table();
+    HealOverTimeComponent_LuaTable["HealOverTime"] = &HealOverTimeComponent::HealOverTime;
+    lua["HealOverTimeComponent"] = HealOverTimeComponent_LuaTable;
+    
+    auto DSBulletSystem_LuaTable = lua.create_table();
+    DSBulletSystem_LuaTable["CreateBullet"] = &DSBulletSystem::CreateBullet;
+    lua["DSBulletSystem"] = DSBulletSystem_LuaTable;
+    
+    auto DSNetOnlineObjectCommand_LuaTable = lua.create_table();
+    DSNetOnlineObjectCommand_LuaTable["RequestCheckOnlineState"] = &DSNetOnlineObjectCommand::RequestCheckOnlineState;
+    DSNetOnlineObjectCommand_LuaTable["QueuePreSearch"] = &DSNetOnlineObjectCommand::QueuePreSearch;
+    DSNetOnlineObjectCommand_LuaTable["StartLastStranding"] = &DSNetOnlineObjectCommand::StartLastStranding;
+    DSNetOnlineObjectCommand_LuaTable["EndLastStranding"] = &DSNetOnlineObjectCommand::EndLastStranding;
+    DSNetOnlineObjectCommand_LuaTable["IsServiceEnd"] = &DSNetOnlineObjectCommand::IsServiceEnd;
+    DSNetOnlineObjectCommand_LuaTable["IsLogin"] = &DSNetOnlineObjectCommand::IsLogin;
+    DSNetOnlineObjectCommand_LuaTable["DeleteObjectsFollowingSyncFlags"] = &DSNetOnlineObjectCommand::DeleteObjectsFollowingSyncFlags;
+    lua["DSNetOnlineObjectCommand"] = DSNetOnlineObjectCommand_LuaTable;
+    
+    auto AI_LuaTable = lua.create_table();
+    AI_LuaTable["gHtnFactMatchesQuery"] = &AI::gHtnFactMatchesQuery;
+    lua["AI"] = AI_LuaTable;
+    
+    auto ContextualSpeechComponent_LuaTable = lua.create_table();
+    ContextualSpeechComponent_LuaTable["SayContextualSpeech"] = &ContextualSpeechComponent::SayContextualSpeech;
+    lua["ContextualSpeechComponent"] = ContextualSpeechComponent_LuaTable;
+    
+    auto LastingHealComponent_LuaTable = lua.create_table();
+    LastingHealComponent_LuaTable["StartLastingHeal"] = &LastingHealComponent::StartLastingHeal;
+    LastingHealComponent_LuaTable["IsLastingHealActive"] = &LastingHealComponent::IsLastingHealActive;
+    lua["LastingHealComponent"] = LastingHealComponent_LuaTable;
+    
+    auto DSRaceNodeGraphBindings_LuaTable = lua.create_table();
+    DSRaceNodeGraphBindings_LuaTable["StartRace"] = &DSRaceNodeGraphBindings::StartRace;
+    DSRaceNodeGraphBindings_LuaTable["GetRaceLapTime"] = &DSRaceNodeGraphBindings::GetRaceLapTime;
+    DSRaceNodeGraphBindings_LuaTable["ShowRaceHUD"] = &DSRaceNodeGraphBindings::ShowRaceHUD;
+    DSRaceNodeGraphBindings_LuaTable["IsRaceMission"] = &DSRaceNodeGraphBindings::IsRaceMission;
+    DSRaceNodeGraphBindings_LuaTable["SetStartTransform"] = &DSRaceNodeGraphBindings::SetStartTransform;
+    lua["DSRaceNodeGraphBindings"] = DSRaceNodeGraphBindings_LuaTable;
+    
+    auto DSMissionEvaluationDataTablesByDeliveryPoint_LuaTable = lua.create_table();
+    DSMissionEvaluationDataTablesByDeliveryPoint_LuaTable["FindEvaluationDataTable"] = &DSMissionEvaluationDataTablesByDeliveryPoint::FindEvaluationDataTable;
+    lua["DSMissionEvaluationDataTablesByDeliveryPoint"] = DSMissionEvaluationDataTablesByDeliveryPoint_LuaTable;
+    
+    auto ComboComponent_LuaTable = lua.create_table();
+    ComboComponent_LuaTable["IncreaseComboLevel"] = &ComboComponent::IncreaseComboLevel;
+    lua["ComboComponent"] = ComboComponent_LuaTable;
+    
+    auto DSMissionOpenConditionList_LuaTable = lua.create_table();
+    DSMissionOpenConditionList_LuaTable["GetOpenConditionList"] = &DSMissionOpenConditionList::GetOpenConditionList;
+    lua["DSMissionOpenConditionList"] = DSMissionOpenConditionList_LuaTable;
+    
+    auto BuddyManager_LuaTable = lua.create_table();
+    BuddyManager_LuaTable["RegisterSceneForMessages"] = &BuddyManager::RegisterSceneForMessages;
+    BuddyManager_LuaTable["RequestSpawnBuddy"] = &BuddyManager::RequestSpawnBuddy;
+    BuddyManager_LuaTable["ClearBuddy"] = &BuddyManager::ClearBuddy;
+    lua["BuddyManager"] = BuddyManager_LuaTable;
+    
+    auto RangedWeaponMode_LuaTable = lua.create_table();
+    RangedWeaponMode_LuaTable["DisableEjectEffectsLocation"] = &RangedWeaponMode::DisableEjectEffectsLocation;
+    RangedWeaponMode_LuaTable["DisableEjectLocation"] = &RangedWeaponMode::DisableEjectLocation;
+    lua["RangedWeaponMode"] = RangedWeaponMode_LuaTable;
+    
+    auto LightbakeOnly_LuaTable = lua.create_table();
+    LightbakeOnly_LuaTable["GetLightbakeOnlyFlag"] = &LightbakeOnly::GetLightbakeOnlyFlag;
+    lua["LightbakeOnly"] = LightbakeOnly_LuaTable;
+    
+    auto SmartObjectComponent_LuaTable = lua.create_table();
+    SmartObjectComponent_LuaTable["CanSatisfyMainDesire"] = &SmartObjectComponent::CanSatisfyMainDesire;
+    lua["SmartObjectComponent"] = SmartObjectComponent_LuaTable;
+    
+    auto ModificationItemComponent_LuaTable = lua.create_table();
+    ModificationItemComponent_LuaTable["GetCategory"] = &ModificationItemComponent::GetCategory;
+    ModificationItemComponent_LuaTable["GetModificationCount"] = &ModificationItemComponent::GetModificationCount;
+    lua["ModificationItemComponent"] = ModificationItemComponent_LuaTable;
+    
+    auto ArtPartsVariation_LuaTable = lua.create_table();
+    ArtPartsVariation_LuaTable["ApplyArtPartsVariation"] = &ArtPartsVariation::ApplyArtPartsVariation;
+    lua["ArtPartsVariation"] = ArtPartsVariation_LuaTable;
+    
+    auto DSMissionLargeSceneCommand_LuaTable = lua.create_table();
+    DSMissionLargeSceneCommand_LuaTable["ActivateFreeMissionScene"] = &DSMissionLargeSceneCommand::ActivateFreeMissionScene;
+    DSMissionLargeSceneCommand_LuaTable["CheckAllMissionSceneIsStable"] = &DSMissionLargeSceneCommand::CheckAllMissionSceneIsStable;
+    DSMissionLargeSceneCommand_LuaTable["IsRunningMissionLargeScene"] = &DSMissionLargeSceneCommand::IsRunningMissionLargeScene;
+    DSMissionLargeSceneCommand_LuaTable["ActivateMissionLargeScene"] = &DSMissionLargeSceneCommand::ActivateMissionLargeScene;
+    lua["DSMissionLargeSceneCommand"] = DSMissionLargeSceneCommand_LuaTable;
+    
+    auto PBDGraph_LuaTable = lua.create_table();
+    PBDGraph_LuaTable["Update"] = &PBDGraph::Update;
+    lua["PBDGraph"] = PBDGraph_LuaTable;
+    
+    auto DynamicPrefabCommand_LuaTable = lua.create_table();
+    DynamicPrefabCommand_LuaTable["DisableDynamicPrefab"] = &DynamicPrefabCommand::DisableDynamicPrefab;
+    lua["DynamicPrefabCommand"] = DynamicPrefabCommand_LuaTable;
+    
+    auto DSDeliveryBotMenuInfo_LuaTable = lua.create_table();
+    DSDeliveryBotMenuInfo_LuaTable["CheckDeliveryBotMenuInfoState"] = &DSDeliveryBotMenuInfo::CheckDeliveryBotMenuInfoState;
+    lua["DSDeliveryBotMenuInfo"] = DSDeliveryBotMenuInfo_LuaTable;
+    
+    auto InventoryCapacityComponent_LuaTable = lua.create_table();
+    InventoryCapacityComponent_LuaTable["GetFreeSlotsLeft"] = &InventoryCapacityComponent::GetFreeSlotsLeft;
+    lua["InventoryCapacityComponent"] = InventoryCapacityComponent_LuaTable;
+    
+    auto UDSGroup_LuaTable = lua.create_table();
+    UDSGroup_LuaTable["PostEvent"] = &UDSGroup::PostEvent;
+    lua["UDSGroup"] = UDSGroup_LuaTable;
+    
+    auto EntitlementResource_LuaTable = lua.create_table();
+    EntitlementResource_LuaTable["IsEntitlementAvailable"] = &EntitlementResource::IsEntitlementAvailable;
+    lua["EntitlementResource"] = EntitlementResource_LuaTable;
+    
+    auto DSMissionFactsResource_LuaTable = lua.create_table();
+    DSMissionFactsResource_LuaTable["GetFacts"] = &DSMissionFactsResource::GetFacts;
+    lua["DSMissionFactsResource"] = DSMissionFactsResource_LuaTable;
+    
+    auto PlayerLoadoutManagerResource_LuaTable = lua.create_table();
+    PlayerLoadoutManagerResource_LuaTable["GiveLoadoutToPlayer"] = &PlayerLoadoutManagerResource::GiveLoadoutToPlayer;
+    lua["PlayerLoadoutManagerResource"] = PlayerLoadoutManagerResource_LuaTable;
+    
+    auto DSDebugNodeGraphGroup_LuaTable = lua.create_table();
+    DSDebugNodeGraphGroup_LuaTable["DebugIsPressed"] = &DSDebugNodeGraphGroup::DebugIsPressed;
+    lua["DSDebugNodeGraphGroup"] = DSDebugNodeGraphGroup_LuaTable;
+    
+    auto DSMissionRankingCommand_LuaTable = lua.create_table();
+    DSMissionRankingCommand_LuaTable["GetCurrentRankingSeasonId"] = &DSMissionRankingCommand::GetCurrentRankingSeasonId;
+    DSMissionRankingCommand_LuaTable["IsNightmareRankingMode"] = &DSMissionRankingCommand::IsNightmareRankingMode;
+    lua["DSMissionRankingCommand"] = DSMissionRankingCommand_LuaTable;
+    
+    auto DSStringHashResource_LuaTable = lua.create_table();
+    DSStringHashResource_LuaTable["GetStringHash"] = &DSStringHashResource::GetStringHash;
+    lua["DSStringHashResource"] = DSStringHashResource_LuaTable;
+    
+    auto KjpSoundGraphNodeGroup_LuaTable = lua.create_table();
+    KjpSoundGraphNodeGroup_LuaTable["GetSoundTimeScaleExport"] = &KjpSoundGraphNodeGroup::GetSoundTimeScaleExport;
+    lua["KjpSoundGraphNodeGroup"] = KjpSoundGraphNodeGroup_LuaTable;
+    
+    auto HUDLogicGroupResource_LuaTable = lua.create_table();
+    HUDLogicGroupResource_LuaTable["HighlightHUDGroup"] = &HUDLogicGroupResource::HighlightHUDGroup;
+    lua["HUDLogicGroupResource"] = HUDLogicGroupResource_LuaTable;
+    
 }

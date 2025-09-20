@@ -162,6 +162,26 @@ struct LuaGameBindingGenerator {
 			AddLine("#include \"" + name + "\"");
 		}
 	}
+
+	// not support some param, return type
+	// example: float*, float&, enum
+	bool IsLuaCanBindFunction(FunctionType* fn) {
+		for (auto& p : fn->parameters) {
+			bool isPrimitiveType = false;
+			if (p->isPrimitive)
+				isPrimitiveType = true;
+			else if (p->rtti && p->rtti->mKind == RTTIKind::Enum)
+				isPrimitiveType = true;
+
+			if (isPrimitiveType) {
+				if (p->isRef || p->isPointer || p->isPointerToPointer) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	void Generate() {
 		AddLine("#pragma once");
 		AddLine();
@@ -173,10 +193,10 @@ struct LuaGameBindingGenerator {
 
 
 		// Build All ClassType 
-		auto functions = DecimaNative::GetAllGameFunctionAPI();
+		auto g_functions = DecimaNative::GetAllGameFunctionAPI();
 		std::unordered_map<std::string, ClassType> allClassMap;
 		std::unordered_map<std::string, SignatureType*> allTypeMap;
-		for (auto& funcPair : functions) {
+		for (auto& funcPair : g_functions) {
 			GameFunctionAPI* funcPtr = funcPair.second;
 			auto& fn = *funcPtr;
 			auto className = ClassType::BuildClassName((FunctionType*)&fn);
@@ -357,7 +377,6 @@ struct LuaGameBindingGenerator {
 
 
 		// Building GameAPI
-		Include("DecimaNative.h"); // override type on namespace GameType
 		Comment("Define All Class Here!");
 		std::function<void(ClassType*)> GenerateClassRecursive = [&](ClassType* classTypePtr) {
 			// already gen class!!
@@ -408,23 +427,43 @@ struct LuaGameBindingGenerator {
 		PushTab();
 
 
+		// generate user type
+		// 1. instance function
+		// 2. fields
+		// 3. !!Don't map static function
+		Comment("Map all usertype with member instance only!!");
 		for (auto& classPair : allClassMap) {
 			auto& classType = classPair.second;
 			auto className = classType.name.c_str();
 			if (IsSkipLuaBindingType(className))
 				continue;
 
-			auto functions = classType.GetFunctions();
+			std::vector<FunctionType*> allInstanceFunc;
+			{
+				auto funs = classType.GetFunctions();
+				for (auto fn : funs) {
+					if (fn->isInstanceFunction && IsLuaCanBindFunction(fn)) {
+						allInstanceFunc.push_back(fn);
+					}
+				}
+			}
+
+			// don't map this user type
+			if (allInstanceFunc.empty())
+				continue;
+
 			AddLine(std::format("lua.new_usertype<{}>(\"{}\",",
 				className, className));
 			PushTab();
-			int fnIndex = 0;
-			for (auto fn : functions) {
+			int fnIndex = -1;
+			int totalFunctionIndex = allInstanceFunc.size() - 1;
+			for (auto fn : allInstanceFunc) {
+				fnIndex++;
+
 				std::string fnBindingFullName = std::string(className) + "::" + fn->name;
 				std::string line = std::format("\"{}\", &{},", fn->name, fnBindingFullName);
 
-				fnIndex++;
-				if (fnIndex == functions.size()) { // remove last comma
+				if (fnIndex == totalFunctionIndex) { // remove last comma
 					line = line.substr(0, line.size() - 1);
 				}
 
@@ -435,12 +474,51 @@ struct LuaGameBindingGenerator {
 			AddLine(");");
 		}
 
+
+		// generate class static function
+		Comment("Map all class static function only!!");
+		for (auto& classPair : allClassMap) {
+			auto& classType = classPair.second;
+			auto className = classType.name.c_str();
+			if (IsSkipLuaBindingType(className))
+				continue;
+
+			std::vector<FunctionType*> allStaticFunc;
+			// private local var
+			{
+				auto funs = classType.GetFunctions();
+				for (auto fn : funs) {
+					if (!fn->isInstanceFunction && IsLuaCanBindFunction(fn)) {
+						allStaticFunc.push_back(fn);
+					}
+				}
+			}
+
+			// empty class member 
+			if (allStaticFunc.empty())
+				continue;
+
+			std::string varTableName = std::string(className) + "_LuaTable";
+			AddLine(std::format("auto {} = lua.create_table();", varTableName));
+			int fnIndex = -1;
+			for (auto fn : allStaticFunc) {
+				fnIndex++;
+
+				std::string fnClassFullName = std::string(className) + "::" + fn->name;
+				std::string line = std::format("{}[\"{}\"] = &{};",
+					varTableName, fn->name, fnClassFullName);
+				AddLine(line);
+			}
+
+			AddLine(std::format("lua[\"{}\"] = {};", className, varTableName));
+			AddLine();
+		}
+
+
 		// End of BindingFunctions
 		PopTab();
 		AddLine("}");
 
-		//PopTab();
-		//AddLine("}");
 	}
 
 	void SaveToFile(std::string fileName) {

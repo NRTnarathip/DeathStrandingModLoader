@@ -363,7 +363,7 @@ const uint64_t g_prefetchFileHash = GetFileCoreHash("prefetch/fullgame.prefetch.
 void DumpPrefetchHeaderInfo(BYTE* buffer) {
 	log("Dump Prefetch");
 	uint32_t fileSize;
-	MyUUID guid[16];
+	GGUUID guid[16];
 	uint64_t fileTypeHash;
 	memcpy(&fileTypeHash, buffer, sizeof(fileTypeHash));
 	memcpy(&fileSize, buffer + 8, sizeof(fileSize));
@@ -594,7 +594,7 @@ void My_AboutResolveLinkAsset(void* param_1, void* param_2, void* param_3, char*
 
 typedef uintptr_t(*My_FindTargetObject_t)(void* param_1, void* param_2, void* param_3);
 My_FindTargetObject_t backup_My_FindTargetObject;
-uintptr_t My_FindTargetObject(void* param_1, MyUUID* p2_guid, void* param_3) {
+uintptr_t My_FindTargetObject(void* param_1, GGUUID* p2_guid, void* param_3) {
 	log("Begin My_FindTargetObject, param_1: %p, param_2: %p, param_3: %p",
 		param_1, p2_guid, param_3);
 	auto result = backup_My_FindTargetObject(param_1, p2_guid, param_3);
