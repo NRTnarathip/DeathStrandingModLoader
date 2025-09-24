@@ -55,6 +55,8 @@ public:
 
 	// example: "Entity* param1, Vec3* param2, bool param3"
 	std::string BuildParamSignatures();
+
+	std::vector<SignatureType*> GetAllTypes();
 };
 
 class ClassType {

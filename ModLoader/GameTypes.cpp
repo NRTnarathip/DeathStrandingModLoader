@@ -141,14 +141,14 @@ void Entity::SetInvulnerable(bool on)
 float Entity::GetHealth()
 {
 	typedef float (*GetHealth_t)(Entity* ent);
-	static GetHealth_t fn = (GetHealth_t)vtable[15];
+	GetHealth_t fn = (GetHealth_t)vtable[15];
 	return fn(this);
 }
 
 float Entity::GetMaxHealth()
 {
 	typedef float (*GetMaxHealth_t)(Entity* ent);
-	static GetMaxHealth_t fn = (GetMaxHealth_t)vtable[16];
+	GetMaxHealth_t fn = (GetMaxHealth_t)vtable[16];
 	return fn(this);
 }
 

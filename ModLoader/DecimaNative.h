@@ -20,6 +20,7 @@ public:
 };
 
 struct DecimaNative {
+	static std::unordered_map<std::string, ClassType*> g_gameClassAPIMap;
 	static std::unordered_map<std::string, GameFunctionAPI*> g_gameFunctionAPIMap;
 	static std::set<ExportedSymbolGroup*> g_symbolSet;
 	static Array<ExportedSymbolGroup*>* g_symbolArray;
@@ -35,10 +36,10 @@ struct DecimaNative {
 		return g_symbolSet;
 	}
 	static bool IsExportedSymbolGroup(void* o);
-	static void ImportFunctionAPIFromSymbol(ExportedSymbolGroup* symbolGroup,
+	static GameFunctionAPI* ImportFunctionAPIFromSymbol(ExportedSymbolGroup* symbolGroup,
 		ExportedSymbolMember* member);
 	static GameFunctionAPI* GetGameFunctionAPI(std::string uniqueName);
 	static GameFunctionAPI* GetGameFunctionAPI(ExportedSymbolMember* member);
-	static std::unordered_map<std::string, GameFunctionAPI*> GetAllGameFunctionAPI();
+	static std::unordered_map<std::string, GameFunctionAPI*> GetAllGameAPI();
 };
 

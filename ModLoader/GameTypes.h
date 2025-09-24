@@ -322,6 +322,8 @@ struct Entity {
 
 	// function
 	const char* GetName();
+	Vec3 GetPosition() { return worldTransform.position; }
+	MyRotMatrix GetRotationMatrix() { return worldTransform.rotation; }
 	Vec3 GetVelocity();
 	MyVec3Pack GetAngularVelocity();
 	float GetLinearSpeed();
@@ -438,7 +440,14 @@ struct SoundShape {};
 #define SoundShape SoundShape
 
 struct XpMultiplier {};
-struct FRGBAColor {};
+
+struct FRGBAColor {
+	float r = 1;
+	float g = 1;
+	float b = 1;
+	float a = 1;
+	FRGBAColor() {}
+};
 #define FRGBAColor FRGBAColor
 
 #define Quat Quat

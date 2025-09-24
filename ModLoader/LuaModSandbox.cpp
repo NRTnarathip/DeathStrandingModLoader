@@ -75,12 +75,19 @@ namespace LuaNative {
 		return result;
 	}
 }
+
+int g_gameTick = 0;
+
+#include "LuaGameTypeBinding.h"
 void LuaModSandbox::CreateNewEnvrionment()
 {
+	// create new state
+	m_lua = sol::state();
+	// ready to use lua state
+
 	// enable libs
 	m_lua.open_libraries(sol::lib::base, sol::lib::math,
 		sol::lib::table, sol::lib::string);
-
 
 	// Default API
 	m_lua.set_function("Log", [this](sol::variadic_args args) {
@@ -98,6 +105,9 @@ void LuaModSandbox::CreateNewEnvrionment()
 	m_lua.set_function("CreateThread", [this](sol::function fn) {
 		this->LuaCreateThread(fn);
 		});
+	m_lua.set_function("GetGameTick", []() -> int {
+		return g_gameTick;
+		});
 
 	// Alias
 	m_lua["Wait"] = m_lua["Await"];
@@ -107,6 +117,8 @@ void LuaModSandbox::CreateNewEnvrionment()
 	log("try binding GameAPI for lua...");
 	LuaBindingPrivate::Bind(m_lua);
 	LuaMathBinding::Bind(m_lua);
+	LuaGameTypeBinding::Bind(m_lua);
+
 	log("success to binding GameAPI lua");
 }
 
@@ -124,23 +136,26 @@ LuaModSandbox::LuaModSandbox()
 	// start at 1
 	m_id = std::format("Sandbox:0x{:x}", ++g_idNumberCounter);
 
+	m_currentStatus = Idle;
 }
 
 void LuaModSandbox::Restart()
 {
-	// setup env
+	//stop it first! for clear data
+	Stop();
+
+	// ready to setup new state
 	SetNewStatus(LuaModStatus::Running);
 	CreateNewEnvrionment();
 }
 
 void LuaModSandbox::Stop()
 {
-	if (!IsRunning()) {
-		log("can't stop mod because is not running");
-		return;
+	if (!IsStop()) {
+		SetNewStatus(LuaModStatus::Stop);
+		m_threadNewList.clear();
+		m_threadWorkingList.clear();
 	}
-
-	SetNewStatus(LuaModStatus::Stop);
 
 	log("stopped sandbox!");
 }
@@ -172,6 +187,7 @@ bool LuaModSandbox::RunMainCodeOnce(std::string code)
 
 void LuaModSandbox::UpdateTick()
 {
+	g_gameTick++;
 	//log("try lua sandbox update..");
 	if (IsStop() || IsError()) {
 		// don't update any thing

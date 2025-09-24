@@ -15,7 +15,7 @@ struct ArrayLuaNative {
 };
 #define Array ArrayLuaNative
 
-#include "GameAPIGenerated.h"
+//#include "GameAPIGenerated.h"
 void LuaBindingPrivate::Bind(sol::state& lua)
 {
 #ifdef LUA_GAME_API_IMPORTED

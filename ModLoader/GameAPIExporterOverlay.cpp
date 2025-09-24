@@ -32,7 +32,7 @@ namespace ExampleAPI {
 	}
 }
 
-struct LuaGameBindingGenerator {
+struct GameAPIGenerator {
 	using Lines = std::vector<std::string>;
 	std::stringstream m_ss;
 	std::string m_currentTab = "";
@@ -182,7 +182,7 @@ struct LuaGameBindingGenerator {
 		return true;
 	}
 
-	void Generate() {
+	void GenGameAPIHeaderFile() {
 		AddLine("#pragma once");
 		AddLine();
 		AddLine("#define LUA_GAME_API_IMPORTED true");
@@ -193,7 +193,7 @@ struct LuaGameBindingGenerator {
 
 
 		// Build All ClassType 
-		auto g_functions = DecimaNative::GetAllGameFunctionAPI();
+		auto g_functions = DecimaNative::GetAllGameAPI();
 		std::unordered_map<std::string, ClassType> allClassMap;
 		std::unordered_map<std::string, SignatureType*> allTypeMap;
 		for (auto& funcPair : g_functions) {
@@ -529,18 +529,24 @@ struct LuaGameBindingGenerator {
 	}
 };
 
-void GenerateLuaGameBindings() {
+void ExportGameAPIToFile() {
 
-	LuaGameBindingGenerator gameAPIGen;
-	gameAPIGen.Generate();
+	GameAPIGenerator gameAPIGen;
+	gameAPIGen.GenGameAPIHeaderFile();
 	gameAPIGen.SaveToFile("GameAPIGenerated.h");
 }
 
+#include "GameAPIJsonExporter.h"
 void GameAPIExporterOverlay::OnDraw()
 {
-	auto functions = DecimaNative::GetAllGameFunctionAPI();
+	auto functions = DecimaNative::GetAllGameAPI();
 	ImGui::Text("Total API: %zu", functions.size());
-	if (ImGui::Button("Generate sol2 lua binding header file")) {
-		GenerateLuaGameBindings();
+	//if (ImGui::Button("Generate sol2 lua binding header file")) {
+	//	ExportGameAPIToFile();
+	//}
+
+	if (ImGui::Button("Export GameAPI To Json")) {
+		GameAPIJsonExporter jsonExpoter{};
+		jsonExpoter.Export("ds_game_api.json");
 	}
 }

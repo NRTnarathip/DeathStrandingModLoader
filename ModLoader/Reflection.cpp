@@ -300,6 +300,15 @@ std::string FunctionType::BuildParamSignatures()
 	return sig;
 }
 
+std::vector<SignatureType*> FunctionType::GetAllTypes()
+{
+	std::vector<SignatureType*> types;
+	types.push_back(returnType);
+	for (auto& p : parameters)
+		types.push_back(p);
+	return types;
+}
+
 uint32_t SignatureType::GetTypeSize()
 {
 	if (m_typeSize != -1)

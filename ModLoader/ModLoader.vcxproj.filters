@@ -198,14 +198,17 @@
     <ClInclude Include="LuaBindingPrivate.h">
       <Filter>Source Files\LuaMod</Filter>
     </ClInclude>
-    <ClInclude Include="GameAPIGenerated.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="extern\decima-native\GGUUID.h">
       <Filter>Source Files\decima-native</Filter>
     </ClInclude>
     <ClInclude Include="LuaMathBinding.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\LuaMod</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaGameTypeBinding.h">
+      <Filter>Source Files\LuaMod</Filter>
+    </ClInclude>
+    <ClInclude Include="GameAPIJsonExporter.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -345,6 +348,12 @@
       <Filter>Source Files\decima-native</Filter>
     </ClCompile>
     <ClCompile Include="LuaMathBinding.cpp">
+      <Filter>Source Files\LuaMod</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaGameTypeBinding.cpp">
+      <Filter>Source Files\LuaMod</Filter>
+    </ClCompile>
+    <ClCompile Include="GameAPIJsonExporter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

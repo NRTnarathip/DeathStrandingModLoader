@@ -8,6 +8,7 @@
 #include <string>
 
 std::unordered_map<std::string, GameFunctionAPI*> DecimaNative::g_gameFunctionAPIMap;
+std::unordered_map<std::string, ClassType*> DecimaNative::g_gameClassAPIMap;
 std::set<ExportedSymbolGroup*> DecimaNative::g_symbolSet;
 Array<ExportedSymbolGroup*>* DecimaNative::g_symbolArray = nullptr;
 
@@ -46,6 +47,9 @@ void DecimaNative::OnExportedSymbolGroupRegisterAllTypes()
 	// initialize symbols
 	auto total = g_symbolArray->size();
 	auto array = (MyVector*)g_symbolArray;
+
+	std::unordered_map<std::string, SignatureType*> allTypeMap;
+
 	for (int i = 0; i < total; i++) {
 		auto symbol = (ExportedSymbolGroup*)array->items[i];
 		g_symbolSet.insert(symbol);
@@ -53,17 +57,43 @@ void DecimaNative::OnExportedSymbolGroupRegisterAllTypes()
 		if (symbol->mMembers.size() == 0)
 			continue;
 
-		RTTI* memberClassType = nullptr;
 		for (int memberIndex = 0; memberIndex < symbol->mMembers.size(); memberIndex++) {
 			auto* member = &symbol->mMembers[memberIndex];
+			if (member->mKind == ExportedSymbolMember::MemberKind::Function) {
+				auto fn = ImportFunctionAPIFromSymbol(symbol, member);
+				if (fn == nullptr)
+					continue;
 
-			if (member->mKind == ExportedSymbolMember::MemberKind::Class) {
-				memberClassType = (RTTI*)member->mRTTI;
-				continue;
+				// build class holding function
+				auto className = ClassType::BuildClassName(fn);
+				if (className.empty())
+					className = "DecimaEngine"; //default name
+
+				// create new
+				if (g_gameClassAPIMap.find(className) == g_gameClassAPIMap.end()) {
+					ClassType* newClassInfo = new ClassType();
+					newClassInfo->name = className;
+					newClassInfo->rtti = fn->instanceRTTI;
+					g_gameClassAPIMap[className] = newClassInfo;
+				}
+
+				// add func to class
+				auto& classType = g_gameClassAPIMap[className];
+				classType->AddFunction(fn);
+
+				// collect all types
+				for (auto type : fn->GetAllTypes())
+					allTypeMap[type->name] = type;
 			}
-			else if (member->mKind == ExportedSymbolMember::MemberKind::Function) {
-				ImportFunctionAPIFromSymbol(symbol, member);
-			}
+		}
+
+	}
+
+	// apply class RTTI
+	for (auto& classPair : g_gameClassAPIMap) {
+		auto& c = *classPair.second;
+		if (allTypeMap.contains(c.name)) {
+			c.rtti = allTypeMap[c.name]->rtti;
 		}
 	}
 }
@@ -85,22 +115,24 @@ bool DecimaNative::IsExportedSymbolGroup(void* o)
 	return set.contains((ExportedSymbolGroup*)o);
 }
 
-void DecimaNative::ImportFunctionAPIFromSymbol(ExportedSymbolGroup* symbolGroup, ExportedSymbolMember* symbolMember)
+GameFunctionAPI* DecimaNative::ImportFunctionAPIFromSymbol(ExportedSymbolGroup* symbolGroup, ExportedSymbolMember* symbolMember)
 {
 	if (!symbolMember->IsExportFunction())
-		return;
+		return nullptr;
 
 	if (GetGameFunctionAPI(symbolMember)) {
 		//log("skip duplicate function api: %s", api.fullName);
-		return;
+		return nullptr;
 	}
 
-	auto fun = new GameFunctionAPI();
-	Reflection::BuildFunction(symbolGroup, symbolMember, (FunctionType*)fun);
+	auto fn = new GameFunctionAPI();
+	Reflection::BuildFunction(symbolGroup, symbolMember, (FunctionType*)fn);
 
 	// added
-	g_gameFunctionAPIMap[fun->exportName] = fun;
+	g_gameFunctionAPIMap[fn->exportName] = fn;
 	// debug
+
+	return fn;
 }
 
 GameFunctionAPI* DecimaNative::GetGameFunctionAPI(std::string exportName)
@@ -116,7 +148,7 @@ GameFunctionAPI* DecimaNative::GetGameFunctionAPI(ExportedSymbolMember* member)
 	return GetGameFunctionAPI(Reflection::GetFunctionExportName(member));
 }
 
-std::unordered_map<std::string, GameFunctionAPI*> DecimaNative::GetAllGameFunctionAPI()
+std::unordered_map<std::string, GameFunctionAPI*> DecimaNative::GetAllGameAPI()
 {
 	return g_gameFunctionAPIMap;
 }
